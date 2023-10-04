@@ -18,7 +18,7 @@ export const ComponentList = ({ config }: { config: Config }) => {
           className={getClassName()}
         >
           {Object.keys(config.components).map((componentKey, i) => {
-            //const componentConfig: ComponentConfig = config[componentKey];
+            const componentConfig: ComponentConfig = config[componentKey];
 
             return (
               <Draggable

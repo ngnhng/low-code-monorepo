@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useState,
-  useMemo,
 } from "react";
 import { Config, Data } from "../../types/Config";
 import { DragStart, DragUpdate } from "react-beautiful-dnd";
@@ -69,7 +68,7 @@ export const DropZoneProvider = ({
 
   const [activeZones, setActiveZones] = useState<Record<string, boolean>>({});
 
-  const { dispatch = null } = value || {};
+  const { dispatch = null } = value ? value : {};
 
   const registerZoneArea = useCallback(
     (area: string) => {
@@ -147,49 +146,28 @@ export const DropZoneProvider = ({
     [value, setPathData]
   );
 
-  const providerValue = useMemo(() => {
-    if (!value) {
-      return null;
-    }
-
-    return {
-      hoveringArea: value.draggedItem ? hoveringAreaDb : hoveringArea,
-      setHoveringArea,
-      hoveringZone,
-      setHoveringZone,
-      hoveringComponent,
-      setHoveringComponent,
-      registerZoneArea,
-      areasWithZones,
-      registerZone,
-      unregisterZone,
-      activeZones,
-      registerPath,
-      pathData,
-      ...value,
-    };
-  }, [
-    hoveringAreaDb,
-    hoveringArea,
-    setHoveringArea,
-    hoveringZone,
-    setHoveringZone,
-    hoveringComponent,
-    setHoveringComponent,
-    registerZoneArea,
-    areasWithZones,
-    registerZone,
-    unregisterZone,
-    activeZones,
-    registerPath,
-    pathData,
-    value, // Make sure this object is stable as well
-  ]);
-
   return (
     <>
       {value && (
-        <dropZoneContext.Provider value={providerValue}>
+        <dropZoneContext.Provider
+          value={{
+            hoveringArea: value.draggedItem ? hoveringAreaDb : hoveringArea,
+            setHoveringArea,
+            hoveringZone,
+            setHoveringZone,
+            hoveringComponent,
+            setHoveringComponent,
+            registerZoneArea,
+            areasWithZones,
+            registerZone,
+            unregisterZone,
+            activeZones,
+            registerPath,
+            pathData,
+
+            ...value,
+          }}
+        >
           {children}
         </dropZoneContext.Provider>
       )}

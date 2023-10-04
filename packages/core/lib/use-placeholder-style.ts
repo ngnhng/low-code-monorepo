@@ -9,7 +9,6 @@ export const usePlaceholderStyle = () => {
   const onDragStartOrUpdate = (
     draggedItem: DragStart & Partial<DragUpdate>
   ) => {
-    console.log("Drag Start", draggedItem);
     const draggableId = draggedItem.draggableId;
     const destinationIndex = (draggedItem.destination || draggedItem.source)
       .index;
@@ -69,7 +68,6 @@ export const usePlaceholderStyle = () => {
     }
 
     setPlaceholderStyle({
-      border: "20px dashed purple",
       position: "absolute",
       top: clientY,
       left: 0,

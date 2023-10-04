@@ -20,7 +20,6 @@ type DropZoneProps = {
 
 function DropZoneEdit({ zone, style }: DropZoneProps) {
   const ctx = useContext(dropZoneContext);
-  console.log("DropZoneEdit", ctx);
 
   const {
     // These all need setting via context
@@ -37,11 +36,8 @@ function DropZoneEdit({ zone, style }: DropZoneProps) {
     hoveringComponent,
   } = ctx! || {};
 
-  console.log("DropZoneEdit - ctx", ctx);
-
   let content = data.content || [];
   let zoneCompound = rootDroppableId;
-  console.log("zoneCompound", zoneCompound);
 
   useEffect(() => {
     if (areaId && registerZoneArea) {
@@ -65,7 +61,6 @@ function DropZoneEdit({ zone, style }: DropZoneProps) {
   if (areaId) {
     if (zone !== rootDroppableId) {
       zoneCompound = `${areaId}:${zone}`;
-      console.log("DropZoneEdit - zoneCompound", zoneCompound);
       content = setupZone(data, zoneCompound).zones[zoneCompound];
     }
   }
@@ -193,7 +188,6 @@ function DropZoneEdit({ zone, style }: DropZoneProps) {
                         No configuration for {item.type}
                       </div>
                     );
-				console.log("What", ctx);
 
                 return (
                   <div key={item.props.id} className={getClassName("item")}>
@@ -320,12 +314,10 @@ function DropZoneEdit({ zone, style }: DropZoneProps) {
 
 function DropZoneRender({ zone }: DropZoneProps) {
   const ctx = useContext(dropZoneContext);
-  console.log("DropZoneRender", ctx);
 
   const { data, areaId = "root", config } = ctx || {};
 
   let zoneCompound = rootDroppableId;
-  console.log("zoneCompound", zoneCompound);
   let content = data?.content || [];
 
   if (!data || !config) {
@@ -361,8 +353,6 @@ function DropZoneRender({ zone }: DropZoneProps) {
 
 export function DropZone(props: DropZoneProps) {
   const ctx = useContext(dropZoneContext);
-  console.log("Render DropZone", ctx);
-  console.log("Render DropZone props", props);
 
   if (ctx?.mode === "edit") {
     return <DropZoneEdit {...props} />;

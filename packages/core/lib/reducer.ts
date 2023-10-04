@@ -89,19 +89,11 @@ export type PuckAction =
   | RegisterZoneAction
   | UnregisterZoneAction;
 
-//  The StateReducer function is a pure function that takes
-//  the current state and an action as arguments and returns
-// 	a new state. The PuckAction type represents the actions
-//	that can be dispatched to the reducer.
-//	These actions are being dispatched from other
-// 	components in the project and are used to update the
-//	state of the component.
 export type StateReducer = Reducer<Data, PuckAction>;
 
 export const createReducer =
   ({ config }: { config: Config }): StateReducer =>
   (data, action) => {
-    console.log("Reducer", action);
     if (action.type === "insert") {
       const emptyComponentData = {
         type: action.componentType,
@@ -314,7 +306,6 @@ export const createReducer =
     }
 
     if (action.type === "registerZone") {
-      console.log("Register Zone", action);
       if (zoneCache[action.zone]) {
         return {
           ...data,

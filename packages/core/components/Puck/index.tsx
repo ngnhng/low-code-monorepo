@@ -5,7 +5,6 @@ import {
   ReactNode,
   useCallback,
   useEffect,
-  useMemo,
   useReducer,
   useState,
 } from "react";
@@ -31,6 +30,8 @@ import { LayerTree } from "../LayerTree";
 import { findZonesForArea } from "../../lib/find-zones-for-area";
 import { areaContainsZones } from "../../lib/area-contains-zones";
 import { flushZones } from "../../lib/flush-zones";
+
+const Field = () => {};
 
 const defaultPageFields: Record<string, Field> = {
   title: { type: "text" },
@@ -85,7 +86,10 @@ export function Puck({
   headerPath?: string;
 }) {
   const [reducer] = useState(() => createReducer({ config }));
-  const [data, dispatch] = useReducer<StateReducer>(reducer, initialData);
+  const [data, dispatch] = useReducer<StateReducer>(
+    reducer,
+    flushZones(initialData)
+  );
 
   const [itemSelector, setItemSelector] = useState<ItemSelector | null>(null);
 
@@ -136,14 +140,12 @@ export function Puck({
 
   const rootFields = config.root?.fields || defaultPageFields;
 
-  const fields = useMemo(() => {
-    return selectedItem
-      ? (config.components[selectedItem.type]?.fields as Record<
-          string,
-          Field<any>
-        >) || {}
-      : rootFields;
-  }, [selectedItem, config.components, rootFields]);
+  let fields = selectedItem
+    ? (config.components[selectedItem.type]?.fields as Record<
+        string,
+        Field<any>
+      >) || {}
+    : rootFields;
 
   useEffect(() => {
     if (onChange) onChange(data);
@@ -192,9 +194,10 @@ export function Puck({
               index: droppedItem.destination!.index,
               zone: droppedItem.destination.droppableId,
             });
+
+            return;
           } else {
             const { source, destination } = droppedItem;
-            console.log("Item", droppedItem);
 
             if (source.droppableId === destination.droppableId) {
               dispatch({
@@ -220,16 +223,6 @@ export function Puck({
           }
         }}
       >
-        {/*The data property is an array of objects that represent the items that can be dragged and dropped. 
-		The itemSelector property is a function that is used to select an item from the data array based on an ID. 
-		The setItemSelector property is a function that is used to update the itemSelector function when an item is dragged and dropped.
-		The config property is an object that contains configuration options for the drag and drop functionality. 
-		The dispatch property is a function that is used to update the state of the drag and drop functionality. 
-		The draggedItem property is an object that represents the item that is currently being dragged. 
-		The placeholderStyle property is an object that contains CSS styles for the placeholder that is displayed when an item is being dragged.
-		The mode property is set to "edit" which indicates that the drag and drop functionality is being used in an editing context. 
-		The areaId property is set to "root" which indicates that the drag and drop functionality is being used in the root area of the component.
-		*/}
         <DropZoneProvider
           value={{
             data,
@@ -258,7 +251,6 @@ export function Puck({
               return (
                 <div
                   style={{
-                    backgroundColor: "purple",
                     display: "grid",
                     gridTemplateAreas:
                       '"header header header" "left editor right"',
@@ -291,7 +283,7 @@ export function Puck({
                             }}
                             icon={<Globe size="14px" />}
                           >
-                            Pub
+                            Publish
                           </Button>
                         ),
                         data,
@@ -345,7 +337,8 @@ export function Puck({
                             justifyContent: "flex-end",
                           }}
                         >
-                          {renderHeaderActions?.({ data, dispatch })}
+                          {renderHeaderActions &&
+                            renderHeaderActions({ data, dispatch })}
                           <Button
                             onClick={() => {
                               onPublish(data);
@@ -368,7 +361,6 @@ export function Puck({
                       flexDirection: "column",
                     }}
                   >
-                    left
                     <SidebarSection title="Components">
                       <ComponentList config={config} />
                     </SidebarSection>
@@ -416,26 +408,21 @@ export function Puck({
                     onClick={() => setItemSelector(null)}
                     id="puck-frame"
                   >
-                    dd
                     <div
                       className="puck-root"
                       style={{
-                        backgroundColor: "pink",
                         border: "1px solid var(--puck-color-grey-8)",
                         boxShadow: "0px 0px 0px 3rem var(--puck-color-grey-10)",
                         zoom: 0.75,
                       }}
                     >
-                      wa
                       <Page data={data} {...data.root}>
-                        dropzone
                         <DropZone zone={rootDroppableId} />
                       </Page>
                     </div>
                   </div>
                   <div
                     style={{
-                      backgroundColor: "brown",
                       borderLeft: "1px solid var(--puck-color-grey-8)",
                       overflowY: "auto",
                       gridArea: "right",
@@ -445,7 +432,6 @@ export function Puck({
                       background: "var(--puck-color-white)",
                     }}
                   >
-                    www
                     <FieldWrapper data={data}>
                       <SidebarSection
                         noPadding
@@ -453,7 +439,7 @@ export function Puck({
                         breadcrumbClick={(breadcrumb) =>
                           setItemSelector(breadcrumb.selector)
                         }
-                        title={selectedItem ? selectedItem.type : "Pag"}
+                        title={selectedItem ? selectedItem.type : "Page"}
                       >
                         {Object.keys(fields).map((fieldName) => {
                           const field = fields[fieldName];
