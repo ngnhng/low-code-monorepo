@@ -20,4 +20,5 @@
     background-color: rgb(var(--app));
 
     border-top-left-radius: var(--corner-radius);
+    overflow: hidden;
 }

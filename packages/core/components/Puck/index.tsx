@@ -57,7 +57,7 @@ export function Puck({
     renderHeaderActions,
     headerTitle,
     headerPath,
-    width
+    containerStyle,
 }: {
     config: Config;
     data: Data;
@@ -68,7 +68,7 @@ export function Puck({
     renderHeaderActions?: (props: { data: Data; dispatch: (action: PuckAction) => void }) => ReactElement;
     headerTitle?: string;
     headerPath?: string;
-    width?: string;
+    containerStyle?: React.CSSProperties;
 }) {
     const [reducer] = useState(() => createReducer({ config }));
     const [data, dispatch] = useReducer<StateReducer>(reducer, flushZones(initialData));
@@ -210,9 +210,10 @@ export function Puck({
                                         gridTemplateAreas: '"header header header" "left editor right"',
                                         gridTemplateColumns: `${leftSidebarVisible ? "288px" : "0px"} auto 288px`,
                                         gridTemplateRows: "min-content auto",
-                                        height: "100vh",
-                                        position: "relative",
-                                        width: width ?? "auto"
+                                        width: "100%",
+                                        height: "100%",
+                                        position: "absolute",
+                                        ...containerStyle,
                                         // top: 0,
                                         // bottom: 0,
                                         // left: 0,
