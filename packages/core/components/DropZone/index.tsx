@@ -274,7 +274,7 @@ function DropZoneEdit({ zone, style }: DropZoneProps) {
                               : undefined,
                         }}
                       >
-                        <div style={{ zoom: 0.75 }}>
+                        <div style={{ zoom: ctx.zoomLevel }}>
                           <Render {...defaultedProps} />
                         </div>
                       </DraggableComponent>

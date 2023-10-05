@@ -282,7 +282,7 @@ export function Puck({
                                             style={{
                                                 boxShadow: "0px 0px 0px 3rem var(--puck-color-neutral-1)",
                                                 background: "white",
-                                                zoom: zoomLevel,
+                                                zoom: 0.75,
                                             }}
                                         >
                                             <Page data={data} {...data.root}>
