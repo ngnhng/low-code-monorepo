@@ -1,6 +1,6 @@
 "use client";
 
-import "./style.css"
+import "./style.css";
 
 import { Config, Data } from "@measured/puck";
 import { Puck } from "@measured/puck";
@@ -29,14 +29,19 @@ export default function Page({ params }: { params: { "project-id": string } }) {
 
     return (
         <div className="editor">
-            <Puck
-                config={config as Config}
-                data={data}
-                onPublish={async (data: Data) => {
-                    localStorage.setItem(key, JSON.stringify(data));
-                }}
-                headerPath={path}
-            />
+            <div className="toolbar">
+                Toolbar Placeholder
+            </div>
+            <div className="puckContainer">
+                <Puck
+                    config={config as Config}
+                    data={data}
+                    onPublish={async (data: Data) => {
+                        localStorage.setItem(key, JSON.stringify(data));
+                    }}
+                    headerPath={path}
+                />
+            </div>
         </div>
     );
 }

@@ -1,5 +1,24 @@
 .editor {
-    position: relative;
     width: 100%;
     height: 100%;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.toolbar {
+    width: 100%;
+    padding: 20px;
+
+    background-color: rgb(var(--secondary));
+
+    color: rgb(var(--accent));
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.puckContainer {
+    position: relative;
+    width: 100%;
+    flex: 1;
 }

@@ -34,12 +34,13 @@
 }
 
 .SidebarSection-breadcrumbLabel {
-  color: var(--puck-color-azure-3);
+  color: rgb(var(--puck-accent));
+  font-size: var(--puck-font-size-m);
   flex-shrink: 0;
 }
 
 .SidebarSection-breadcrumbLabel:hover {
-  color: var(--puck-color-azure-4);
+  color: rgb(var(--puck-secondary));
   cursor: pointer;
   text-decoration: underline;
 }
