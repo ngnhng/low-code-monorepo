@@ -1,4 +1,4 @@
 module.exports = {
-  reactStrictMode: true,
-  transpilePackages: ["ui", "@measured/puck"],
+    reactStrictMode: true,
+    transpilePackages: ["ui", "@measured/puck"],
 };
