@@ -1,4 +1,5 @@
 @import url("https://rsms.me/inter/inter.css");
+@import url('https://fonts.googleapis.com/css2?family=Gabarito:wght@400;500;600;700;800;900&display=swap');
 
 :root {
   /**
@@ -84,10 +85,10 @@
        ======================================================================== */
 
   /* Stacks */
-  --puck-font-stack: Inter, -apple-system, BlinkMacSystemFont, Segoe UI,
+  --puck-font-stack: Gabarito, Inter, -apple-system, BlinkMacSystemFont, Segoe UI,
     Helvetica Neue, sans-serif, Apple Color Emoji, Segoe UI Emoji,
     Segoe UI Symbol;
-  --puck-font-stack-variable: "Inter var", -apple-system, BlinkMacSystemFont,
+  --puck-font-stack-variable: Gabarito, "Inter var", -apple-system, BlinkMacSystemFont,
     Segoe UI, Helvetica Neue, sans-serif, Apple Color Emoji, Segoe UI Emoji,
     Segoe UI Symbol;
 

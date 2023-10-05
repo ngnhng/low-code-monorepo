@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactElement, ReactNode, useCallback, useEffect, useReducer, useState } from "react";
+import { ReactElement, ReactNode, useCallback, useEffect, useReducer, useState, useRef } from "react";
 import { DragDropContext, DragStart, DragUpdate } from "react-beautiful-dnd";
 import type { Config, Data, Field } from "../../types/Config";
 import { InputOrGroup } from "../InputOrGroup";
@@ -70,6 +70,7 @@ export function Puck({
     headerPath?: string;
     containerStyle?: React.CSSProperties;
 }) {
+    const puckEle = useRef(null);
     const [reducer] = useState(() => createReducer({ config }));
     const [data, dispatch] = useReducer<StateReducer>(reducer, flushZones(initialData));
 
@@ -120,8 +121,17 @@ export function Puck({
 
     const [draggedItem, setDraggedItem] = useState<DragStart & Partial<DragUpdate>>();
 
+    const [zoomLevel, setZoomLevel] = useState(0.75);
+
+    useEffect(() => {
+        if (puckEle.current) {
+            const computedWidth = getComputedStyle(puckEle.current).width;
+            setZoomLevel((parseInt(computedWidth) - 288 * 2) / window.innerWidth);
+        }
+    }, []);
+
     return (
-        <div className="puck">
+        <div className="puck" ref={puckEle}>
             <DragDropContext
                 onDragUpdate={(update) => {
                     setDraggedItem({ ...draggedItem, ...update });
@@ -214,99 +224,12 @@ export function Puck({
                                         height: "100%",
                                         position: "absolute",
                                         ...containerStyle,
-                                        // top: 0,
-                                        // bottom: 0,
-                                        // left: 0,
-                                        // right: 0,
                                     }}
                                 >
-                                    <header
-                                        style={{
-                                            gridArea: "header",
-                                            color: "var(--puck-color-black)",
-                                            background: "var(--puck-color-white)",
-                                            borderBottom: "1px solid var(--puck-color-grey-8)",
-                                        }}
-                                    >
-                                        {renderHeader ? (
-                                            renderHeader({
-                                                children: (
-                                                    <Button
-                                                        onClick={() => {
-                                                            onPublish(data);
-                                                        }}
-                                                        icon={<Globe size="14px" />}
-                                                    >
-                                                        Publish
-                                                    </Button>
-                                                ),
-                                                data,
-                                                dispatch,
-                                            })
-                                        ) : (
-                                            <div
-                                                style={{
-                                                    display: "grid",
-                                                    padding: 16,
-                                                    gridTemplateAreas: '"left middle right"',
-                                                    gridTemplateColumns: "288px auto 288px",
-                                                    gridTemplateRows: "auto",
-                                                }}
-                                            >
-                                                <div
-                                                    style={{
-                                                        display: "flex",
-                                                        gap: 16,
-                                                    }}
-                                                >
-                                                    <IconButton
-                                                        onClick={() => setLeftSidebarVisible(!leftSidebarVisible)}
-                                                        title="Toggle left sidebar"
-                                                    >
-                                                        <Sidebar />
-                                                    </IconButton>
-                                                </div>
-                                                <div
-                                                    style={{
-                                                        display: "flex",
-                                                        justifyContent: "center",
-                                                        alignItems: "center",
-                                                    }}
-                                                >
-                                                    <Heading rank={2} size="xs">
-                                                        {headerTitle || data.root.title || "Page"}
-                                                        {headerPath && (
-                                                            <small style={{ fontWeight: 400, marginLeft: 4 }}>
-                                                                <code>{headerPath}</code>
-                                                            </small>
-                                                        )}
-                                                    </Heading>
-                                                </div>
-                                                <div
-                                                    style={{
-                                                        display: "flex",
-                                                        gap: 16,
-                                                        justifyContent: "flex-end",
-                                                    }}
-                                                >
-                                                    {renderHeaderActions && renderHeaderActions({ data, dispatch })}
-                                                    <Button
-                                                        onClick={() => {
-                                                            onPublish(data);
-                                                        }}
-                                                        icon={<Globe size="14px" />}
-                                                    >
-                                                        Publish
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </header>
                                     <div
                                         style={{
                                             gridArea: "left",
-                                            background: "var(--puck-color-grey-11)",
-                                            borderRight: "1px solid var(--puck-color-grey-8)",
+                                            background: "#ffffff",
                                             overflowY: "auto",
                                             display: "flex",
                                             flexDirection: "column",
@@ -348,6 +271,7 @@ export function Puck({
                                             overflowY: "auto",
                                             gridArea: "editor",
                                             position: "relative",
+                                            background: "var(--puck-color-neutral-1)",
                                         }}
                                         onClick={() => setItemSelector(null)}
                                         id="puck-frame"
@@ -355,9 +279,9 @@ export function Puck({
                                         <div
                                             className="puck-root"
                                             style={{
-                                                border: "1px solid var(--puck-color-grey-8)",
-                                                boxShadow: "0px 0px 0px 3rem var(--puck-color-grey-10)",
-                                                zoom: 0.75,
+                                                boxShadow: "0px 0px 0px 3rem var(--puck-color-neutral-1)",
+                                                background: "white",
+                                                zoom: zoomLevel,
                                             }}
                                         >
                                             <Page data={data} {...data.root}>
@@ -367,13 +291,12 @@ export function Puck({
                                     </div>
                                     <div
                                         style={{
-                                            borderLeft: "1px solid var(--puck-color-grey-8)",
                                             overflowY: "auto",
                                             gridArea: "right",
                                             fontFamily: "var(--puck-font-stack)",
                                             display: "flex",
                                             flexDirection: "column",
-                                            background: "var(--puck-color-white)",
+                                            background: "#ffffff",
                                         }}
                                     >
                                         <FieldWrapper data={data}>

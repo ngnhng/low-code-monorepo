@@ -84,4 +84,16 @@
 
   --puck-color-black: #000000;
   --puck-color-white: #ffffff;
+
+  --puck-primary-1: 247, 243, 246;
+  --puck-primary-2: 241, 233, 240;
+  --puck-primary-3: 225, 208, 221;
+  --puck-primary-4: 215, 193, 210;
+  --puck-primary-5: 205, 177, 199;
+  --puck-primary-6: 195, 162, 188;
+  --puck-primary-7: 185, 146, 177;
+
+  --puck-secondary: 228, 216, 226;
+  --puck-accent: 141, 98, 134;
+
 }

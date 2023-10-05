@@ -1,44 +1,45 @@
 .Heading {
-  display: block;
-  font-family: var(--puck-font-stack);
-  font-weight: 700;
-  margin: 0;
+    display: block;
+    font-family: var(--puck-font-stack);
+    font-weight: 700;
+    margin: 0;
+    color: rgb(var(--puck-accent));
 }
 
 .Heading b {
-  font-weight: 700;
+    font-weight: 700;
 }
 
 .Heading--xxxxl {
-  font-size: var(--puck-font-size-xxxxl);
-  letter-spacing: 0.08ch;
-  font-weight: 800;
+    font-size: var(--puck-font-size-xxxxl);
+    letter-spacing: 0.08ch;
+    font-weight: 800;
 }
 
 .Heading--xxxl {
-  font-size: var(--puck-font-size-xxxl);
+    font-size: var(--puck-font-size-xxxl);
 }
 
 .Heading--xxl {
-  font-size: var(--puck-font-size-xxl);
+    font-size: var(--puck-font-size-xxl);
 }
 
 .Heading--xl {
-  font-size: var(--puck-font-size-xl);
+    font-size: var(--puck-font-size-xl);
 }
 
 .Heading--l {
-  font-size: var(--puck-font-size-l);
+    font-size: var(--puck-font-size-l);
 }
 
 .Heading--m {
-  font-size: var(--puck-font-size-m);
+    font-size: var(--puck-font-size-m);
 }
 
 .Heading--s {
-  font-size: var(--puck-font-size-s);
+    font-size: var(--puck-font-size-s);
 }
 
 .Heading--xs {
-  font-size: var(--puck-font-size-xs);
+    font-size: var(--puck-font-size-xs);
 }

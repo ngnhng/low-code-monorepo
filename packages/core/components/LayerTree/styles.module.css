@@ -23,13 +23,13 @@
 
 .Layer {
   position: relative;
-  border: 1px solid transparent;
+  /* border: 1px solid transparent; */
 }
 
 .Layer-inner {
   padding-left: 20px;
   padding-right: 8px;
-  border-radius: 3px;
+  border-radius: 10px;
 }
 
 .Layer--containsZone > .Layer-inner {
@@ -47,18 +47,18 @@
 
 .Layer:not(.Layer--isSelected) > .Layer-inner:hover,
 .Layer--isHovering > .Layer-inner {
-  color: var(--puck-color-blue);
-  background: var(--puck-color-azure-85);
+  color: rgb(var(--puck-accent));
+  background: rgb(var(--puck-primary-1));
 }
 
 .Layer--isSelected {
-  background: var(--puck-color-azure-9);
-  border-color: var(--puck-color-azure-7);
-  border-radius: 4px;
+  background: rgb(var(--puck-primary-2));
+  /* border-color: var(--puck-color-azure-7); */
+  border-radius: 10px;
 }
 
 .Layer--isSelected > .Layer-inner {
-  background: var(--puck-color-azure-85);
+  background: rgb(var(--puck-primary-1));
   font-weight: 600;
 }
 

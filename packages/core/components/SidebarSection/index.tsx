@@ -40,7 +40,7 @@ export const SidebarSection = ({
             </div>
           ))}
           <div className={getClassName("heading")}>
-            <Heading rank={2} size="xs">
+            <Heading rank={2} size="m">
               {title}
             </Heading>
           </div>

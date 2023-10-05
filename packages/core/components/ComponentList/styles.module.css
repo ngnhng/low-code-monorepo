@@ -8,11 +8,11 @@
 
 .ComponentList-item,
 .ComponentList-itemShadow {
-  background: white;
+  background: rgb(var(--puck-primary-1));
   padding: 12px;
   display: flex;
-  border: 1px var(--puck-color-grey-8) solid;
-  border-radius: 8px;
+  /* border-bottom: 1px var(--puck-color-grey-8) solid; */
+  border-radius: 10px;
   font-size: var(--puck-font-size-xxs);
   justify-content: space-between;
   align-items: center;
@@ -30,5 +30,5 @@
 }
 
 .ComponentList-item:hover {
-  background-color: var(--puck-color-azure-9);
+  background-color: rgb(var(--puck-secondary));
 }
