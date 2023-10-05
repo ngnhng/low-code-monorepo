@@ -57,7 +57,7 @@ export const Card: ComponentConfig<CardProps> = {
   render: ({ title, icon, description, mode }) => {
     return (
       <div className={getClassName({ [mode]: mode })}>
-        <div className={getClassName("icon")}>{icons[icon]}</div>
+        <div className={getClassName("icon")}>{icons[icon || "default"]}</div>
         <div className={getClassName("title")}>{title}</div>
         <div className={getClassName("description")}>{description}</div>
       </div>
