@@ -202,6 +202,7 @@ export function Puck({
                         placeholderStyle,
                         mode: "edit",
                         areaId: "root",
+                        zoomLevel
                     }}
                 >
                     <dropZoneContext.Consumer>

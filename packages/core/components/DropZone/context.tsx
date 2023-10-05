@@ -41,6 +41,7 @@ export type DropZoneContext = {
   pathData?: PathData;
   registerPath?: (selector: ItemSelector) => void;
   mode?: "edit" | "render";
+  zoomLevel?: number
 } | null;
 
 export const dropZoneContext = createContext<DropZoneContext>(null);
