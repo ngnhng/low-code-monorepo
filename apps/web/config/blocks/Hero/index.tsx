@@ -34,7 +34,7 @@ export const Hero: ComponentConfig<HeroProps> = {
     _data: {
       type: "external",
       adaptor: quotesAdaptor,
-      getItemSummary: (item: Partial<HeroProps>) => item.description,
+      getItemSummary: (item: Partial<HeroProps>) => item.description!,
     },
     title: { type: "text" },
     description: { type: "textarea" },

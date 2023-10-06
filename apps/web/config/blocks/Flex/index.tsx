@@ -22,7 +22,7 @@ export const Flex: ComponentConfig<FlexProps> = {
           type: "number",
         },
       },
-      getItemSummary: (_, id) => `Item ${id + 1}`,
+      getItemSummary: (_, id) => `Item ${id! + 1}`,
     },
     minItemWidth: {
       label: "Minimum Item Width",
