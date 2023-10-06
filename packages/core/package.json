@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint \"**/*.ts*\"",
-    "build": "rm -rf dist && tsup index.ts",
+    "build": "rimraf -rf dist && tsup index.ts",
     "prepare": "cp ../../README.md . && yarn build",
     "postpublish": "rm README.md"
   },
@@ -30,6 +30,7 @@
     "classnames": "^2.3.2",
     "react-beautiful-dnd": "^13.1.1",
     "react-spinners": "^0.13.8",
+    "rimraf": "^5.0.5",
     "use-debounce": "^9.0.4"
   },
   "peerDependencies": {
