@@ -78,7 +78,7 @@ export const FeatureList: ComponentConfig<FeatureListProps> = {
         <div className={getClassName("items")}>
           {items.map((item, i) => (
             <div key={i} className={getClassName("item")}>
-              <div className={getClassName("icon")}>{icons[item.icon]}</div>
+              <div className={getClassName("icon")}>{icons[item.icon || "Feather"]}</div>
               <div className={getClassName("title")}>{item.title}</div>
               <div className={getClassName("description")}>
                 {item.description}
