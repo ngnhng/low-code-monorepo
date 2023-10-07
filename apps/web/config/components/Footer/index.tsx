@@ -69,23 +69,6 @@ const Footer = ({ children }: { children: ReactNode }) => {
           {children}
         </div>
       </Section>
-      <div
-        style={{
-          padding: 64,
-          textAlign: "center",
-          color: "var(--puck-color-grey-2)",
-          background: "var(--puck-color-grey-10)",
-        }}
-      >
-        Made by{" "}
-        <a
-          href="https://measured.co"
-          target="_blank"
-          style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}
-        >
-          Measured
-        </a>
-      </div>
     </footer>
   );
 };

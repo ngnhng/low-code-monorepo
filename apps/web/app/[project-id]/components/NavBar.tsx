@@ -2,9 +2,10 @@ import "./NavBar.css";
 
 import Link from "next/link";
 import Image from "next/image";
+import { NavigationProps } from "../../../config/types/Navigation";
 
 export default function NavBar({ selectedPage }: { selectedPage: string }): JSX.Element {
-    const navigations = [
+    const navigations: Required<NavigationProps>[] = [
         {
             url: "edit",
             title: "UI Editor",
