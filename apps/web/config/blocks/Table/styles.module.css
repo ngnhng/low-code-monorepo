@@ -1,0 +1,52 @@
+.Table {
+    background-image: linear-gradient(
+        rgba(255, 255, 255, 0),
+        rgb(247, 250, 255) 100%
+    );
+    display: flex;
+    align-items: center;
+	width: 100%;
+    position: relative;
+}
+
+/* thead */
+.Table-head {
+	background-color: rgb(247, 250, 255);
+	border-bottom: 1px solid rgb(229, 231, 235);
+	color: rgb(107, 114, 128);
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1.25rem;
+	text-align: left;
+	text-transform: uppercase;
+}
+
+.Table-head tr {
+	display: flex;
+	align-items: center;
+}
+
+.Table-head tr th {
+	padding: 0.75rem 1rem;
+}
+
+/* tbody */
+.Table-body {
+	background-color: rgb(255, 255, 255);
+	border-bottom: 1px solid rgb(229, 231, 235);
+	color: rgb(55, 65, 81);
+	font-size: 0.875rem;
+	font-weight: 400;
+	line-height: 1.25rem;
+	text-align: left;
+}
+
+/* tr */
+.Table-row {
+	border-bottom: 1px solid rgb(229, 231, 235);
+}
+
+/* td */
+.Table-cell {
+	padding: 0.75rem 1rem;
+}
