@@ -8,35 +8,38 @@ import { Section } from "../../components/Section";
 const getClassName = getClassNameFactory("Table", styles);
 
 export type WebAPIDataSourceConfigProps = {
-  id: string;
-  url: string;
-  apiKey?: string;
+   id: string;
+   url: string;
+   apiKey?: string;
 };
 
 export type DataSourceConfigProps =
-  | WebAPIDataSourceConfigProps
-  | { id: string; type: "static"; data: object[] };
+   | WebAPIDataSourceConfigProps
+   | { id: string; type: "static"; data: object[] };
 
 export type TableProps = {
-  title: string;
-  dataSourceId: string;
+   title?: string;
+   dataSourceId: string;
 };
 
 export const Table: ComponentConfig<TableProps> = {
-  fields: {
-    title: { type: "text" },
-    dataSourceId: { type: "text" },
-  },
-  render: ({ title, dataSourceId }: TableProps) => {
-    return (
-      <Section className={getClassName()}>
-        <div className={getClassName("renderer")}>
-          <TableRenderer
-            dataSourceId={dataSourceId}
-            classNameFn={getClassName}
-          />
-        </div>
-      </Section>
-    );
-  },
+   fields: {
+      title: { type: "text" },
+      dataSourceId: { type: "text" }, // we could pass config here instead of id lookup inside the renderer
+   },
+   defaultProps: {
+	  dataSourceId: "api",
+   },
+   render: ({ title, dataSourceId }: TableProps) => {
+      return (
+         <Section className={getClassName()}>
+            <div className={getClassName("renderer")}>
+               <TableRenderer
+                  dataSourceId={dataSourceId}
+                  classNameFn={getClassName}
+               />
+            </div>
+         </Section>
+      );
+   },
 };

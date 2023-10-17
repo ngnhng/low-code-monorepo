@@ -4,7 +4,8 @@ import {
    getCoreRowModel,
    useReactTable,
 } from "@tanstack/react-table";
-import { Reducer, useEffect, useState } from "react";
+import { Reducer, useEffect, useReducer, useState } from "react";
+import { DataSourceConfigProps, WebAPIDataSourceConfigProps } from ".";
 
 type TableRendererProps = {
    dataSourceId: string;
@@ -37,7 +38,7 @@ type TableState = {
    tableData: TableData | null;
 };
 
-export type DataFetch = (config?: any) => Promise<TableData | null>;
+export type DataFetch = (config: any) => Promise<TableData | null>;
 
 const getStaticData = async (
    config: StaticConfig
@@ -51,53 +52,86 @@ const getStaticData = async (
    return null;
 };
 
+const getAPIData = async (
+   config: WebAPIDataSourceConfigProps
+): Promise<TableData | null> => {
+   const response = await fetch(config.url);
+   if (response.ok) {
+      const data = await response.json();
+      return data;
+   }
+
+   return null;
+};
+
 const createDataSource = ({
    dataSourceId,
 }: {
    dataSourceId: string;
-}): DataFetch => {
+}): [DataFetch, DataSourceConfigProps] => {
+   // expected to be a call to backend API
    switch (dataSourceId) {
-      case "static":
-         return getStaticData;
+      case "api":
+         return [getAPIData, { id: "123", url: "/api/data" }];
+      default:
+         return [getStaticData, { id: "123", type: "static", data: [] }];
    }
+};
 
-   return () => Promise.resolve(null);
+type Action =
+   | { type: "LOADING" }
+   | { type: "SUCCESS"; payload: TableData }
+   | { type: "ERROR"; payload: string };
+
+const tableReducer: Reducer<TableState, Action> = (state, action) => {
+   switch (action.type) {
+      case "LOADING":
+         return { ...state, loading: true, error: null };
+      case "SUCCESS":
+         return { ...state, loading: false, tableData: action.payload };
+      case "ERROR":
+         return { ...state, loading: false, error: action.payload };
+      default:
+         throw new Error();
+   }
+};
+
+const useTableData = (dataSourceId: string) => {
+   const [state, dispatch] = useReducer(tableReducer, {
+      loading: false,
+      error: null,
+      tableData: null,
+   });
+
+   useEffect(() => {
+      const fetchTableData = async () => {
+         dispatch({ type: "LOADING" });
+
+         const [dataFetch, configs] = createDataSource({ dataSourceId });
+         const data = await dataFetch(configs);
+
+         if (data) {
+            dispatch({ type: "SUCCESS", payload: data });
+         } else {
+            dispatch({ type: "ERROR", payload: "No data available" });
+         }
+      };
+
+      fetchTableData();
+   }, [dataSourceId]);
+
+   return state;
 };
 
 export function TableRenderer({
    dataSourceId,
    classNameFn,
 }: TableRendererProps) {
-   const [state, setState] = useState<TableState>({
-      loading: false,
-      error: null,
-      tableData: null,
-   });
+   const { loading, error, tableData } = useTableData(dataSourceId);
+
    const columnHelper = createColumnHelper();
 
-   const fetchTableData = async () => {
-      if (!dataSourceId) {
-         setState({ ...state, error: "No data source ID provided" });
-         return;
-      }
-
-      setState({ ...state, loading: true, error: null });
-
-      const dataFetch = createDataSource({ dataSourceId });
-      const data = await dataFetch();
-
-      setState({ ...state, loading: false, tableData: data });
-
-      if (!data) {
-         setState({ ...state, error: "No data available" });
-      }
-   };
-
-   useEffect(() => {
-      fetchTableData();
-   }, []);
-
-   const columns = state.tableData!.columns.map((column) =>
+   const columns = (tableData?.columns || []).map((column) =>
       columnHelper.accessor(column.key, {
          header: column.label,
          cell: (info) => info.getValue(),
@@ -106,9 +140,17 @@ export function TableRenderer({
 
    const table = useReactTable({
       columns,
-      data: state.tableData!.rows,
+      data: tableData?.rows || [],
       getCoreRowModel: getCoreRowModel(),
    });
+
+   if (loading) {
+      return <div>Loading...</div>;
+   }
+
+   if (error) {
+      return <div>{error}</div>;
+   }
 
    return (
       <div>
