@@ -1,10 +1,12 @@
 import {
+   ColumnDef,
    createColumnHelper,
    flexRender,
    getCoreRowModel,
    useReactTable,
 } from "@tanstack/react-table";
-import { Reducer, useEffect, useReducer, useState } from "react";
+import { parse } from "path";
+import { Reducer, useEffect, useMemo, useReducer, useState } from "react";
 import { DataSourceConfigProps, WebAPIDataSourceConfigProps } from ".";
 
 type TableRendererProps = {
@@ -21,6 +23,7 @@ type ColumnProps = {
    key: string;
    label: string;
    type: string;
+   children?: ColumnProps[];
 };
 
 type RowProps = {
@@ -36,6 +39,64 @@ type TableState = {
    loading: boolean;
    error: string | null;
    tableData: TableData | null;
+};
+
+function sanitize(rawJSON: object[]): TableData {
+   const columns = Object.keys(rawJSON[0]).map((key) => ({
+      key,
+      label: key,
+      type: "text",
+   }));
+
+   const rows = rawJSON.map((row) => {
+      const newRow: RowProps = {};
+      columns.forEach((column) => {
+         newRow[column.key] = row[column.key];
+      });
+      return newRow;
+   });
+
+   return { columns, rows };
+}
+
+function isDataFormatValid(data: any): data is TableData {
+   if (!data) {
+      return false;
+   }
+
+   if (!Array.isArray(data.columns) || !Array.isArray(data.rows)) {
+      return false;
+   }
+
+   return true;
+}
+
+const flattenObject = (obj: Record<string, any>, prefix = "") => {
+   return Object.keys(obj).reduce((acc, key) => {
+      const pre = prefix.length ? prefix + "_" : "";
+      if (
+         typeof obj[key] === "object" &&
+         obj[key] !== null &&
+         !Array.isArray(obj[key])
+      ) {
+         Object.assign(acc, flattenObject(obj[key], pre + key));
+      } else {
+         acc[pre + key] = obj[key];
+      }
+      return acc;
+   }, {});
+};
+
+const flattenArray = (arr: any[] | undefined) => {
+   if (!arr) {
+      return [];
+   }
+   return arr.map((item) => {
+      if (typeof item === "object" && item !== null && !Array.isArray(item)) {
+         return flattenObject(item);
+      }
+      return item;
+   });
 };
 
 export type DataFetch = (config: any) => Promise<TableData | null>;
@@ -58,6 +119,9 @@ const getAPIData = async (
    const response = await fetch(config.url);
    if (response.ok) {
       const data = await response.json();
+      if (!isDataFormatValid(data)) {
+         return sanitize(data);
+      }
       return data;
    }
 
@@ -73,6 +137,19 @@ const createDataSource = ({
    switch (dataSourceId) {
       case "api":
          return [getAPIData, { id: "123", url: "/api/data" }];
+
+      case "api-2":
+         return [getAPIData, { id: "123", url: "/api/data?e=1" }];
+      case "url-1":
+         return [
+            getAPIData,
+            { id: "123", url: "https://jsonplaceholder.typicode.com/users" },
+         ];
+      case "url-2":
+         return [
+            getAPIData,
+            { id: "123", url: "https://jsonplaceholder.typicode.com/posts" },
+         ];
       default:
          return [getStaticData, { id: "123", type: "static", data: [] }];
    }
@@ -129,18 +206,42 @@ export function TableRenderer({
 }: TableRendererProps) {
    const { loading, error, tableData } = useTableData(dataSourceId);
 
-   const columnHelper = createColumnHelper();
+   const columnHelper = useMemo(() => createColumnHelper(), []);
 
-   const columns = (tableData?.columns || []).map((column) =>
-      columnHelper.accessor(column.key, {
-         header: column.label,
-         cell: (info) => info.getValue(),
-      })
-   );
+   const parseColumns = (columns, parentKey?: string) => {
+      return columns.map((column) => {
+         if (column.children) {
+            return {
+               ...column,
+               header: column.label,
+               columns: parseColumns(column.children, column.key),
+            };
+         }
+
+         if (parentKey)
+            return columnHelper.accessor(`${parentKey}_${column.key}`, {
+               header: column.label,
+               cell: (info) => info.getValue(),
+            });
+
+         return columnHelper.accessor(column.key, {
+            header: column.label,
+            cell: (info) => info.getValue(),
+         });
+      });
+   };
+
+   const columns = useMemo(() => {
+      return parseColumns(tableData?.columns || []);
+   }, [tableData]);
+
+   const rows = useMemo(() => {
+      return flattenArray(structuredClone(tableData?.rows));
+   }, [tableData]);
 
    const table = useReactTable({
       columns,
-      data: tableData?.rows || [],
+      data: rows,
       getCoreRowModel: getCoreRowModel(),
    });
 
