@@ -1,5 +1,5 @@
 import React from "react";
-import { Adaptor, ComponentConfig } from "@measured/puck/types/Config";
+import { ComponentConfig } from "@measured/puck/types/Config";
 import styles from "./styles.module.css";
 import { getClassNameFactory } from "@measured/puck/lib";
 import { TableRenderer } from "./TableRender";
@@ -33,12 +33,10 @@ export const Table: ComponentConfig<TableProps> = {
    render: ({ title, dataSourceId }: TableProps) => {
       return (
          <Section className={getClassName()}>
-            <div className={getClassName("renderer")}>
                <TableRenderer
                   dataSourceId={dataSourceId}
-                  classNameFn={getClassName}
+				  classNameFn={getClassName}
                />
-            </div>
          </Section>
       );
    },

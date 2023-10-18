@@ -1,12 +1,10 @@
 import {
-   ColumnDef,
    createColumnHelper,
    flexRender,
    getCoreRowModel,
    useReactTable,
 } from "@tanstack/react-table";
-import { parse } from "path";
-import { Reducer, useEffect, useMemo, useReducer, useState } from "react";
+import { Reducer, useEffect, useMemo, useReducer } from "react";
 import { DataSourceConfigProps, WebAPIDataSourceConfigProps } from ".";
 
 type TableRendererProps = {
@@ -254,7 +252,7 @@ export function TableRenderer({
    }
 
    return (
-      <div>
+      <div className={classNameFn("renderer")}>
          <table className={classNameFn("table")}>
             <thead className={classNameFn("head")}>
                {table.getHeaderGroups().map((headerGroup) => (

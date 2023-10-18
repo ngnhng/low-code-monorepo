@@ -9,6 +9,17 @@
    position: relative;
 }
 
+.Table-renderer {
+   width: 100%;
+   overflow-x: auto;
+}
+
+.Table-table {
+   width: 100%;
+   border-collapse: collapse;
+   border-spacing: 0;
+}
+
 /* thead */
 .Table-head {
    background-color: rgb(247, 250, 255);
@@ -22,9 +33,15 @@
 }
 
 .Table-head tr {
+   display: flex;
+   justify-content: space-around;
+   align-items: center;
+   border-bottom: 1px solid rgb(229, 231, 235);
 }
 
 .Table-head tr th {
+   width: 100%;
+   align-items: center;
 }
 
 /* tbody */
