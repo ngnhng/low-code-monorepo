@@ -1,4 +1,6 @@
 import {
+   ColumnDef,
+   ColumnHelper,
    createColumnHelper,
    flexRender,
    getCoreRowModel,
@@ -6,6 +8,7 @@ import {
 } from "@tanstack/react-table";
 import { Reducer, useEffect, useMemo, useReducer } from "react";
 import { DataSourceConfigProps, WebAPIDataSourceConfigProps } from ".";
+import { z } from "zod";
 
 type TableRendererProps = {
    dataSourceId: string;
@@ -17,6 +20,17 @@ type TableData = {
    rows: RowProps[];
 };
 
+const TableDataSchema = z.object({
+   columns: z.array(
+      z.object({
+         key: z.string(),
+         label: z.string(),
+         type: z.string(),
+      })
+   ),
+   rows: z.array(z.object({})),
+});
+
 type ColumnProps = {
    key: string;
    label: string;
@@ -25,12 +39,7 @@ type ColumnProps = {
 };
 
 type RowProps = {
-   [key: string]: any;
-};
-
-type StaticConfig = {
-   type: "static";
-   path: "/api/data";
+   [key: string]: Record<string, unknown> | string | number | boolean;
 };
 
 type TableState = {
@@ -39,77 +48,13 @@ type TableState = {
    tableData: TableData | null;
 };
 
-function sanitize(rawJSON: object[]): TableData {
-   const columns = Object.keys(rawJSON[0]).map((key) => ({
-      key,
-      label: key,
-      type: "text",
-   }));
-
-   const rows = rawJSON.map((row) => {
-      const newRow: RowProps = {};
-      columns.forEach((column) => {
-         newRow[column.key] = row[column.key];
-      });
-      return newRow;
-   });
-
-   return { columns, rows };
+function is<T>(value: any, type: z.ZodType<T>): value is T {
+   return type.safeParse(value).success;
 }
-
-function isDataFormatValid(data: any): data is TableData {
-   if (!data) {
-      return false;
-   }
-
-   if (!Array.isArray(data.columns) || !Array.isArray(data.rows)) {
-      return false;
-   }
-
-   return true;
-}
-
-const flattenObject = (obj: Record<string, any>, prefix = "") => {
-   return Object.keys(obj).reduce((acc, key) => {
-      const pre = prefix.length ? prefix + "_" : "";
-      if (
-         typeof obj[key] === "object" &&
-         obj[key] !== null &&
-         !Array.isArray(obj[key])
-      ) {
-         Object.assign(acc, flattenObject(obj[key], pre + key));
-      } else {
-         acc[pre + key] = obj[key];
-      }
-      return acc;
-   }, {});
-};
-
-const flattenArray = (arr: any[] | undefined) => {
-   if (!arr) {
-      return [];
-   }
-   return arr.map((item) => {
-      if (typeof item === "object" && item !== null && !Array.isArray(item)) {
-         return flattenObject(item);
-      }
-      return item;
-   });
-};
 
 export type DataFetch = (config: any) => Promise<TableData | null>;
 
-const getStaticData = async (
-   config: StaticConfig
-): Promise<TableData | null> => {
-   const response = await fetch(config.path);
-   if (response.ok) {
-      const data = await response.json();
-      return data;
-   }
-
-   return null;
-};
+type FetchError = string | null;
 
 const getAPIData = async (
    config: WebAPIDataSourceConfigProps
@@ -117,9 +62,10 @@ const getAPIData = async (
    const response = await fetch(config.url);
    if (response.ok) {
       const data = await response.json();
-      if (!isDataFormatValid(data)) {
-         return sanitize(data);
+      if (!is<TableData>(data, TableDataSchema)) {
+         throw new Error("Invalid data");
       }
+
       return data;
    }
 
@@ -130,26 +76,17 @@ const createDataSource = ({
    dataSourceId,
 }: {
    dataSourceId: string;
-}): [DataFetch, DataSourceConfigProps] => {
+}): [DataFetch, DataSourceConfigProps, FetchError] => {
    // expected to be a call to backend API
    switch (dataSourceId) {
       case "api":
-         return [getAPIData, { id: "123", url: "/api/data" }];
+         return [getAPIData, { id: "123", url: "/api/data" }, null];
 
       case "api-2":
-         return [getAPIData, { id: "123", url: "/api/data?e=1" }];
-      case "url-1":
-         return [
-            getAPIData,
-            { id: "123", url: "https://jsonplaceholder.typicode.com/users" },
-         ];
-      case "url-2":
-         return [
-            getAPIData,
-            { id: "123", url: "https://jsonplaceholder.typicode.com/posts" },
-         ];
+         return [getAPIData, { id: "123", url: "/api/data?e=1" }, null];
+
       default:
-         return [getStaticData, { id: "123", type: "static", data: [] }];
+         return [() => Promise.resolve(null), {}, "No data source found"];
    }
 };
 
@@ -182,13 +119,13 @@ const useTableData = (dataSourceId: string) => {
       const fetchTableData = async () => {
          dispatch({ type: "LOADING" });
 
-         const [dataFetch, configs] = createDataSource({ dataSourceId });
+         const [dataFetch, configs, error] = createDataSource({ dataSourceId });
          const data = await dataFetch(configs);
 
          if (data) {
             dispatch({ type: "SUCCESS", payload: data });
-         } else {
-            dispatch({ type: "ERROR", payload: "No data available" });
+         } else if (error) {
+            dispatch({ type: "ERROR", payload: error });
          }
       };
 
@@ -196,6 +133,39 @@ const useTableData = (dataSourceId: string) => {
    }, [dataSourceId]);
 
    return state;
+};
+
+const parseColumns = (
+   columnsHelper: ColumnHelper<unknown>,
+   columns: ColumnProps[],
+   prefix?: string
+) => {
+   return columns.map((column) => {
+      if (column.children) {
+         return columnsHelper.group({
+            id: column.key,
+            header: column.label,
+            columns: parseColumns(
+               columnsHelper,
+               column.children,
+               prefix ? `${prefix}.${column.key}` : column.key
+            ),
+         });
+      }
+
+      console.log(prefix ? `${prefix}.${column.key}` : column.key);
+
+      return columnsHelper.accessor(
+         prefix ? `${prefix}.${column.key}` : column.key,
+         {
+            id: column.key,
+            header: column.label,
+            cell: (props) => {
+               return <div>{props.getValue()}</div>;
+            },
+         }
+      );
+   });
 };
 
 export function TableRenderer({
@@ -206,35 +176,12 @@ export function TableRenderer({
 
    const columnHelper = useMemo(() => createColumnHelper(), []);
 
-   const parseColumns = (columns, parentKey?: string) => {
-      return columns.map((column) => {
-         if (column.children) {
-            return {
-               ...column,
-               header: column.label,
-               columns: parseColumns(column.children, column.key),
-            };
-         }
-
-         if (parentKey)
-            return columnHelper.accessor(`${parentKey}_${column.key}`, {
-               header: column.label,
-               cell: (info) => info.getValue(),
-            });
-
-         return columnHelper.accessor(column.key, {
-            header: column.label,
-            cell: (info) => info.getValue(),
-         });
-      });
-   };
-
    const columns = useMemo(() => {
-      return parseColumns(tableData?.columns || []);
+      return parseColumns(columnHelper, tableData?.columns ?? []);
    }, [tableData]);
 
    const rows = useMemo(() => {
-      return flattenArray(structuredClone(tableData?.rows));
+      return tableData?.rows ?? [];
    }, [tableData]);
 
    const table = useReactTable({
@@ -253,12 +200,12 @@ export function TableRenderer({
 
    return (
       <div className={classNameFn("renderer")}>
-         <table className={classNameFn("table")}>
-            <thead className={classNameFn("head")}>
+         <table>
+            <thead>
                {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                      {headerGroup.headers.map((header) => (
-                        <th key={header.id}>
+                        <th key={header.id} colSpan={header.colSpan}>
                            {header.isPlaceholder
                               ? null
                               : flexRender(
@@ -270,11 +217,11 @@ export function TableRenderer({
                   </tr>
                ))}
             </thead>
-            <tbody className={classNameFn("body")}>
+            <tbody>
                {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className={classNameFn("row")}>
+                  <tr key={row.id}>
                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className={classNameFn("cell")}>
+                        <td key={cell.id}>
                            {flexRender(
                               cell.column.columnDef.cell,
                               cell.getContext()
@@ -284,6 +231,22 @@ export function TableRenderer({
                   </tr>
                ))}
             </tbody>
+            {/*<tfoot>
+          {table.getFooterGroups().map(footerGroup => (
+            <tr key={footerGroup.id}>
+              {footerGroup.headers.map(header => (
+                <th key={header.id} colSpan={header.colSpan}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.footer,
+                        header.getContext()
+                      )}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </tfoot>*/}
          </table>
       </div>
    );

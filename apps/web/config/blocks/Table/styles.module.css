@@ -1,54 +1,36 @@
 .Table {
-   background-image: linear-gradient(
-      rgba(255, 255, 255, 0),
-      rgb(247, 250, 255) 100%
-   );
-   display: flex;
-   align-items: center;
-   width: 100%;
-   position: relative;
 }
 
 .Table-renderer {
-   width: 100%;
-   overflow-x: auto;
 }
 
 .Table-table {
-   width: 100%;
-   border-collapse: collapse;
+   border: 1px solid rgb(36, 37, 38);
    border-spacing: 0;
 }
 
 /* thead */
 .Table-head {
-   background-color: rgb(247, 250, 255);
    border-bottom: 1px solid rgb(229, 231, 235);
-   color: rgb(107, 114, 128);
+   color: rgb(117, 23, 193);
    font-size: 0.875rem;
    font-weight: 500;
    line-height: 1.25rem;
-   text-align: left;
    text-transform: uppercase;
 }
 
 .Table-head tr {
-   display: flex;
-   justify-content: space-around;
-   align-items: center;
    border-bottom: 1px solid rgb(229, 231, 235);
 }
 
 .Table-head tr th {
-   width: 100%;
-   align-items: center;
+   border: 1px solid rgb(229, 231, 235);
+   padding: 0.75rem 1rem;
+   text-align: center;
 }
 
 /* tbody */
 .Table-body {
-   background-color: rgb(255, 255, 255);
-   border-bottom: 1px solid rgb(229, 231, 235);
-   color: rgb(55, 65, 81);
    font-size: 0.875rem;
    font-weight: 400;
 }
@@ -61,4 +43,5 @@
 /* td */
 .Table-cell {
    padding: 0.75rem 1rem;
+   text-align: center;
 }

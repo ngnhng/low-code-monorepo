@@ -15,7 +15,8 @@ export type WebAPIDataSourceConfigProps = {
 
 export type DataSourceConfigProps =
    | WebAPIDataSourceConfigProps
-   | { id: string; type: "static"; data: object[] };
+   | { id: string; type: "static"; data: object[] }
+   | {};
 
 export type TableProps = {
    title?: string;
@@ -28,15 +29,15 @@ export const Table: ComponentConfig<TableProps> = {
       dataSourceId: { type: "text" }, // we could pass config here instead of id lookup inside the renderer
    },
    defaultProps: {
-	  dataSourceId: "api",
+      dataSourceId: "api",
    },
    render: ({ title, dataSourceId }: TableProps) => {
       return (
          <Section className={getClassName()}>
-               <TableRenderer
-                  dataSourceId={dataSourceId}
-				  classNameFn={getClassName}
-               />
+            <TableRenderer
+               dataSourceId={dataSourceId}
+               classNameFn={getClassName}
+            />
          </Section>
       );
    },
