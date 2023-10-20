@@ -60,6 +60,8 @@ export const initialData: Record<string, Data> = {
                config: {
                   url: "https://tryz.vercel.app/api/test",
                   groupBy: "id",
+                  headerField: "username",
+                  secondaryField: "id",
                },
             },
          },

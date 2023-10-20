@@ -60,6 +60,17 @@
 
    background: white;
    border-radius: 10px;
+
+   color: black;
+
+   display: flex;
+
+   padding: 10px;
+}
+
+.Kanban-itemInformation {
+    display: flex;
+    flex-direction: column;
 }
 
 .Input {

@@ -21,7 +21,11 @@ const initialData = {};
 export type KanbanProps = {
    config: {
       url: string;
-      groupBy?: string;
+      groupBy: string | null;
+      headerField?: string;
+      customHeaderField?: string;
+      secondaryField?: string;
+      customSecondaryField?: string;
    };
 };
 
@@ -54,7 +58,7 @@ export const Kanban: ComponentConfig<KanbanProps> = {
                return () => {
                   source.cancel();
                };
-            }, []);
+            }, [value.url]);
 
             useEffect(() => {
                const keys = Array.from(
@@ -71,46 +75,25 @@ export const Kanban: ComponentConfig<KanbanProps> = {
                setCategoryList(keys);
             }, [JSON.stringify(rawData)]);
 
-            return (
-               <>
-                  {/* <label className={getClassNameInput()}>
-                     <div className={getClassNameInput("label")}>
-                        <div className={getClassNameInput("labelIcon")}>
-                           <Type size={16} />
-                        </div>
-                        Title
-                     </div>
-                     <input
-                        type="text"
-                        className={getClassNameInput("input")}
-                        autoComplete="off"
-                        onChange={(e) => onChange(e.currentTarget.value)}
-                     />
-                  </label> */}
+            const Select = ({ prop, name }) => {
+               return (
                   <label className={getClassNameInput()}>
                      <div className={getClassNameInput("label")}>
                         <div className={getClassNameInput("labelIcon")}>
                            <ChevronDown size={16} />
                         </div>
-                        Group by
+                        {name as string}
                      </div>
                      <select
                         className={getClassNameInput("input")}
                         onChange={(e) => {
-                           if (
-                              e.currentTarget.value === "true" ||
-                              e.currentTarget.value === "false"
-                           ) {
-                              onChange(Boolean(e.currentTarget.value));
-                              return;
-                           }
+                           const clone = structuredClone(value);
+                           clone[prop] = e.currentTarget.value;
 
-                           onChange({
-                              ...value,
-                              groupBy: e.currentTarget.value
-                           });
+                           onChange(clone);
+                           console.log(clone);
                         }}
-                        value={value.groupBy}
+                        value={value[prop]}
                      >
                         {categoryList.map((option) => (
                            <option
@@ -121,6 +104,40 @@ export const Kanban: ComponentConfig<KanbanProps> = {
                         ))}
                      </select>
                   </label>
+               );
+            };
+
+            const Input = ({ prop, name }) => {
+               return (
+                  <label className={getClassNameInput()}>
+                     <div className={getClassNameInput("label")}>
+                        <div className={getClassNameInput("labelIcon")}>
+                           <Type size={16} />
+                        </div>
+                        {name}
+                     </div>
+                     <input
+                        type="text"
+                        className={getClassNameInput("input")}
+                        autoComplete="off"
+                        onChange={(e) => {
+                           const clone = structuredClone(value);
+                           clone[prop] = e.currentTarget.value;
+
+                           onChange(clone);
+                        }}
+                        value={value[prop]}
+                     />
+                  </label>
+               );
+            };
+
+            return (
+               <>
+                  <Input prop="url" name="Data source URL" />
+                  <Select prop="groupBy" name="Group by" />
+                  <Select prop="headerField" name="Header Field" />
+                  <Select prop="secondaryField" name="Secondary Field" />
                </>
             );
          },
@@ -128,7 +145,8 @@ export const Kanban: ComponentConfig<KanbanProps> = {
    },
    defaultProps: {
       config: {
-         url: "https://tryz.vercel.app/api/test",
+         url: "",
+         groupBy: null,
       },
    },
    render: ({ config }) => {
@@ -150,6 +168,8 @@ export const Kanban: ComponentConfig<KanbanProps> = {
       };
 
       useEffect(() => {
+         if (config.url === "") return;
+
          const source = axios.CancelToken.source();
          fetchData(source);
 
@@ -200,7 +220,35 @@ export const Kanban: ComponentConfig<KanbanProps> = {
                                        <div
                                           className={getClassName("item")}
                                           key={idx}
-                                       ></div>
+                                       >
+                                          <div
+                                             className={getClassName(
+                                                "itemInformation"
+                                             )}
+                                          >
+                                             <div
+                                                className={getClassName(
+                                                   "itemHeader"
+                                                )}
+                                             >
+                                                {`${
+                                                   entry[config.headerField!] ??
+                                                   ""
+                                                }`}
+                                             </div>
+                                             <div
+                                                className={getClassName(
+                                                   "itemSecondary"
+                                                )}
+                                             >
+                                                {`${
+                                                   entry[
+                                                      config.secondaryField!
+                                                   ] ?? ""
+                                                }`}
+                                             </div>
+                                          </div>
+                                       </div>
                                     );
                                  })}
                               </div>
