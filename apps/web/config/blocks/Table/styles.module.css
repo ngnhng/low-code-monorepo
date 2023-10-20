@@ -2,57 +2,46 @@
 }
 
 .Table-renderer {
-   display: flex;
-   flex-direction: column;
-   width: 100%;
-   overflow-x: auto;
 }
 
 .Table-table {
-   width: 100%;
-   table-layout: fixed;
    border: 1px solid rgb(36, 37, 38);
    border-spacing: 0;
 }
 
 /* thead */
-.Table-thead {
-   border-bottom: 1px solid var(--puck-color-azure-6);
-   color: var(--puck-color-azure-3);
+.Table-head {
+   border-bottom: 1px solid rgb(229, 231, 235);
+   color: rgb(117, 23, 193);
    font-size: 0.875rem;
    font-weight: 500;
    line-height: 1.25rem;
    text-transform: uppercase;
 }
 
-.Table-tr {
-   border-bottom: 1px solid var(--puck-color-azure-6);
-   min-width: 200px;
+.Table-head tr {
+   border-bottom: 1px solid rgb(229, 231, 235);
 }
 
-.Table-th {
-   border: 1px solid var(--puck-color-azure-6);
+.Table-head tr th {
+   border: 1px solid rgb(229, 231, 235);
    padding: 0.75rem 1rem;
    text-align: center;
-   min-width: 200px;
-   white-space: nowrap;
 }
 
 /* tbody */
-.Table-tbody {
+.Table-body {
    font-size: 0.875rem;
    font-weight: 400;
 }
 
 /* tr */
-.Table-tr {
-   border-bottom: 1px solid var(--puck-color-azure-6);
+.Table-row {
+   border-bottom: 1px solid rgb(229, 231, 235);
 }
 
 /* td */
-.Table-td {
+.Table-cell {
    padding: 0.75rem 1rem;
    text-align: center;
-   min-width: 200px;
-   white-space: nowrap;
 }
