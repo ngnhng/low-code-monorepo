@@ -19,7 +19,7 @@ const getClassNameInput = getClassNameFactory("Input", styles);
 const initialData = {};
 
 export type KanbanProps = {
-   groupBy: {
+   config: {
       url: string;
       groupBy?: string;
    };
@@ -27,7 +27,7 @@ export type KanbanProps = {
 
 export const Kanban: ComponentConfig<KanbanProps> = {
    fields: {
-      groupBy: {
+      config: {
          type: "custom",
          render: ({ field, value, onChange }) => {
             const [rawData, setData] = useState([]);
@@ -127,18 +127,18 @@ export const Kanban: ComponentConfig<KanbanProps> = {
       },
    },
    defaultProps: {
-      groupBy: {
+      config: {
          url: "https://tryz.vercel.app/api/test",
       },
    },
-   render: ({ groupBy }) => {
+   render: ({ config }) => {
       const [rawData, setData] = useState<Object[]>([]);
       const [categorized, setCategorized] = useState<Object>({});
 
       const fetchData = async (source: CancelTokenSource) => {
          try {
             const response = (
-               await axios.get(groupBy.url, {
+               await axios.get(config.url, {
                   cancelToken: source.token,
                })
             ).data;
@@ -159,10 +159,10 @@ export const Kanban: ComponentConfig<KanbanProps> = {
       }, []);
 
       useEffect(() => {
-         if (!groupBy.groupBy) return;
+         if (!config.groupBy) return;
 
          const categorizedList = rawData.reduce((accumulate, element) => {
-            const value = element[groupBy.groupBy as string];
+            const value = element[config.groupBy as string];
 
             let key = "";
             if (["boolean", "number", "string"].includes(typeof value))
@@ -178,12 +178,12 @@ export const Kanban: ComponentConfig<KanbanProps> = {
          setCategorized(categorizedList);
 
          console.log(categorizedList);
-      }, [groupBy.groupBy, JSON.stringify(rawData)]);
+      }, [config.groupBy, JSON.stringify(rawData)]);
 
       return (
          <div className={getClassName("container")}>
             <div className={getClassName("wrapper")}>
-               {groupBy.groupBy ? (
+               {config.groupBy ? (
                   Object.keys(categorized).map((category) => {
                      return (
                         <div

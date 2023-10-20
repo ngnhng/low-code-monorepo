@@ -57,7 +57,7 @@ export const initialData: Record<string, Data> = {
             type: "Kanban",
             props: {
                id: "test",
-               groupBy: {
+               config: {
                   url: "https://tryz.vercel.app/api/test",
                   groupBy: "id",
                },
