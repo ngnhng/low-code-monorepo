@@ -1,17 +1,24 @@
 import {
-   ColumnDef,
+   Column,
+   Table,
    ColumnHelper,
    createColumnHelper,
    flexRender,
    getCoreRowModel,
+   getPaginationRowModel,
    useReactTable,
+   getSortedRowModel,
+   getFacetedRowModel,
+   getFacetedMinMaxValues,
+   getFacetedUniqueValues,
 } from "@tanstack/react-table";
-import { Reducer, useEffect, useMemo, useReducer } from "react";
+import { Reducer, useEffect, useMemo, useReducer, useState } from "react";
 import { DataSourceConfigProps, WebAPIDataSourceConfigProps } from ".";
 import { z } from "zod";
 
 type TableRendererProps = {
    dataSourceId: string;
+   pageSize: number;
    classNameFn: (options?: {}) => string;
 };
 
@@ -108,7 +115,7 @@ const tableReducer: Reducer<TableState, Action> = (state, action) => {
    }
 };
 
-const useTableData = (dataSourceId: string) => {
+const useTableData = (dataSourceId: string, pageSize: number) => {
    const [state, dispatch] = useReducer(tableReducer, {
       loading: false,
       error: null,
@@ -130,7 +137,7 @@ const useTableData = (dataSourceId: string) => {
       };
 
       fetchTableData();
-   }, [dataSourceId]);
+   }, [dataSourceId, pageSize]);
 
    return state;
 };
@@ -153,8 +160,6 @@ const parseColumns = (
          });
       }
 
-      console.log(prefix ? `${prefix}.${column.key}` : column.key);
-
       return columnsHelper.accessor(
          prefix ? `${prefix}.${column.key}` : column.key,
          {
@@ -170,9 +175,10 @@ const parseColumns = (
 
 export function TableRenderer({
    dataSourceId,
+   pageSize,
    classNameFn,
 }: TableRendererProps) {
-   const { loading, error, tableData } = useTableData(dataSourceId);
+   const { loading, error, tableData } = useTableData(dataSourceId, pageSize);
 
    const columnHelper = useMemo(() => createColumnHelper(), []);
 
@@ -188,7 +194,16 @@ export function TableRenderer({
       columns,
       data: rows,
       getCoreRowModel: getCoreRowModel(),
+      getPaginationRowModel: getPaginationRowModel(),
+      getSortedRowModel: getSortedRowModel(),
+      getFacetedRowModel: getFacetedRowModel(),
+      getFacetedUniqueValues: getFacetedUniqueValues(),
+      getFacetedMinMaxValues: getFacetedMinMaxValues(),
    });
+
+   useEffect(() => {
+      table.setPageSize(pageSize);
+   }, [pageSize]);
 
    if (loading) {
       return <div>Loading...</div>;
@@ -200,28 +215,57 @@ export function TableRenderer({
 
    return (
       <div className={classNameFn("renderer")}>
-         <table>
-            <thead>
+         <table className={classNameFn("table")}>
+            <thead className={classNameFn("thead")}>
                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id}>
+                  <tr key={headerGroup.id} className={classNameFn("tr")}>
                      {headerGroup.headers.map((header) => (
-                        <th key={header.id} colSpan={header.colSpan}>
-                           {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                   header.column.columnDef.header,
-                                   header.getContext()
-                                )}
+                        <th
+                           key={header.id}
+                           colSpan={header.colSpan}
+                           className={classNameFn("th")}
+                        >
+                           {header.isPlaceholder ? null : (
+                              <>
+                                 <div
+                                    {...{
+                                       className: header.column.getCanSort()
+                                          ? "cursor-pointer select-none"
+                                          : "",
+                                       onClick:
+                                          header.column.getToggleSortingHandler(),
+                                    }}
+                                 >
+                                    {flexRender(
+                                       header.column.columnDef.header,
+                                       header.getContext()
+                                    )}
+                                    {{
+                                       asc: " 🔼",
+                                       desc: " 🔽",
+                                    }[header.column.getIsSorted() as string] ??
+                                       null}
+                                 </div>
+                                 {header.column.getCanFilter() ? (
+                                    <div>
+                                       <Filter
+                                          column={header.column}
+                                          table={table}
+                                       />
+                                    </div>
+                                 ) : null}
+                              </>
+                           )}
                         </th>
                      ))}
                   </tr>
                ))}
             </thead>
-            <tbody>
+            <tbody className={classNameFn("tbody")}>
                {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id}>
+                  <tr key={row.id} className={classNameFn("tr")}>
                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id}>
+                        <td key={cell.id} className={classNameFn("td")}>
                            {flexRender(
                               cell.column.columnDef.cell,
                               cell.getContext()
@@ -231,23 +275,196 @@ export function TableRenderer({
                   </tr>
                ))}
             </tbody>
-            {/*<tfoot>
-          {table.getFooterGroups().map(footerGroup => (
-            <tr key={footerGroup.id}>
-              {footerGroup.headers.map(header => (
-                <th key={header.id} colSpan={header.colSpan}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.footer,
-                        header.getContext()
-                      )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </tfoot>*/}
          </table>
+         <TableController table={table} classNameFn={classNameFn} />
       </div>
+   );
+}
+
+function TableController({
+   table,
+   classNameFn,
+}: {
+   table: any;
+   classNameFn: any;
+}) {
+   return (
+      <div className={classNameFn("pagination")}>
+         <div>
+            <button
+               onClick={() => table.setPageIndex(0)}
+               disabled={!table.getCanPreviousPage()}
+            >
+               {"<<"}
+            </button>
+            <button
+               onClick={() => table.previousPage()}
+               disabled={!table.getCanPreviousPage()}
+            >
+               {"<"}
+            </button>
+            <button
+               onClick={() => table.nextPage()}
+               disabled={!table.getCanNextPage()}
+            >
+               {">"}
+            </button>
+            <button
+               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+               disabled={!table.getCanNextPage()}
+            >
+               {">>"}
+            </button>
+            <span>
+               <div>Page</div>
+               <strong>
+                  {table.getState().pagination.pageIndex + 1} of{" "}
+                  {table.getPageCount()}
+               </strong>
+            </span>
+            <span>
+               | Go to page:
+               <input
+                  type="number"
+                  defaultValue={table.getState().pagination.pageIndex + 1}
+                  onChange={(e) => {
+                     const page = e.target.value
+                        ? Number(e.target.value) - 1
+                        : 0;
+                     table.setPageIndex(page);
+                  }}
+               />
+            </span>
+            <select
+               value={table.getState().pagination.pageSize}
+               onChange={(e) => {
+                  table.setPageSize(Number(e.target.value));
+               }}
+            >
+               {[2, 4, 6, 8, 10, 20, 30, 40, 50].map((pageSize) => (
+                  <option key={pageSize} value={pageSize}>
+                     Show {pageSize}
+                  </option>
+               ))}
+            </select>
+         </div>
+         <div>{table.getRowModel().rows.length} Rows</div>
+      </div>
+   );
+}
+
+function Filter({
+   column,
+   table,
+}: {
+   column: Column<any, unknown>;
+   table: Table<any>;
+}) {
+   const firstValue = table
+      .getPreFilteredRowModel()
+      .flatRows[0]?.getValue(column.id);
+
+   const columnFilterValue = column.getFilterValue();
+
+   const sortedUniqueValues = useMemo(
+      () =>
+         typeof firstValue === "number"
+            ? []
+            : Array.from(column.getFacetedUniqueValues().keys()).sort(),
+      [column.getFacetedUniqueValues()]
+   );
+
+   return typeof firstValue === "number" ? (
+      <div>
+         <div className="flex space-x-2">
+            <DebouncedInput
+               type="number"
+               min={Number(column.getFacetedMinMaxValues()?.[0] ?? "")}
+               max={Number(column.getFacetedMinMaxValues()?.[1] ?? "")}
+               value={(columnFilterValue as [number, number])?.[0] ?? ""}
+               onChange={(value) =>
+                  column.setFilterValue((old: [number, number]) => [
+                     value,
+                     old?.[1],
+                  ])
+               }
+               placeholder={`Min ${
+                  column.getFacetedMinMaxValues()?.[0]
+                     ? `(${column.getFacetedMinMaxValues()?.[0]})`
+                     : ""
+               }`}
+               className="w-24 border shadow rounded"
+            />
+            <DebouncedInput
+               type="number"
+               min={Number(column.getFacetedMinMaxValues()?.[0] ?? "")}
+               max={Number(column.getFacetedMinMaxValues()?.[1] ?? "")}
+               value={(columnFilterValue as [number, number])?.[1] ?? ""}
+               onChange={(value) =>
+                  column.setFilterValue((old: [number, number]) => [
+                     old?.[0],
+                     value,
+                  ])
+               }
+               placeholder={`Max ${
+                  column.getFacetedMinMaxValues()?.[1]
+                     ? `(${column.getFacetedMinMaxValues()?.[1]})`
+                     : ""
+               }`}
+               className="w-24 border shadow rounded"
+            />
+         </div>
+         <div className="h-1" />
+      </div>
+   ) : (
+      <>
+         <datalist id={column.id + "list"}>
+            {sortedUniqueValues.slice(0, 5000).map((value: any) => (
+               <option value={value} key={value} />
+            ))}
+         </datalist>
+         <DebouncedInput
+            type="text"
+            value={(columnFilterValue ?? "") as string}
+            onChange={(value) => column.setFilterValue(value)}
+            placeholder={`Search... (${column.getFacetedUniqueValues().size})`}
+            className="w-36 border shadow rounded"
+            list={column.id + "list"}
+         />
+         <div className="h-1" />
+      </>
+   );
+}
+
+function DebouncedInput({
+   value: initialValue,
+   onChange,
+   debounce = 500,
+   ...props
+}: {
+   value: string | number;
+   onChange: (value: string | number) => void;
+   debounce?: number;
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange">) {
+   const [value, setValue] = useState(initialValue);
+
+   useEffect(() => {
+      setValue(initialValue);
+   }, [initialValue]);
+
+   useEffect(() => {
+      const timeout = setTimeout(() => {
+         onChange(value);
+      }, debounce);
+
+      return () => clearTimeout(timeout);
+   }, [value]);
+
+   return (
+      <input
+         {...props}
+         value={value}
+         onChange={(e) => setValue(e.target.value)}
+      />
    );
 }

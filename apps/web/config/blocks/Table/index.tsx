@@ -20,25 +20,27 @@ export type DataSourceConfigProps =
 
 export type TableProps = {
    title?: string;
+   pageSize: number;
    dataSourceId: string;
 };
 
 export const Table: ComponentConfig<TableProps> = {
    fields: {
       title: { type: "text" },
+      pageSize: { type: "number" },
       dataSourceId: { type: "text" }, // we could pass config here instead of id lookup inside the renderer
    },
    defaultProps: {
       dataSourceId: "api",
+	  pageSize: 2,
    },
-   render: ({ title, dataSourceId }: TableProps) => {
+   render: ({ title, pageSize, dataSourceId }: TableProps) => {
       return (
-         <Section className={getClassName()}>
-            <TableRenderer
-               dataSourceId={dataSourceId}
-               classNameFn={getClassName}
-            />
-         </Section>
+         <TableRenderer
+            dataSourceId={dataSourceId}
+            pageSize={pageSize}
+            classNameFn={getClassName}
+         />
       );
    },
 };
