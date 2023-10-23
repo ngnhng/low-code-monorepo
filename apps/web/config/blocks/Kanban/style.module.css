@@ -65,7 +65,7 @@
 
    display: flex;
 
-   padding: 10px;
+   padding: 20px;
 }
 
 .Kanban-itemInformation {
@@ -73,9 +73,13 @@
     flex-direction: column;
 }
 
+.Kanban-itemHeader {
+   font-size: 1.2rem;
+   font-weight: 700;
+}
+
 .Input {
    color: var(--puck-color-grey-3);
-   padding: 16px;
    padding-bottom: 12px;
    display: block;
    font-family: var(--puck-font-stack);

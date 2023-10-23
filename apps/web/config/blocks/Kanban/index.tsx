@@ -223,13 +223,13 @@ export const Kanban: ComponentConfig<KanbanProps> = {
                         type="text"
                         className={getClassNameInput("input")}
                         autoComplete="off"
-                        onChange={(e) => {
+                        onBlur={(e) => {
                            const clone = structuredClone(value);
                            clone[prop] = e.currentTarget.value;
 
                            onChange(clone);
                         }}
-                        value={value[prop]}
+                        defaultValue={value[prop]}
                      />
                   </label>
                );
@@ -242,7 +242,15 @@ export const Kanban: ComponentConfig<KanbanProps> = {
                      <>
                         <Select prop="groupBy" name="Group by" />
                         <Select prop="headerField" name="Header Field" />
+                        <Input
+                           prop="customHeaderField"
+                           name="Format Header Field"
+                        />
                         <Select prop="secondaryField" name="Secondary Field" />
+                        <Input
+                           prop="customSecondaryField"
+                           name="Format Secondary Field"
+                        />
                      </>
                   ) : (
                      <LoadingAnimation />
@@ -257,9 +265,9 @@ export const Kanban: ComponentConfig<KanbanProps> = {
          url: "",
          groupBy: "",
          headerField: "",
-         customHeaderField: "",
+         customHeaderField: "{value}",
          secondaryField: "",
-         customSecondaryField: "",
+         customSecondaryField: "{value}",
       },
    },
    render: ({ config }) => {
@@ -344,21 +352,23 @@ export const Kanban: ComponentConfig<KanbanProps> = {
                                                    "itemHeader"
                                                 )}
                                              >
-                                                {`${
+                                                {`${config.customHeaderField.replaceAll(
+                                                   "{value}",
                                                    entry[config.headerField!] ??
-                                                   ""
-                                                }`}
+                                                      ""
+                                                )}`}
                                              </div>
                                              <div
                                                 className={getClassName(
                                                    "itemSecondary"
                                                 )}
                                              >
-                                                {`${
+                                                {`${config.customSecondaryField.replaceAll(
+                                                   "{value}",
                                                    entry[
                                                       config.secondaryField!
                                                    ] ?? ""
-                                                }`}
+                                                )}`}
                                              </div>
                                           </div>
                                        </div>
