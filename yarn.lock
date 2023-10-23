@@ -1038,6 +1038,11 @@
     "@typescript-eslint/types" "6.7.4"
     eslint-visitor-keys "^3.4.1"
 
+"@uidotdev/usehooks@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@uidotdev/usehooks/-/usehooks-2.4.0.tgz#f49df1d8ab159efb7cc7ea14236eb65cf1b48dc9"
+  integrity sha512-NrpTsZUGsawYxFbEXrd8+FPpfziC4M01GSQgYWOnGa84UiavqVCzCL5bSRe6rfQc4QsHS2rGAA0h63ya/j+p6A==
+
 "@yarnpkg/lockfile@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz#e77a97fbd345b76d83245edcd17d393b1b41fb31"
@@ -1384,7 +1389,7 @@ axe-core@^4.6.2:
   resolved "https://registry.yarnpkg.com/axe-core/-/axe-core-4.8.2.tgz#2f6f3cde40935825cf4465e3c1c9e77b240ff6ae"
   integrity sha512-/dlp0fxyM3R8YW7MFzaHWXrf4zzbr0vaYb23VBFCl83R7nWNPg/yaQw2Dc8jzCMmDVLhSdzH8MjrsuIUuvX+6g==
 
-axios@^1.0.0:
+axios@^1.0.0, axios@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.5.1.tgz#11fbaa11fc35f431193a9564109c88c1f27b585f"
   integrity sha512-Q28iYCWzNHjAm+yEAot5QaAMxhMghWLFVf7rRdwhUI+c2jix2DUXjAHXVi+s1ibs3mjPO/cCgbA++3BjD0vP/A==
@@ -5361,6 +5366,11 @@ pascal-case@^2.0.0:
   dependencies:
     camel-case "^3.0.0"
     upper-case-first "^1.1.0"
+
+paseto@^3.1.4:
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/paseto/-/paseto-3.1.4.tgz#a8a448abadb20fef609e00a4fd6d82369b3ea05a"
+  integrity sha512-BifaKKu+MS9b/vTgFMC6Q8uLUMqw8VtYgl4qODJWb6Jqt+dTKn8XH9EftJZx+6wxF4ELBbKdH33DZa4inMYVcg==
 
 path-case@^2.1.0:
   version "2.1.1"
