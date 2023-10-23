@@ -32,6 +32,8 @@
    text-align: left;
 
    padding: 20px;
+   font-size: 1.2rem;
+   font-weight: 600;
 }
 
 .Kanban-itemList {
@@ -66,16 +68,36 @@
    display: flex;
 
    padding: 20px;
+
+   overflow: hidden;
 }
 
 .Kanban-itemInformation {
-    display: flex;
-    flex-direction: column;
+   display: flex;
+   flex-direction: column;
+
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
 }
 
 .Kanban-itemHeader {
+   width: 100%;
+
    font-size: 1.2rem;
-   font-weight: 700;
+   font-weight: 600;
+
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.Kanban-itemSecondary {
+   width: 100%;
+
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
 }
 
 .Input {

@@ -62,7 +62,7 @@ export const initialData: Record<string, Data> = {
                   groupBy: "id",
                   headerField: "username",
                   customHeaderField: "{value}",
-                  secondaryField: "id",
+                  secondaryField: "user_achievements",
                   customSecondaryField: "{value}",
                },
             },
