@@ -4,13 +4,14 @@ import { redirect } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import './style.css';
 import { useEffect } from "react";
-
-// * Auto refresh Token?
-// * Middleware :D 
-// * Logout ? onClick clear localStorage or auth/logout 
+import { EnvVariable, useEnvKey } from "../../hooks/useEnv";
 
 export default function Page() {
-    const serverOAuthURL = process.env.GOOGLE_LOGIN_REQUEST || "http://localhost:3000/api/oauth/google";
+		console.log("Provider: ", process.env.GOOGLE_LOGIN_REQUEST);
+
+		const serverOAuthURL = useEnvKey(EnvVariable.LOGIN_REQUEST, "http://localhost:3000/api/oauth/google")
+
+    // const serverOAuthURL = process.env.GOOGLE_LOGIN_REQUEST || "http://localhost:3000/api/oauth/google";
 
 		const searchParams = useSearchParams()
 		const accessToken = searchParams.get('access_token');

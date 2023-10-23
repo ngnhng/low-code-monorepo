@@ -14,7 +14,7 @@ const SignInButton = () => {
       <div className={`container`}>
         <p className="text">Name of User</p>
         <Link
-          href={"/auth/signout"}
+          href={"/auth/logout"}
           className={`link sign-out-button`}
         >
           Sign Out 
