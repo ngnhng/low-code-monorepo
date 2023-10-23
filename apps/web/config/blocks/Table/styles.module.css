@@ -5,12 +5,13 @@
    display: flex;
    flex-direction: column;
    width: 100%;
+   max-height: 600px;
    overflow-x: auto;
+   overflow-y: auto;
 }
 
 .Table-table {
    width: 100%;
-   table-layout: fixed;
    border: 1px solid rgb(36, 37, 38);
    border-spacing: 0;
 }
@@ -54,5 +55,20 @@
    padding: 0.75rem 1rem;
    text-align: center;
    min-width: 200px;
+   max-width: 300px;
    white-space: nowrap;
+}
+
+
+/* Table controller */
+.Table-pagination {
+   margin-top: 1rem;
+   margin-bottom: 1rem;
+
+   display: flex;
+   flex-direction: column;
+
+   position: sticky;
+   bottom: 0;
+   left: 0;
 }

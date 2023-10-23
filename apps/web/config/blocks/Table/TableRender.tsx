@@ -285,12 +285,12 @@ function TableController({
    table,
    classNameFn,
 }: {
-   table: any;
+   table: Table<RowProps>;
    classNameFn: any;
 }) {
    return (
       <div className={classNameFn("pagination")}>
-         <div>
+         <div className={classNameFn("pagination-btns")}>
             <button
                onClick={() => table.setPageIndex(0)}
                disabled={!table.getCanPreviousPage()}
@@ -315,12 +315,11 @@ function TableController({
             >
                {">>"}
             </button>
+         </div>
+         <div className={classNameFn("pagination-pages")}>
             <span>
-               <div>Page</div>
-               <strong>
-                  {table.getState().pagination.pageIndex + 1} of{" "}
-                  {table.getPageCount()}
-               </strong>
+               Page {table.getState().pagination.pageIndex + 1} of{" "}
+               {table.getPageCount()}
             </span>
             <span>
                | Go to page:
@@ -348,7 +347,7 @@ function TableController({
                ))}
             </select>
          </div>
-         <div>{table.getRowModel().rows.length} Rows</div>
+         {/*<div>{table.getRowModel().rows.length} Rows</div>*/}
       </div>
    );
 }
