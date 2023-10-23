@@ -21,12 +21,94 @@ const initialData = {};
 export type KanbanProps = {
    config: {
       url: string;
-      groupBy: string | null;
-      headerField?: string;
-      customHeaderField?: string;
-      secondaryField?: string;
-      customSecondaryField?: string;
+      groupBy: string;
+      headerField: string;
+      customHeaderField: string;
+      secondaryField: string;
+      customSecondaryField: string;
    };
+};
+
+const LoadingAnimation = () => {
+   return (
+      <div className="App">
+         <div className="loading">
+            <svg
+               xmlns="http://www.w3.org/2000/svg"
+               version="1.1"
+               width="50px"
+               height="50px"
+            >
+               <circle cx="25" cy="25" r="20" strokeLinecap="round" />
+            </svg>
+            <style jsx>
+               {`
+                  @keyframes spin {
+                     0% {
+                        scale: 1 1;
+                        stroke-dashoffset: 200;
+                        transform: none;
+                     }
+                     50% {
+                        scale: 1 1;
+                        stroke-dashoffset: 0;
+                        transform: none;
+                     }
+                     50.0001% {
+                        scale: 1 -1;
+                        transform: translateY(-50px);
+                     }
+                     99.9999% {
+                        scale: 1 -1;
+                        stroke-dashoffset: 200;
+                        transform: translateY(-50px);
+                     }
+                     100% {
+                        scale: 1 1;
+                        transform: none;
+                     }
+                  }
+
+                  @keyframes osuSpinnerKurwa {
+                     from {
+                        transform: rotate(0deg);
+                     }
+                     to {
+                        transform: rotate(360deg);
+                     }
+                  }
+
+                  .loading {
+                     width: 100%;
+
+                     padding: 50px;
+
+                     {/* background-color: #151515; */}
+                     border-radius: 20px;
+
+                     display: flex;
+                     justify-content: center;
+                  }
+
+                  circle {
+                     fill: none;
+                     stroke: rgb(71, 71, 71);
+                     stroke-width: 5px;
+                     stroke-dasharray: 200;
+                     stroke-dashoffset: 150;
+
+                     animation: spin 2s infinite;
+                     shape-rendering: geometricPrecision;
+                  }
+
+                  svg {
+                     animation: linear osuSpinnerKurwa 2s infinite;
+                  }
+               `}
+            </style>
+         </div>
+      </div>
+   );
 };
 
 export const Kanban: ComponentConfig<KanbanProps> = {
@@ -34,10 +116,13 @@ export const Kanban: ComponentConfig<KanbanProps> = {
       config: {
          type: "custom",
          render: ({ field, value, onChange }) => {
-            const [rawData, setData] = useState([]);
+            const [rawData, setData] = useState<Object[]>([]);
             const [categoryList, setCategoryList] = useState<string[]>([]);
+            const [isLoading, setIsLoading] = useState<boolean>(true);
 
             const fetchData = async (source: CancelTokenSource) => {
+               setIsLoading(true);
+
                try {
                   const response = (
                      await axios.get(value.url, {
@@ -46,6 +131,7 @@ export const Kanban: ComponentConfig<KanbanProps> = {
                   ).data;
 
                   setData(response);
+                  setIsLoading(false);
                } catch (error) {
                   console.log(error);
                }
@@ -61,18 +147,35 @@ export const Kanban: ComponentConfig<KanbanProps> = {
             }, [value.url]);
 
             useEffect(() => {
+               if (value.url === "") return;
+
                const keys = Array.from(
                   new Set(
-                     rawData.reduce((accumulated: string[], element) => {
-                        accumulated.push(...Object.keys(element));
-                        return accumulated;
-                     }, [])
+                     rawData.reduce(
+                        (accumulated: string[], element: Object) => {
+                           accumulated.push(...Object.keys(element));
+                           return accumulated;
+                        },
+                        []
+                     ) as string[]
                   )
                ).filter((key) =>
                   rawData.every((entry) => Object.keys(entry).includes(key))
                );
 
                setCategoryList(keys);
+               onChange({
+                  ...value,
+                  groupBy: value.groupBy !== "" ? value.groupBy : keys[0] ?? "",
+                  headerField:
+                     value.headerField !== ""
+                        ? value.headerField
+                        : keys[0] ?? "",
+                  secondaryField:
+                     value.secondaryField !== ""
+                        ? value.secondaryField
+                        : keys[0] ?? "",
+               });
             }, [JSON.stringify(rawData)]);
 
             const Select = ({ prop, name }) => {
@@ -135,9 +238,15 @@ export const Kanban: ComponentConfig<KanbanProps> = {
             return (
                <>
                   <Input prop="url" name="Data source URL" />
-                  <Select prop="groupBy" name="Group by" />
-                  <Select prop="headerField" name="Header Field" />
-                  <Select prop="secondaryField" name="Secondary Field" />
+                  {!isLoading ? (
+                     <>
+                        <Select prop="groupBy" name="Group by" />
+                        <Select prop="headerField" name="Header Field" />
+                        <Select prop="secondaryField" name="Secondary Field" />
+                     </>
+                  ) : (
+                     <LoadingAnimation />
+                  )}
                </>
             );
          },
@@ -146,7 +255,11 @@ export const Kanban: ComponentConfig<KanbanProps> = {
    defaultProps: {
       config: {
          url: "",
-         groupBy: null,
+         groupBy: "",
+         headerField: "",
+         customHeaderField: "",
+         secondaryField: "",
+         customSecondaryField: "",
       },
    },
    render: ({ config }) => {
@@ -176,10 +289,10 @@ export const Kanban: ComponentConfig<KanbanProps> = {
          return () => {
             source.cancel();
          };
-      }, []);
+      }, [config.url]);
 
       useEffect(() => {
-         if (!config.groupBy) return;
+         if (config.groupBy === "") return;
 
          const categorizedList = rawData.reduce((accumulate, element) => {
             const value = element[config.groupBy as string];
@@ -203,7 +316,7 @@ export const Kanban: ComponentConfig<KanbanProps> = {
       return (
          <div className={getClassName("container")}>
             <div className={getClassName("wrapper")}>
-               {config.groupBy ? (
+               {!(config.groupBy === "") || !(config.url === "") ? (
                   Object.keys(categorized).map((category) => {
                      return (
                         <div
