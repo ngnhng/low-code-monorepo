@@ -31,18 +31,17 @@ export type KanbanProps = {
 
 const LoadingAnimation = () => {
    return (
-      <div className="App">
-         <div className="loading">
-            <svg
-               xmlns="http://www.w3.org/2000/svg"
-               version="1.1"
-               width="50px"
-               height="50px"
-            >
-               <circle cx="25" cy="25" r="20" strokeLinecap="round" />
-            </svg>
-            <style jsx>
-               {`
+      <div className="loading">
+         <svg
+            xmlns="http://www.w3.org/2000/svg"
+            version="1.1"
+            width="50px"
+            height="50px"
+         >
+            <circle cx="25" cy="25" r="20" strokeLinecap="round" />
+         </svg>
+         <style jsx>
+            {`
                   @keyframes spin {
                      0% {
                         scale: 1 1;
@@ -105,8 +104,7 @@ const LoadingAnimation = () => {
                      animation: linear osuSpinnerKurwa 2s infinite;
                   }
                `}
-            </style>
-         </div>
+         </style>
       </div>
    );
 };
@@ -252,6 +250,8 @@ export const Kanban: ComponentConfig<KanbanProps> = {
                            name="Format Secondary Field"
                         />
                      </>
+                  ) : value.url === "" ? (
+                     ""
                   ) : (
                      <LoadingAnimation />
                   )}
@@ -273,8 +273,10 @@ export const Kanban: ComponentConfig<KanbanProps> = {
    render: ({ config }) => {
       const [rawData, setData] = useState<Object[]>([]);
       const [categorized, setCategorized] = useState<Object>({});
+      const [isLoading, setIsLoading] = useState<boolean>(true);
 
       const fetchData = async (source: CancelTokenSource) => {
+         setIsLoading(true);
          try {
             const response = (
                await axios.get(config.url, {
@@ -283,6 +285,7 @@ export const Kanban: ComponentConfig<KanbanProps> = {
             ).data;
 
             setData(response);
+            setIsLoading(false);
          } catch (error) {
             console.log(error);
          }
@@ -325,60 +328,67 @@ export const Kanban: ComponentConfig<KanbanProps> = {
          <div className={getClassName("container")}>
             <div className={getClassName("wrapper")}>
                {!(config.groupBy === "") || !(config.url === "") ? (
-                  Object.keys(categorized).map((category) => {
-                     return (
-                        <div
-                           className={getClassName("category")}
-                           key={category}
-                        >
-                           <div className={getClassName("categoryTitle")}>
-                              {category}
-                           </div>
-                           <div className={getClassName("itemList")}>
-                              <div className={getClassName("itemListWrapper")}>
-                                 {categorized[category].map((entry, idx) => {
-                                    return (
-                                       <div
-                                          className={getClassName("item")}
-                                          key={idx}
-                                       >
+                  isLoading ? (
+                     <LoadingAnimation />
+                  ) : (
+                     Object.keys(categorized).map((category) => {
+                        return (
+                           <div
+                              className={getClassName("category")}
+                              key={category}
+                           >
+                              <div className={getClassName("categoryTitle")}>
+                                 {category}
+                              </div>
+                              <div className={getClassName("itemList")}>
+                                 <div
+                                    className={getClassName("itemListWrapper")}
+                                 >
+                                    {categorized[category].map((entry, idx) => {
+                                       return (
                                           <div
-                                             className={getClassName(
-                                                "itemInformation"
-                                             )}
+                                             className={getClassName("item")}
+                                             key={idx}
                                           >
                                              <div
                                                 className={getClassName(
-                                                   "itemHeader"
+                                                   "itemInformation"
                                                 )}
                                              >
-                                                {`${config.customHeaderField.replaceAll(
-                                                   "{value}",
-                                                   entry[config.headerField!] ??
-                                                      ""
-                                                )}`}
-                                             </div>
-                                             <div
-                                                className={getClassName(
-                                                   "itemSecondary"
-                                                )}
-                                             >
-                                                {`${config.customSecondaryField.replaceAll(
-                                                   "{value}",
-                                                   entry[
-                                                      config.secondaryField!
-                                                   ] ?? ""
-                                                )}`}
+                                                <div
+                                                   className={getClassName(
+                                                      "itemHeader"
+                                                   )}
+                                                >
+                                                   {`${config.customHeaderField.replaceAll(
+                                                      "{value}",
+                                                      entry[
+                                                         config.headerField!
+                                                      ] ?? ""
+                                                   )}`}
+                                                </div>
+                                                <div
+                                                   className={getClassName(
+                                                      "itemSecondary"
+                                                   )}
+                                                >
+                                                   {`${config.customSecondaryField.replaceAll(
+                                                      "{value}",
+                                                      entry[
+                                                         config.secondaryField!
+                                                      ] ?? ""
+                                                   )}`}
+                                                </div>
                                              </div>
                                           </div>
-                                       </div>
-                                    );
-                                 })}
+                                       );
+                                    })}
+                                 </div>
                               </div>
                            </div>
-                        </div>
-                     );
-                  })
+                        );
+                     })
+                  )
                ) : (
                   <div className={getClassName("category")}>
                      <div className={getClassName("categoryTitle")}>
