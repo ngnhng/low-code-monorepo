@@ -80,7 +80,7 @@
 
 .Input {
    color: var(--puck-color-grey-3);
-   padding-bottom: 12px;
+   padding: 12px 0;
    display: block;
    font-family: var(--puck-font-stack);
 }
