@@ -5,9 +5,9 @@ import { useSearchParams } from "next/navigation";
 import './style.css';
 import { useEffect } from "react";
 
-// * Receive token from query parameters
-// * Save to local storage
-// * May need to decrypt it and save user info to local storage?
+// * Auto refresh Token?
+// * Middleware :D 
+// * Logout ? onClick clear localStorage or auth/logout 
 
 export default function Page() {
     const serverOAuthURL = process.env.GOOGLE_LOGIN_REQUEST || "http://localhost:3000/api/oauth/google";
@@ -21,8 +21,6 @@ export default function Page() {
 			if (typeof window !== "undefined" && accessToken && refreshToken) {
 				window.localStorage.setItem('access_token', JSON.stringify(accessToken));
 				window.localStorage.setItem('refresh_token', JSON.stringify(refreshToken));
-
-				// TODO: DECRYPT TOKEN HERE and SAVE INFORMATION TO LOCAL STORAGE ...
 
 				redirect('/profile')
 			}
