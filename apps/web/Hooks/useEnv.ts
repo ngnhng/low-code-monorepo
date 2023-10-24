@@ -1,34 +1,36 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export enum EnvVariable {
-  environment,
-  serverEndPoint,
-  website
+    CLIENT_URL = "CLIENT_URL",
+    SERVER_URL = "SERVER_URL",
+    LOGIN_REQUEST = "LOGIN_REQUEST",
+    LOGIN_CALLBACK = "LOGIN_CALLBACK",
 }
 
-type EnvVariables = {[key in keyof typeof EnvVariable]:string}
+const DefaultVariables: Record<EnvVariable, string> = {
+    [EnvVariable.SERVER_URL]: "http://localhost:3000",
+    [EnvVariable.CLIENT_URL]: "http://localhost:3001",
+    [EnvVariable.LOGIN_REQUEST]: "",
+    [EnvVariable.LOGIN_CALLBACK]: "",
+};
 
-const DefaultVariables:EnvVariables = {
-  environment:"local",//"local" | "prod"
-  serverEndPoint:"http://localhost:3000",
-  website:"http://localhost:3001"
+export function useEnv() {
+    const [variables, setVariables] = useState(DefaultVariables);
+
+    useEffect(() => {
+        const variables: Record<EnvVariable, string> = { ...DefaultVariables };
+        for (const environmentVariable in EnvVariable) {
+            const value = process.env["LOWCODE_" + environmentVariable] ?? "";
+            variables[environmentVariable as EnvVariable] = value;
+        }
+        setVariables(variables);
+    }, []);
+
+    return variables;
 }
 
-export function useEnv()
-{
-  const [variables, setVariables] = useState(DefaultVariables);
-
-  const getVariables = () => {
-    var variables:EnvVariables = DefaultVariables;
-    for(var environmentVariable in EnvVariable)
-    {
-       var value = process.env["REACT_APP_" + environmentVariable];
-       if(value === undefined) value = "";
-       
-       variables[environmentVariable] = value
-    }
-    setVariables(variables);
- }
-
-  return variables
+export function useEnvKey(key: EnvVariable, defaultValue: string) {
+    const environmentVariable = useEnv();
+    const variable = environmentVariable[key];
+    return variable || defaultValue;
 }
