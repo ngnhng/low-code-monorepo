@@ -5,8 +5,10 @@ type TokenResponse = [string, string];
 export async function GET(request: Request) {
    const serverOAuthUrl = getEnv(EnvVariable.LOGIN_REQUEST);
    const serverCallbackUrl = getEnv(EnvVariable.LOGIN_CALLBACK);
-   const successUrl = "/auth/login?success=1";
-   const failureUrl = "/auth/login?success=0";
+   const successUrl =
+      "https://low-code-monorepo-web.vercel.app/auth/login?success=1";
+   const failureUrl =
+      "https://low-code-monorepo-web.vercel.app/auth/login?success=0";
 
    // get query param ?success=1
    const incomingUrl = new URL(request.url ?? "");
