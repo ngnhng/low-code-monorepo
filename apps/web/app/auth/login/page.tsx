@@ -1,56 +1,53 @@
-'use client';
+//"use client";
 
-import { redirect } from "next/navigation";
-import { useSearchParams } from "next/navigation";
-import './style.css';
-import { useEffect } from "react";
-import { EnvVariable, useEnvKey } from "../../hooks/useEnv";
+//import { useRouter } from "next/navigation";
+import "./style.css";
+import { EnvVariable, getEnv } from "../../../utils/getEnv";
+import Image from "next/image";
+import useLocalStorage from "../../../hooks/useLocalStorage";
+import { headers } from "next/headers";
 
 export default function Page() {
-		console.log("Provider: ", process.env.GOOGLE_LOGIN_REQUEST);
+    const header = headers();
 
-		const serverOAuthURL = useEnvKey(EnvVariable.LOGIN_REQUEST, "http://localhost:3000/api/oauth/google")
+    console.log(header);
 
-    // const serverOAuthURL = process.env.GOOGLE_LOGIN_REQUEST || "http://localhost:3000/api/oauth/google";
 
-		const searchParams = useSearchParams()
-		const accessToken = searchParams.get('access_token');
-		const refreshToken = searchParams.get('refresh_token');
+    //const router = useRouter();
+    //const [accessToken, setAccessToken] = useLocalStorage("access_token", "");
 
-		useEffect(() => {
-			// save access token and refresh token to local storage
-			if (typeof window !== "undefined" && accessToken && refreshToken) {
-				window.localStorage.setItem('access_token', JSON.stringify(accessToken));
-				window.localStorage.setItem('refresh_token', JSON.stringify(refreshToken));
+    const serverOAuthURL = getEnv(EnvVariable.LOGIN_REQUEST);
 
-				redirect('/profile')
-			}
-
-			return;
-			
-		}, [])
+    //useEffect(() => {
+    //    // TODO: abstract to a useUser hook if possible
+    //    if (accessToken) {
+    //        router.push("/profile");
+    //    }
+    //}, [accessToken, router]);
 
     return (
-			<div className="container">
-				<div className="form-container">
-					<h1>Login</h1>
-					<div className="form">
-						<p>Access feature by google login</p>
-
-						<a href={serverOAuthURL}>
-							<div className="g-login-button">
-								<div className="content-wrapper">
-									<div className="logo-wrapper">
-										<img src="https://developers.google.com/identity/images/g-logo.png" alt="" />
-									</div>
-									<span className="text-container">
-										Sign in with Google
-									</span>
-								</div>
-							</div>
-						</a>
-					</div>
-				</div>
-			</div>
+        <div className="container">
+            <div className="form-container">
+                <h1>Login</h1>
+                <div className="form">
+                    <p>Access feature by google login</p>
+                    <a href="/api/auth" className="g-login-button">
+                        <div className="content-wrapper">
+                            <div className="logo-wrapper">
+                                <Image
+                                    src="/g-logo.png"
+                                    alt="Google logo"
+                                    width={24}
+                                    height={24}
+                                />
+                            </div>
+                            <span className="text-container">
+                                Sign in with Google
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
     );
 }

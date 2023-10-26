@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import 'server-only';
 
 export enum EnvVariable {
     CLIENT_URL = "CLIENT_URL",
@@ -11,7 +12,7 @@ const DefaultVariables: Record<EnvVariable, string> = {
     [EnvVariable.SERVER_URL]: "http://localhost:3000",
     [EnvVariable.CLIENT_URL]: "http://localhost:3001",
     [EnvVariable.LOGIN_REQUEST]: "",
-    [EnvVariable.LOGIN_CALLBACK]: "",
+    [EnvVariable.LOGIN_CALLBACK]: "http://localhost:3000/api/oauth/google/callback",
 };
 
 export function useEnv() {
