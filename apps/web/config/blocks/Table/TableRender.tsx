@@ -11,7 +11,18 @@ import {
    getFacetedRowModel,
    getFacetedMinMaxValues,
    getFacetedUniqueValues,
+   FilterFn,
+   SortingFn,
+   sortingFns,
+   ColumnFiltersState,
+   getFilteredRowModel,
 } from "@tanstack/react-table";
+import {
+   RankingInfo,
+   rankItem,
+   compareItems,
+} from "@tanstack/match-sorter-utils";
+
 import { Reducer, useEffect, useMemo, useReducer, useState } from "react";
 import { DataSourceConfigProps, WebAPIDataSourceConfigProps } from ".";
 import { z } from "zod";
@@ -173,6 +184,33 @@ const parseColumns = (
    });
 };
 
+const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
+   // Rank the item
+   const itemRank = rankItem(row.getValue(columnId), value);
+
+   // Store the itemRank info
+   addMeta({
+      itemRank,
+   });
+
+   // Return if the item should be filtered in/out
+   return itemRank.passed;
+};
+const fuzzySort = (rowA, rowB, columnId) => {
+   let dir = 0;
+
+   // Only sort by rank if the column has ranking information
+   if (rowA.columnFiltersMeta[columnId]) {
+      dir = compareItems(
+         rowA.columnFiltersMeta[columnId]!,
+         rowB.columnFiltersMeta[columnId]!
+      );
+   }
+
+   // Provide an alphanumeric fallback for when the item ranks are equal
+   return dir === 0 ? sortingFns.alphanumeric(rowA, rowB, columnId) : dir;
+};
+
 export function TableRenderer({
    dataSourceId,
    pageSize,
@@ -190,10 +228,24 @@ export function TableRenderer({
       return tableData?.rows ?? [];
    }, [tableData]);
 
+   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+   const [globalFilter, setGlobalFilter] = useState("");
+
    const table = useReactTable({
       columns,
       data: rows,
+      filterFns: {
+         fuzzy: fuzzyFilter,
+      },
+      state: {
+         columnFilters,
+         globalFilter,
+      },
+      onColumnFiltersChange: setColumnFilters,
+      onGlobalFilterChange: setGlobalFilter,
+      globalFilterFn: fuzzyFilter,
       getCoreRowModel: getCoreRowModel(),
+      getFilteredRowModel: getFilteredRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
       getSortedRowModel: getSortedRowModel(),
       getFacetedRowModel: getFacetedRowModel(),
