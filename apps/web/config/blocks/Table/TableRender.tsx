@@ -1,27 +1,22 @@
 import {
-   Column,
-   Table,
    ColumnHelper,
    createColumnHelper,
    flexRender,
    getCoreRowModel,
-   getPaginationRowModel,
    useReactTable,
    getSortedRowModel,
    getFacetedRowModel,
    getFacetedMinMaxValues,
    getFacetedUniqueValues,
    FilterFn,
-   SortingFn,
    sortingFns,
    ColumnFiltersState,
    getFilteredRowModel,
+   getPaginationRowModel,
+   Table,
+   Column,
 } from "@tanstack/react-table";
-import {
-   RankingInfo,
-   rankItem,
-   compareItems,
-} from "@tanstack/match-sorter-utils";
+import { rankItem, compareItems } from "@tanstack/match-sorter-utils";
 
 import { Reducer, useEffect, useMemo, useReducer, useState } from "react";
 import { DataSourceConfigProps, WebAPIDataSourceConfigProps } from ".";
@@ -29,7 +24,6 @@ import { z } from "zod";
 
 type TableRendererProps = {
    dataSourceId: string;
-   pageSize: number;
    classNameFn: (options?: {}) => string;
 };
 
@@ -126,7 +120,7 @@ const tableReducer: Reducer<TableState, Action> = (state, action) => {
    }
 };
 
-const useTableData = (dataSourceId: string, pageSize: number) => {
+const useTableData = (dataSourceId: string) => {
    const [state, dispatch] = useReducer(tableReducer, {
       loading: false,
       error: null,
@@ -148,7 +142,7 @@ const useTableData = (dataSourceId: string, pageSize: number) => {
       };
 
       fetchTableData();
-   }, [dataSourceId, pageSize]);
+   }, [dataSourceId]);
 
    return state;
 };
@@ -170,6 +164,8 @@ const parseColumns = (
             ),
          });
       }
+
+      console.log(prefix ? `${prefix}.${column.key}` : column.key);
 
       return columnsHelper.accessor(
          prefix ? `${prefix}.${column.key}` : column.key,
@@ -213,10 +209,9 @@ const fuzzySort = (rowA, rowB, columnId) => {
 
 export function TableRenderer({
    dataSourceId,
-   pageSize,
    classNameFn,
 }: TableRendererProps) {
-   const { loading, error, tableData } = useTableData(dataSourceId, pageSize);
+   const { loading, error, tableData } = useTableData(dataSourceId);
 
    const columnHelper = useMemo(() => createColumnHelper(), []);
 
@@ -253,10 +248,6 @@ export function TableRenderer({
       getFacetedMinMaxValues: getFacetedMinMaxValues(),
    });
 
-   useEffect(() => {
-      table.setPageSize(pageSize);
-   }, [pageSize]);
-
    if (loading) {
       return <div>Loading...</div>;
    }
@@ -267,10 +258,10 @@ export function TableRenderer({
 
    return (
       <div className={classNameFn("renderer")}>
-         <table className={classNameFn("table")}>
-            <thead className={classNameFn("thead")}>
+         <table>
+            <thead>
                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id} className={classNameFn("tr")}>
+                  <tr key={headerGroup.id}>
                      {headerGroup.headers.map((header) => (
                         <>
                            <th
@@ -316,11 +307,11 @@ export function TableRenderer({
                   </tr>
                ))}
             </thead>
-            <tbody className={classNameFn("tbody")}>
+            <tbody>
                {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className={classNameFn("tr")}>
+                  <tr key={row.id}>
                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className={classNameFn("td")}>
+                        <td key={cell.id}>
                            {flexRender(
                               cell.column.columnDef.cell,
                               cell.getContext()
@@ -330,8 +321,23 @@ export function TableRenderer({
                   </tr>
                ))}
             </tbody>
+            {/*<tfoot>
+          {table.getFooterGroups().map(footerGroup => (
+            <tr key={footerGroup.id}>
+              {footerGroup.headers.map(header => (
+                <th key={header.id} colSpan={header.colSpan}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.footer,
+                        header.getContext()
+                      )}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </tfoot>*/}
          </table>
-         <TableController table={table} classNameFn={classNameFn} />
       </div>
    );
 }

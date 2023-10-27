@@ -1,0 +1,24 @@
+.container {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  margin-left: auto;
+}
+
+.sign-in-button {
+  display: flex;
+  gap: 1rem;
+  margin-left: auto;
+  /* align-items: center; */
+}
+
+.sign-out-button {
+  display: flex;
+  gap: 1rem;
+  margin-left: auto;
+  color: rgb(220 38 38 / 1);
+}
+
+.text {
+  color: rgb(2 132 199 / 1);
+}
