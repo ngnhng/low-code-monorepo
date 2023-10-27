@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@measured/puck": "*",
+    "@tanstack/match-sorter-utils": "^8.8.4",
     "@tanstack/react-table": "^8.10.6",
     "axios": "^1.5.1",
     "next": "^13.4.19",
