@@ -1,0 +1,47 @@
+.navBar {
+    width: 100%;
+    height: 60px;
+
+    border-bottom: solid 1px #ddd;
+
+    padding: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.home {
+    width: 200px;
+    height: 60px;
+
+    background: red;
+}
+
+.right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.navItem {
+    & {
+        padding: 15px 20px;
+        font-weight: 500;
+        font-size: 1rem;
+    
+        color: rgb(var(--accent));
+        border-radius: 5px;
+    }
+
+    &:hover {
+        background-color: rgb(var(--secondary-2));
+    }
+}
