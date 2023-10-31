@@ -9,16 +9,16 @@ export async function POST(request: Request) {
    const refreshToken = body.refresh_token;
 
    if (!refreshToken) {
-      return new Response({
+      return new Response(undefined, {
          status: 401,
       });
    }
 
-   const response: Response = await fetch(serverApi)
+   const response = await fetch(serverApi)
       .then((res) => res.json())
       .catch((_) => undefined);
 
-   if (!response || !response.ok || response.status != 200) {
+   if (!response || response.status != 200) {
       const tokens = response.result.data;
 
       return new Response(
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
             refresh_token: tokens.refresh_token,
          }),
          {
-			status: 200,
+            status: 200,
             headers: {
                "Content-Type": "application/json",
             },
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       );
    }
 
-   return new Response({
+   return new Response(undefined, {
       status: 401,
    });
 }
