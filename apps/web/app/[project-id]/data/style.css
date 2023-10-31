@@ -1,0 +1,59 @@
+.editor-container {
+   width: 100%;
+   height: 100%;
+
+   display: flex;
+   flex-direction: row;
+}
+
+.editor-container .sidebar {
+   width: 300px;
+   height: 100%;
+
+   display: flex;
+   flex-direction: column;
+
+   /*background-color: lightskyblue;*/
+}
+
+.editor-container .canva {
+   flex: 1;
+   height: 100%;
+}
+
+.editor-container .canva .canva-toolbar {
+   width: 100%;
+   height: 50px;
+
+   display: flex;
+   flex-direction: row;
+   align-items: center;
+   justify-content: space-between;
+
+   /*background-color: lightcoral*/
+}
+
+.editor-container .canva .table-container {
+   width: 100%;
+   height: calc(100% - 50px);
+
+   display: flex;
+   flex-direction: row;
+
+   /*background-color: antiquewhite;*/
+}
+
+.editor-container .config-menu {
+   position: fixed;
+   right: 0;
+   top: 0;
+   width: 0;
+   height: 100vh;
+   overflow: hidden;
+   transition: width 0.5s ease;
+}
+
+.editor-container .config-menu.open {
+   width: 500px;
+   /*background-color: lightblue;*/
+}
