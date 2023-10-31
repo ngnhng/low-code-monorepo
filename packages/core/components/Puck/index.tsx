@@ -1,6 +1,14 @@
 "use client";
 
-import { ReactElement, ReactNode, useCallback, useEffect, useReducer, useState, useRef } from "react";
+import {
+    ReactElement,
+    ReactNode,
+    useCallback,
+    useEffect,
+    useReducer,
+    useState,
+    useRef,
+} from "react";
 import { DragDropContext, DragStart, DragUpdate } from "react-beautiful-dnd";
 import type { Config, Data, Field } from "../../types/Config";
 import { InputOrGroup } from "../InputOrGroup";
@@ -44,7 +52,10 @@ const PluginRenderer = ({
     return plugins
         .filter((item) => item[renderMethod])
         .map((item) => item[renderMethod])
-        .reduce((accChildren, Item) => <Item data={data}>{accChildren}</Item>, children);
+        .reduce(
+            (accChildren, Item) => <Item data={data}>{accChildren}</Item>,
+            children
+        );
 };
 
 export function Puck({
@@ -64,15 +75,25 @@ export function Puck({
     onChange?: (data: Data) => void;
     onPublish: (data: Data) => void;
     plugins?: Plugin[];
-    renderHeader?: (props: { children: ReactNode; data: Data; dispatch: (action: PuckAction) => void }) => ReactElement;
-    renderHeaderActions?: (props: { data: Data; dispatch: (action: PuckAction) => void }) => ReactElement;
+    renderHeader?: (props: {
+        children: ReactNode;
+        data: Data;
+        dispatch: (action: PuckAction) => void;
+    }) => ReactElement;
+    renderHeaderActions?: (props: {
+        data: Data;
+        dispatch: (action: PuckAction) => void;
+    }) => ReactElement;
     headerTitle?: string;
     headerPath?: string;
     containerStyle?: React.CSSProperties;
 }) {
     const puckEle = useRef(null);
     const [reducer] = useState(() => createReducer({ config }));
-    const [data, dispatch] = useReducer<StateReducer>(reducer, flushZones(initialData));
+    const [data, dispatch] = useReducer<StateReducer>(
+        reducer,
+        flushZones(initialData)
+    );
 
     const [itemSelector, setItemSelector] = useState<ItemSelector | null>(null);
 
@@ -80,8 +101,14 @@ export function Puck({
 
     const Page = useCallback(
         (pageProps) => (
-            <PluginRenderer plugins={plugins} renderMethod="renderRoot" data={pageProps.data}>
-                {config.root?.render ? config.root?.render({ ...pageProps, editMode: true }) : pageProps.children}
+            <PluginRenderer
+                plugins={plugins}
+                renderMethod="renderRoot"
+                data={pageProps.data}
+            >
+                {config.root?.render
+                    ? config.root?.render({ ...pageProps, editMode: true })
+                    : pageProps.children}
             </PluginRenderer>
         ),
         [config.root]
@@ -89,7 +116,11 @@ export function Puck({
 
     const PageFieldWrapper = useCallback(
         (props) => (
-            <PluginRenderer plugins={plugins} renderMethod="renderRootFields" data={props.data}>
+            <PluginRenderer
+                plugins={plugins}
+                renderMethod="renderRootFields"
+                data={props.data}
+            >
                 {props.children}
             </PluginRenderer>
         ),
@@ -98,18 +129,29 @@ export function Puck({
 
     const ComponentFieldWrapper = useCallback(
         (props) => (
-            <PluginRenderer plugins={plugins} renderMethod="renderFields" data={props.data}>
+            <PluginRenderer
+                plugins={plugins}
+                renderMethod="renderFields"
+                data={props.data}
+            >
                 {props.children}
             </PluginRenderer>
         ),
         []
     );
 
-    const FieldWrapper = itemSelector ? ComponentFieldWrapper : PageFieldWrapper;
+    const FieldWrapper = itemSelector
+        ? ComponentFieldWrapper
+        : PageFieldWrapper;
 
     const rootFields = config.root?.fields || defaultPageFields;
 
-    let fields = selectedItem ? (config.components[selectedItem.type]?.fields as Record<string, Field<any>>) || {} : rootFields;
+    let fields = selectedItem
+        ? (config.components[selectedItem.type]?.fields as Record<
+              string,
+              Field<any>
+          >) || {}
+        : rootFields;
 
     useEffect(() => {
         if (onChange) onChange(data);
@@ -119,14 +161,18 @@ export function Puck({
 
     const [leftSidebarVisible, setLeftSidebarVisible] = useState(true);
 
-    const [draggedItem, setDraggedItem] = useState<DragStart & Partial<DragUpdate>>();
+    const [draggedItem, setDraggedItem] = useState<
+        DragStart & Partial<DragUpdate>
+    >();
 
     const [zoomLevel, setZoomLevel] = useState(0.75);
 
     useEffect(() => {
         if (puckEle.current) {
             const computedWidth = getComputedStyle(puckEle.current).width;
-            setZoomLevel((parseInt(computedWidth) - 288 * 2) / window.innerWidth);
+            setZoomLevel(
+                (parseInt(computedWidth) - 288 * 2) / window.innerWidth
+            );
         }
     }, []);
 
@@ -150,20 +196,22 @@ export function Puck({
                     }
 
                     // New component
-                    if (droppedItem.source.droppableId === "component-list" && droppedItem.destination) {
+                    if (
+                        droppedItem.source.droppableId === "component-list" &&
+                        droppedItem.destination
+                    ) {
                         dispatch({
                             type: "insert",
                             componentType: droppedItem.draggableId,
                             destinationIndex: droppedItem.destination!.index,
-                            destinationZone: droppedItem.destination.droppableId,
+                            destinationZone:
+                                droppedItem.destination.droppableId,
                         });
 
                         setItemSelector({
                             index: droppedItem.destination!.index,
                             zone: droppedItem.destination.droppableId,
                         });
-
-                        return;
                     } else {
                         const { source, destination } = droppedItem;
 
@@ -202,24 +250,36 @@ export function Puck({
                         placeholderStyle,
                         mode: "edit",
                         areaId: "root",
-                        zoomLevel
+                        zoomLevel,
                     }}
                 >
                     <dropZoneContext.Consumer>
                         {(ctx) => {
-                            let path = ctx?.pathData && selectedItem ? ctx?.pathData[selectedItem?.props.id] : undefined;
+                            let path =
+                                ctx?.pathData && selectedItem
+                                    ? ctx?.pathData[selectedItem?.props.id]
+                                    : undefined;
 
                             if (path) {
-                                path = [{ label: "Page", selector: null }, ...path];
-                                path = path.slice(path.length - 2, path.length - 1);
+                                path = [
+                                    { label: "Page", selector: null },
+                                    ...path,
+                                ];
+                                path = path.slice(
+                                    path.length - 2,
+                                    path.length - 1
+                                );
                             }
 
                             return (
                                 <div
                                     style={{
                                         display: "grid",
-                                        gridTemplateAreas: '"header header header" "left editor right"',
-                                        gridTemplateColumns: `${leftSidebarVisible ? "288px" : "0px"} auto 288px`,
+                                        gridTemplateAreas:
+                                            '"header header header" "left editor right"',
+                                        gridTemplateColumns: `${
+                                            leftSidebarVisible ? "288px" : "0px"
+                                        } auto 288px`,
                                         gridTemplateRows: "min-content auto",
                                         width: "100%",
                                         height: "100%",
@@ -240,17 +300,35 @@ export function Puck({
                                             <ComponentList config={config} />
                                         </SidebarSection>
                                         <SidebarSection title="Outline">
-                                            {ctx?.activeZones && ctx?.activeZones[rootDroppableId] && (
-                                                <LayerTree
-                                                    data={data}
-                                                    label={areaContainsZones(data, "root") ? rootDroppableId : ""}
-                                                    zoneContent={data.content}
-                                                    setItemSelector={setItemSelector}
-                                                    itemSelector={itemSelector}
-                                                />
-                                            )}
+                                            {ctx?.activeZones &&
+                                                ctx?.activeZones[
+                                                    rootDroppableId
+                                                ] && (
+                                                    <LayerTree
+                                                        data={data}
+                                                        label={
+                                                            areaContainsZones(
+                                                                data,
+                                                                "root"
+                                                            )
+                                                                ? rootDroppableId
+                                                                : ""
+                                                        }
+                                                        zoneContent={
+                                                            data.content
+                                                        }
+                                                        setItemSelector={
+                                                            setItemSelector
+                                                        }
+                                                        itemSelector={
+                                                            itemSelector
+                                                        }
+                                                    />
+                                                )}
 
-                                            {Object.entries(findZonesForArea(data, "root")).map(([zoneKey, zone]) => {
+                                            {Object.entries(
+                                                findZonesForArea(data, "root")
+                                            ).map(([zoneKey, zone]) => {
                                                 return (
                                                     <LayerTree
                                                         key={zoneKey}
@@ -258,8 +336,12 @@ export function Puck({
                                                         label={zoneKey}
                                                         zone={zoneKey}
                                                         zoneContent={zone}
-                                                        setItemSelector={setItemSelector}
-                                                        itemSelector={itemSelector}
+                                                        setItemSelector={
+                                                            setItemSelector
+                                                        }
+                                                        itemSelector={
+                                                            itemSelector
+                                                        }
                                                     />
                                                 );
                                             })}
@@ -272,7 +354,8 @@ export function Puck({
                                             overflowY: "auto",
                                             gridArea: "editor",
                                             position: "relative",
-                                            background: "var(--puck-color-neutral-1)",
+                                            background:
+                                                "var(--puck-color-neutral-1)",
                                         }}
                                         onClick={() => setItemSelector(null)}
                                         id="puck-frame"
@@ -280,13 +363,16 @@ export function Puck({
                                         <div
                                             className="puck-root"
                                             style={{
-                                                boxShadow: "0px 0px 0px 3rem var(--puck-color-neutral-1)",
+                                                boxShadow:
+                                                    "0px 0px 0px 3rem var(--puck-color-neutral-1)",
                                                 background: "white",
                                                 zoom: zoomLevel,
                                             }}
                                         >
                                             <Page data={data} {...data.root}>
-                                                <DropZone zone={rootDroppableId} />
+                                                <DropZone
+                                                    zone={rootDroppableId}
+                                                />
                                             </Page>
                                         </div>
                                     </div>
@@ -294,7 +380,8 @@ export function Puck({
                                         style={{
                                             overflowY: "auto",
                                             gridArea: "right",
-                                            fontFamily: "var(--puck-font-stack)",
+                                            fontFamily:
+                                                "var(--puck-font-stack)",
                                             display: "flex",
                                             flexDirection: "column",
                                             background: "#ffffff",
@@ -304,96 +391,173 @@ export function Puck({
                                             <SidebarSection
                                                 noPadding
                                                 breadcrumbs={path}
-                                                breadcrumbClick={(breadcrumb) => setItemSelector(breadcrumb.selector)}
-                                                title={selectedItem ? selectedItem.type : "Page"}
+                                                breadcrumbClick={(breadcrumb) =>
+                                                    setItemSelector(
+                                                        breadcrumb.selector
+                                                    )
+                                                }
+                                                title={
+                                                    selectedItem
+                                                        ? selectedItem.type
+                                                        : "Page"
+                                                }
                                             >
-                                                {Object.keys(fields).map((fieldName) => {
-                                                    const field = fields[fieldName];
+                                                {Object.keys(fields).map(
+                                                    (fieldName) => {
+                                                        const field =
+                                                            fields[fieldName];
 
-                                                    const onChange = (value: any) => {
-                                                        let currentProps;
-                                                        let newProps;
+                                                        const onChange = (
+                                                            value: any
+                                                        ) => {
+                                                            let currentProps;
+                                                            let newProps;
 
-                                                        if (selectedItem) {
-                                                            currentProps = selectedItem.props;
-                                                        } else {
-                                                            currentProps = data.root;
-                                                        }
-
-                                                        if (fieldName === "_data") {
-                                                            // Reset the link if value is falsey
-                                                            if (!value) {
-                                                                const { locked, ..._meta } = currentProps._meta || {};
-
-                                                                newProps = {
-                                                                    ...currentProps,
-                                                                    _data: undefined,
-                                                                    _meta: _meta,
-                                                                };
+                                                            if (selectedItem) {
+                                                                currentProps =
+                                                                    selectedItem.props;
                                                             } else {
-                                                                const changedFields = filter(
-                                                                    // filter out anything not supported by this component
-                                                                    value,
-                                                                    Object.keys(fields)
-                                                                );
+                                                                currentProps =
+                                                                    data.root;
+                                                            }
 
+                                                            if (
+                                                                fieldName ===
+                                                                "_data"
+                                                            ) {
+                                                                // Reset the link if value is falsey
+                                                                if (!value) {
+                                                                    const {
+                                                                        locked,
+                                                                        ..._meta
+                                                                    } =
+                                                                        currentProps._meta ||
+                                                                        {};
+
+                                                                    newProps = {
+                                                                        ...currentProps,
+                                                                        _data: undefined,
+                                                                        _meta: _meta,
+                                                                    };
+                                                                } else {
+                                                                    const changedFields =
+                                                                        filter(
+                                                                            // filter out anything not supported by this component
+                                                                            value,
+                                                                            Object.keys(
+                                                                                fields
+                                                                            )
+                                                                        );
+
+                                                                    newProps = {
+                                                                        ...currentProps,
+                                                                        ...changedFields,
+                                                                        _data: value, // TODO perf - this is duplicative and will make payload larger
+                                                                        _meta: {
+                                                                            locked: Object.keys(
+                                                                                changedFields
+                                                                            ),
+                                                                        },
+                                                                    };
+                                                                }
+                                                            } else {
                                                                 newProps = {
                                                                     ...currentProps,
-                                                                    ...changedFields,
-                                                                    _data: value, // TODO perf - this is duplicative and will make payload larger
-                                                                    _meta: {
-                                                                        locked: Object.keys(changedFields),
-                                                                    },
+                                                                    [fieldName]:
+                                                                        value,
                                                                 };
                                                             }
-                                                        } else {
-                                                            newProps = {
-                                                                ...currentProps,
-                                                                [fieldName]: value,
-                                                            };
-                                                        }
 
-                                                        if (itemSelector) {
-                                                            dispatch({
-                                                                type: "replace",
-                                                                destinationIndex: itemSelector.index,
-                                                                destinationZone: itemSelector.zone || rootDroppableId,
-                                                                data: { ...selectedItem, props: newProps },
-                                                            });
-                                                        } else {
-                                                            dispatch({
-                                                                type: "set",
-                                                                data: { root: newProps },
-                                                            });
-                                                        }
-                                                    };
+                                                            if (itemSelector) {
+                                                                dispatch({
+                                                                    type: "replace",
+                                                                    destinationIndex:
+                                                                        itemSelector.index,
+                                                                    destinationZone:
+                                                                        itemSelector.zone ||
+                                                                        rootDroppableId,
+                                                                    data: {
+                                                                        ...selectedItem,
+                                                                        props: newProps,
+                                                                    },
+                                                                });
+                                                            } else {
+                                                                dispatch({
+                                                                    type: "set",
+                                                                    data: {
+                                                                        root: newProps,
+                                                                    },
+                                                                });
+                                                            }
+                                                        };
 
-                                                    if (selectedItem && itemSelector) {
-                                                        return (
-                                                            <InputOrGroup
-                                                                key={`${selectedItem.props.id}_${fieldName}`}
-                                                                field={field}
-                                                                name={fieldName}
-                                                                label={field.label}
-                                                                readOnly={getItem(itemSelector, data)!.props._meta?.locked?.indexOf(fieldName) > -1}
-                                                                value={selectedItem.props[fieldName]}
-                                                                onChange={onChange}
-                                                            />
-                                                        );
-                                                    } else {
-                                                        return (
-                                                            <InputOrGroup
-                                                                key={`page_${fieldName}`}
-                                                                field={field}
-                                                                name={fieldName}
-                                                                label={field.label}
-                                                                readOnly={data.root._meta?.locked?.indexOf(fieldName) > -1}
-                                                                value={data.root[fieldName]}
-                                                                onChange={onChange}
-                                                            />
-                                                        );
+                                                        if (
+                                                            selectedItem &&
+                                                            itemSelector
+                                                        ) {
+                                                            return (
+                                                                <InputOrGroup
+                                                                    key={`${selectedItem.props.id}_${fieldName}`}
+                                                                    field={
+                                                                        field
+                                                                    }
+                                                                    name={
+                                                                        fieldName
+                                                                    }
+                                                                    label={
+                                                                        field.label
+                                                                    }
+                                                                    readOnly={
+                                                                        getItem(
+                                                                            itemSelector,
+                                                                            data
+                                                                        )!.props._meta?.locked?.indexOf(
+                                                                            fieldName
+                                                                        ) > -1
+                                                                    }
+                                                                    value={
+                                                                        selectedItem
+                                                                            .props[
+                                                                            fieldName
+                                                                        ]
+                                                                    }
+                                                                    onChange={
+                                                                        onChange
+                                                                    }
+                                                                />
+                                                            );
+                                                        } else {
+                                                            return (
+                                                                <InputOrGroup
+                                                                    key={`page_${fieldName}`}
+                                                                    field={
+                                                                        field
+                                                                    }
+                                                                    name={
+                                                                        fieldName
+                                                                    }
+                                                                    label={
+                                                                        field.label
+                                                                    }
+                                                                    readOnly={
+                                                                        data.root._meta?.locked?.indexOf(
+                                                                            fieldName
+                                                                        ) > -1
+                                                                    }
+                                                                    value={
+                                                                        data
+                                                                            .root[
+                                                                            fieldName
+                                                                        ]
+                                                                    }
+                                                                    onChange={
+                                                                        onChange
+                                                                    }
+                                                                />
+                                                            );
+                                                        }
                                                     }
-                                                })}
+                                                )}
                                             </SidebarSection>
                                         </FieldWrapper>
                                     </div>
