@@ -30,17 +30,12 @@ export default function Page() {
          .catch((err) => {});
    }, []);
 
-   if (loading) {
-      return <div>Loading...</div>;
-   }
+   const conditionalRender = () => {
+      if (loading) {
+         return <div>Loading...</div>;
+      }
 
-   // If logged in, redirect to dashboard
-   if (isLoggedIn) {
-      return null;
-   }
-
-   return (
-      <div className="container">
+      return (
          <div className="form-container">
             <div className="loginLabel">Sign in with:</div>
             <div className="methodsList">
@@ -57,6 +52,13 @@ export default function Page() {
                </Link>
             </div>
          </div>
-      </div>
-   );
+      );
+   };
+
+   // If logged in, redirect to dashboard
+   if (isLoggedIn) {
+      return null;
+   }
+
+   return <div className="container">{conditionalRender()}</div>;
 }
