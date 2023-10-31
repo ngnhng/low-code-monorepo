@@ -10,7 +10,7 @@ export default function Page() {
                <Link href="./">
                   <div className="home"></div>
                </Link>
-               <Link href="./">
+               <Link href="./projects">
                   <div className="navItem">Projects</div>
                </Link>
                <Link href="./">
