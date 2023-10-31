@@ -15,21 +15,6 @@ export async function GET(request: Request) {
    const incomingUrl = new URL(request.url ?? "");
    const params = incomingUrl.searchParams;
 
-   const notLoggedInResponse = new Response(
-      JSON.stringify({ isLoggedIn: false }),
-      {
-         headers: {
-            "Content-Type": "application/json",
-         },
-      }
-   );
-
-   const loggedInResponse = new Response(JSON.stringify({ isLoggedIn: true }), {
-      headers: {
-         "Content-Type": "application/json",
-      },
-   });
-
    if (params.get("code")) {
       // handle code
       return await handleCode(
@@ -38,22 +23,6 @@ export async function GET(request: Request) {
          successUrl,
          failureUrl
       );
-   } else if (params.get("isLoggedIn")) {
-      const action = params.get("isLoggedIn");
-      // check if user is logged in
-      const result = await handleCheck(
-         serverCallbackUrl,
-         successUrl,
-         failureUrl
-      );
-
-      const isLoggedIn = result.accessToken && result.refreshToken;
-
-      if (action === "ask") {
-         return isLoggedIn ? loggedInResponse : notLoggedInResponse;
-      }
-
-      return notLoggedInResponse;
    }
 
    // redirect caller to the server oauth url
@@ -88,22 +57,6 @@ async function handleCode(
 
    // redirect to success
    return Response.redirect(successUrl, 302);
-}
-
-async function handleCheck(
-   callbackUrl: string,
-   successUrl: string,
-   failureUrl: string
-) {
-   const { accessToken, refreshToken } = checkCookiesForTokens();
-
-   const isLoggedIn = accessToken && refreshToken;
-
-   if (isLoggedIn) {
-      return { accessToken, refreshToken };
-   }
-
-   return { accessToken: null, refreshToken: null };
 }
 
 function constructUrl(base, path) {
