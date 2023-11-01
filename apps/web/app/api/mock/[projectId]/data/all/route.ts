@@ -7,10 +7,20 @@ const TABLES = [
    {
       id: "1",
       name: "Table 1",
+	  dateCreated: "2021-01-01",
+	  dateModified: "2021-01-01",
    },
    {
       id: "2",
       name: "Table 2",
+	  dateCreated: "2021-01-01",
+	  dateModified: "2021-01-01",
+   },
+   {
+	  id: "3",
+	  name: "Table 3",
+	  dateCreated: "2021-01-01",
+	  dateModified: "2021-01-01",
    },
 ];
 
