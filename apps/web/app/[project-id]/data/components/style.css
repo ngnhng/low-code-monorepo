@@ -90,7 +90,6 @@
 table,
 .table {
    border: 1px solid lightgray;
-   width: fit-content;
 }
 
 .tr {
