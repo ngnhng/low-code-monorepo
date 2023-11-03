@@ -7,7 +7,8 @@
 import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
-   const baseUrl = process.env["NEXT_PUBLIC_BASE_URL"];
+   const url = new URL(request.url);
+   const baseUrl = url.origin;
    const refreshEndpoint = process.env["NEXT_PUBLIC_REFRESH_TOKEN_API"];
 
    // Is logged in response
@@ -69,7 +70,7 @@ function checkCookiesForTokens(): CookieCheckResult {
 
    if (!accessToken || !refreshToken) {
       return "failed";
-   } else if (accessToken) {
+   } else if (!accessToken && refreshToken) {
       return "refresh";
    }
 
