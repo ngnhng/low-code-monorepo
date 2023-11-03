@@ -13,137 +13,67 @@ import ReactFlow, {
   ReactFlowInstance,
   Panel,
   useReactFlow,
-  MarkerType
+  getIncomers,
+  getOutgoers,
+  getConnectedEdges,
+  MarkerType,
+  Background
 } from 'reactflow';
 import Sidebar from './components/Sidebar/Sidebar';
-import { ConditionalNode, ExampleNode } from './components/CustomNode';
-import { initialNodes, initialEdges } from './data';
+import ConfigPanel from './components/ConfigPanel/ConfigPanel';
 import { v4 as uuidv4 } from 'uuid'
+import { initialNodes, initialEdges } from './data';
+import { createNode, createEdge, CustomNode } from './utils';
 import 'reactflow/dist/style.css';
 import './style.css';
 
 const flowKey = 'example-flow';
-// let id = 1;
-// const getId = () => `${id++}`;
+
 const getId = () => `${uuidv4()}`;
 
 const DnDFlow = () => {
-  const nodeTypes = useMemo(() => ({ example: ExampleNode, conditional: ConditionalNode }), []);
+  const nodeTypes = useMemo(() => (CustomNode), []);
 
   const reactFlowWrapper = useRef<HTMLParagraphElement>(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const { setViewport } = useReactFlow();
+  // const {}
+  const [edgeClick, setEdgeClick] = useState<Edge | null>(null);
+  const [nodeCheck, setNodeCheck] = useState<Node | null>(null);
 
-  // TODO: Modify that can choose which node created
-  const initialNodeType: Node = {
-    id : getId(),
-    type : 'default',
-    position : { x: initialNodes[0].position.x, y: nodes.length*100},
-    data: { label: 'New Node' },
-    width: 150
-  }
+  useEffect(() => {
+    if (edgeClick) {
+      // * change the edge 
+      const newEdge = createEdge(nodes[nodes.length - 1].id, edgeClick.target);
 
-  const initialEdge: Edge = {
-    id: String(parseInt(`${Math.random()*1000000}`)),
-    source: nodes[nodes.length-2].id,
-    target: nodes[nodes.length-1].id,
-    label: '+',
-    labelBgPadding: [8, 4],
-    labelBgBorderRadius: 4,
-    labelBgStyle: { fill: '#FFCC00', color: '#fff', fillOpacity: 0.7 },
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-    },
-  }
+      setEdges((prev) => {
+        prev.map(e => {
+          if (e.id === edgeClick.id) {
+            e.target = nodes[nodes.length - 1].id;
+          }
+          return e;
+        })
 
-  // * QUITE SAME WITH WORKFLOW BUILDER NOVU
-  const tempHandleEdgeClick = (event, data: Edge) => {
-    const targetNode: Node | undefined = nodes.find((node) => {
-      return node.id === data.target
-    })
-    
-    if (targetNode) {
-      const changeEdge: Edge | undefined = edges.find((edge) => {
-        return edge.source === data.source && edge.target === data.target
+        return prev.concat(newEdge)
       });
-      
-      // TODO: Function to return Node and Edge
-      const newNode: Node = {
-        id : getId(),
-        type : 'default',
-        position : { x: initialNodes[0].position.x, y: nodes.length*100},
-        data: { label: `New Node` },
-        width: 150
-      }
-      
-      if (changeEdge) {
-        changeEdge.target = newNode.id;
-      }
-      
-      const newEdge: Edge = {
-        id: getId(),
-        source: newNode.id,
-        target: targetNode.id,
-        label: '+',
-        labelBgPadding: [8, 4],
-        labelBgBorderRadius: 4,
-        labelBgStyle: { fill: '#FFCC00', color: '#fff', fillOpacity: 0.7 },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-        },
-      }
-      
-      setEdges((prev) => prev.concat(newEdge));
-      setNodes((prev) => prev.concat(newNode));
-    }
-  }
 
-  const tempHandleNodeClick = (event, data: Node) => {
-    const newNode: Node = {
-      id : getId(),
-      type : 'default',
-      position : { x: initialNodes[0].position.x, y: nodes.length*100},
-      data: { label: `New Node` },
-      width: 150
+      setEdgeClick(null);
+      setNodeCheck(null);
     }
-
-    const newEdge: Edge = {
-      id: getId(),
-        source: data.id,
-        target: newNode.id,
-        label: '+',
-        labelBgPadding: [8, 4],
-        labelBgBorderRadius: 4,
-        labelBgStyle: { fill: '#FFCC00', color: '#fff', fillOpacity: 0.7 },
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-        },
-    }
-
-    setEdges((prev) => prev.concat(newEdge));
-    setNodes((prev) => prev.concat(newNode));
-  }
+  }, [nodes])
 
   const onConnect: OnConnect = useCallback(
     (connection) => setEdges((eds) => addEdge(connection, eds)),
     [setEdges]
   );
 
-  const onDragOver = useCallback((event: React.DragEvent) => {
+	const onDrop = useCallback((event: React.DragEvent) => {
     event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-  }, []);
-
-  const onDrop = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-
     if (reactFlowWrapper) {
       const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
       const type = event.dataTransfer.getData('application/reactflow');
-
-      console.log("type: " + type);
 
       if (typeof type === 'undefined' || !type) {
         return;
@@ -161,29 +91,30 @@ const DnDFlow = () => {
           position,
           data: { label: `${type} node` },
         };
-
         setNodes((nds) => nds.concat(newNode));
-
       }
     } else {
       return;
     }
   }, [reactFlowInstance])
 
-  const onSave = useCallback(() => {
+	const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+	// TODO: Refactor this to save to database
+	const onSave = useCallback(() => {
     if (reactFlowInstance) {
       const flow = reactFlowInstance.toObject();
       localStorage.setItem(flowKey, JSON.stringify(flow));
 
       console.log("format: ", JSON.stringify(flow));
     }
-
-
   }, [reactFlowInstance]);
 
-  const onRestore = useCallback(() => {
+	const onRestore = useCallback(() => {
     const restoreFlow = async () => {
-
       if (!localStorage.getItem(flowKey)) {
         return;
       }
@@ -197,34 +128,77 @@ const DnDFlow = () => {
         setViewport({ x, y, zoom });
       }
     };
-
     restoreFlow();
   }, [setNodes, setViewport]);
 
+  const handleNodeClick = (event, data: Node) => {
+    const newNode: Node = createNode('default', { x: data.position.x, y: data.position.y + 100}, { label: `New Node` })
+    const newEdge: Edge = createEdge(data.id, newNode.id)
+    setEdges((prev) => prev.concat(newEdge));
+    setNodes((prev) => prev.concat(newNode));
+  }
+
+  const handleEdgeClick = (event, data: Edge) => {
+    const targetNode: Node | undefined = nodes.find((node) => {
+      return node.id === data.target
+    })
+
+    // Assume 1: 
+    if (targetNode) {
+      const newNode: Node = createNode('default', {x: targetNode.position.x, y: targetNode.position.y},{ label: `New Node` })
+      setNodes((prev) => prev.concat(newNode));
+      setEdgeClick(data);
+      setNodeCheck(targetNode);
+    }
+
+    return;
+  }
+
+  const onNodesDelete = useCallback((deleted: Node[]) => {
+    setEdges(
+      deleted.reduce((acc, node) => {
+        const incomers = getIncomers(node, nodes, edges);
+        const outgoers = getOutgoers(node, nodes, edges);
+        const connectedEdges = getConnectedEdges([node], edges);
+
+        const remainingEdges = acc.filter((edge) => !connectedEdges.includes(edge));
+
+        const createdEdges = incomers.flatMap(({ id: source }) =>
+          outgoers.map(({ id: target }) => ({ id: `${source}->${target}`, source, target }))
+        );
+
+        return [...remainingEdges, ...createdEdges];
+      }, edges)
+    )
+  },[nodes, edges])
+
   return (
-        <div className="reactflow-wrapper" ref={reactFlowWrapper}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            nodeTypes={nodeTypes}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onEdgeClick={tempHandleEdgeClick}
-            onNodeClick={tempHandleNodeClick}
-            onConnect={onConnect}
-            onInit={setReactFlowInstance}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-            fitView
-          >
-            <Panel position="top-right">
+    <div className='reactflow-wrapper' ref={reactFlowWrapper}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={handleNodeClick}
+        onEdgeClick={handleEdgeClick}
+        onNodesDelete={onNodesDelete}
+				onDrop={onDrop}
+				onInit={setReactFlowInstance}
+        onDragOver={onDragOver}
+        onConnect={onConnect}
+        fitView
+      >
+				<Panel position="bottom-right">
               <button onClick={onSave}>save</button>
               <button onClick={onRestore}>restore</button>
             </Panel>
-            <Controls position='bottom-left'/>
-          </ReactFlow>
-        </div>
-  );
+        <Controls position='bottom-left'/>
+        <Background variant="dots" gap={12} size={1} />
+        <ConfigPanel id="abc" label="abc" setNodes={setNodes}/>
+      </ReactFlow>
+    </div>
+  )
 }
 
 export default function Page() {
@@ -240,6 +214,8 @@ export default function Page() {
 
 
 /* 
+* The ReactFlowInstance provides a collection of methods to query and manipulate the internal state of your flow
+
 * NOTE: QUITE SAME WITH THE WORKFLOW BUILDER OF REACT-FLOW-PRO
 
 const [addNode, setAddNode] = useState<boolean>(false);

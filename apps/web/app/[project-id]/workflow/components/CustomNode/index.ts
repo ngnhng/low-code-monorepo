@@ -1,5 +1,6 @@
-import ActionNode  from './ActionNode';
-import ConditionalNode from './ConditionalNode';
 import ExampleNode from './ExampleNode';
+import GatewayNode from './GatewayNode';
+import TriggerNode from './TriggerNode';
+import ActivityNode from './ActivityNode';
 
-export { ActionNode, ConditionalNode, ExampleNode }
+export { ExampleNode, GatewayNode, TriggerNode, ActivityNode}

@@ -3,16 +3,22 @@ import { Node, Edge, MarkerType } from 'reactflow';
 export const initialNodes: Node[] = [
   {
     id: '0',
-    type: 'default',
-    data: { label: 'Default Node' },
+    type: 'trigger',
+    data: { label: 'Trigger Node' },
     position: { x: 0, y: 0 },
   },
-  {
-    id: '1',
-    type: 'default',
-    data: { label: 'Default Node' },
-    position: { x: 0, y: 100 },
-  },
+  // {
+  //   id: '1',
+  //   type: 'activity',
+  //   data: { label: 'Activity Node' },
+  //   position: { x: 0, y: 100 },
+  // },
+  // {
+  //   id: '2',
+  //   type: 'gateway',
+  //   data: { label: 'Gateway Node' },
+  //   position: { x: 0, y: 200 },
+  // },
 ]
 
 export const initialEdges: Edge[] = [
