@@ -1,9 +1,10 @@
 "use client";
 
 import { ColumnHelper } from "@tanstack/react-table";
+import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Reducer, useEffect, useReducer, useState } from "react";
-import useSWR from "swr";
+import { Reducer, useEffect, useReducer, useRef, useState } from "react";
+import { TableData, ColumnProps } from "../../../../interfaces/TableData";
 import { ColumnConfigMenu } from "./ColumnConfigMenu";
 import { RowConfigMenu } from "./RowConfigMenu";
 import "./style.css";
@@ -15,68 +16,28 @@ const mockApiBuilder = (projectId: string) => {
    return `${base}/api/mock/${projectId}`;
 };
 
-const fetcher = (url) => fetch(url).then((res) => res.json());
-
 type CanvaAction =
    | { type: "open-config-add-column" }
    | { type: "open-config-insert-row" }
+   | { type: "close-config" }
    | { type: "open-config" }
    | { type: "edit-config" }
-   | { type: "add-column" }
+   | {
+        type: "add-column";
+        isSaved?: boolean;
+        isError?: boolean;
+     }
    | { type: "add-row" }
    | { type: "remove-column" }
    | { type: "remove-row" }
    | { type: "select-table"; tableId: string }
    | { type: "set-data"; payload?: TableData; isError?: boolean };
 
-type TableData = {
-   columns: string[];
-   rows: string[];
-};
-
-type EditorConfigMenuProps = {
-   isOpen: boolean;
-   configItems?: EditorConfigMenuItem[];
-
-   onClose: any;
-
-   onEdit?: () => void;
-
-   onAddColumn?: () => void;
-
-   onAddRow?: () => void;
-
-   onRemoveColumn?: () => void;
-
-   onRemoveRow?: () => void;
-
-   onSave?: () => void;
-};
-
-type EditorConfigMenuItem = {
-   type: "data-type" | "name";
-   title: string;
-   icon?: string;
-
-   onChange: (event: any) => void;
-};
-
-type EditorConfigMenuAction =
-   | { type: "open-config" }
-   | { type: "edit-config" }
-   | { type: "add-column" }
-   | { type: "add-row" }
-   | { type: "remove-column" }
-   | { type: "remove-row" };
-
-type EditorConfigMenuState = {
-   [configItem: string]: any;
-};
-
 type CanvaState = {
    isLoaded?: boolean;
    isLoading?: boolean;
    isSaving?: boolean;
+   isModified?: boolean;
 
    isRowConfigOpen?: boolean;
    isColumnConfigOpen?: boolean;
@@ -85,6 +46,7 @@ type CanvaState = {
    errorMessage?: string;
 
    tableId: string;
+   projectId: string;
    data?: TableData;
 };
 
@@ -96,8 +58,6 @@ type TableEditorProps = {
 export type TableCanvaProps = {
    state: CanvaState;
    dispatch: any;
-   setRowConfig: any;
-   setColumnConfig: any;
 };
 
 const canvaReducer: Reducer<CanvaState, CanvaAction> = (state, action) => {
@@ -106,9 +66,9 @@ const canvaReducer: Reducer<CanvaState, CanvaAction> = (state, action) => {
          return { ...state, isColumnConfigOpen: true };
       case "open-config-insert-row":
          return { ...state, isRowConfigOpen: true };
+      case "close-config":
+         return { ...state, isColumnConfigOpen: false, isRowConfigOpen: false };
       case "edit-config":
-         return { ...state };
-      case "add-column":
          return { ...state };
       case "add-row":
          return { ...state };
@@ -125,114 +85,150 @@ const canvaReducer: Reducer<CanvaState, CanvaAction> = (state, action) => {
          };
       case "set-data":
          return { ...state, data: action.payload };
-      default:
-         throw new Error();
-   }
-};
 
-const editorConfigReducer: Reducer<
-   EditorConfigMenuState,
-   EditorConfigMenuAction
-> = (state, action) => {
-   switch (action.type) {
-      case "open-config":
-         return { ...state, isConfigOpen: true };
-      case "edit-config":
-         return { ...state, isConfigOpen: true };
-      case "add-row":
-         return { ...state, isConfigOpen: true };
-      case "remove-column":
-         return { ...state, isConfigOpen: true };
-      case "remove-row":
-         return { ...state, isConfigOpen: true };
+      case "add-column":
+         console.log("add-column", action.isSaved);
+         return {
+            ...state,
+            isModified: action.isSaved,
+         };
       default:
          throw new Error();
    }
 };
 
 const fetchTable = async (projectId: string, tableId: string) => {
-   const data = await fetch(
-      `${mockApiBuilder(projectId)}/data/${tableId}`
-   ).then((res) => res.json());
+   const data = await axios
+      .get(`${mockApiBuilder(projectId)}/data/${tableId}`)
+      .then((res) => res.data);
    return data;
+};
+
+const fetchTableData = async (projectId, tableId, dispatch) => {
+   console.log("fetching table data");
+   if (projectId && tableId) {
+      try {
+         const data = await fetchTable(projectId, tableId);
+         dispatch({
+            type: "set-data",
+            payload: data,
+         });
+      } catch (error) {
+         console.error(error);
+         dispatch({
+            type: "set-data",
+            isError: true,
+         });
+      }
+   }
 };
 
 const useTableEditor = (projectId, tableId) => {
    const [canvaState, canvaDispatch] = useReducer(canvaReducer, {
       tableId: tableId,
+      projectId: projectId,
    });
-   const [configState, configDispatch] = useReducer(editorConfigReducer, {});
-   // Fetch table data
-   useEffect(() => {
-      const fetchTableData = async () => {
-         if (projectId && tableId) {
-            const data = await fetchTable(projectId, tableId);
-            if (data) {
-               canvaDispatch({
-                  type: "set-data",
-                  payload: data,
-               });
-            } else {
-               canvaDispatch({
-                  type: "set-data",
-                  isError: true,
-               });
-            }
-         }
-      };
-      fetchTableData();
-   }, [projectId, tableId]);
 
-   return [canvaState, canvaDispatch, configState, configDispatch] as const;
+   const [updateTrigger, setUpdateTrigger] = useState(false);
+
+   const dispatchWithTrigger = (action) => {
+      canvaDispatch(action);
+      setUpdateTrigger((prev) => !prev); // Toggle the trigger state
+   };
+
+   useEffect(() => {
+      fetchTableData(projectId, tableId, canvaDispatch);
+   }, [projectId, tableId, canvaDispatch, updateTrigger]);
+   // we return two dispatches, one with trigger and one without
+   // the one with trigger is used when we want to force trigger a re-fetch of table data
+   return [canvaState, canvaDispatch, dispatchWithTrigger] as const;
 };
 
-const FilterToolbarItem = () => (
-   <div className="filter-toolbar-item" style={{ margin: "10px" }}>
-      <Dropdown
-         title={"Filter"}
-         options={[
-            { value: "filter", label: "Filter" },
-            { value: "sort", label: "Sort" },
-         ]}
-         onSelect={(value) => console.log(value)}
-      />
-   </div>
-);
+//const FilterToolbarItem = () => (
+//   <div className="filter-toolbar-item" style={{ margin: "10px" }}>
+//      <Dropdown
+//         title={"Filter"}
+//         options={[
+//            { value: "filter", label: "Filter" },
+//            { value: "sort", label: "Sort" },
+//         ]}
+//         onSelect={(value) => console.log(value)}
+//      />
+//   </div>
+//);
 
-const InsertToolbatItem = () => (
+const InsertToolbarItem = ({ dispatch }) => (
    <div className="insert-toolbar-item" style={{ margin: "10px" }}>
       <Dropdown
          title={"Insert"}
+         dispatch={dispatch}
          options={[
-            { value: "column", label: "Column" },
-            { value: "row", label: "Row" },
+            {
+               value: "column",
+               label: "Column",
+               description: "Add New Column",
+               dispatcher: "open-config-add-column",
+            },
+            {
+               value: "row",
+               label: "Row",
+               description: "Add New Row",
+               dispatcher: "open-config-insert-row",
+            },
          ]}
          onSelect={(value) => console.log(value)}
       />
    </div>
 );
 
-const Dropdown = ({ title, options, onSelect }) => {
+const Dropdown = ({ title, dispatch, options, onSelect }) => {
    const [isOpen, setIsOpen] = useState(false);
-   const [selectedOption, setSelectedOption] = useState(null);
+
+   const dropdownRef = useRef<HTMLDivElement>(null);
+
+   useEffect(() => {
+      const handleClickOutside = (event) => {
+         if (
+            dropdownRef.current &&
+            !dropdownRef.current.contains(event.target)
+         ) {
+            setIsOpen(false);
+         }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+
+      return () => {
+         document.removeEventListener("mousedown", handleClickOutside);
+      };
+   }, []);
 
    return (
-      <div className="dropdown">
+      <div ref={dropdownRef} className="dropdown">
          <div
-            className="dropdown-toggle"
+            className="dropdown-header"
             onClick={() => setIsOpen((prev) => !prev)}
          >
             {title}
          </div>
          {isOpen && (
-            <div className="dropdown-options">
+            <div className="dropdown-list">
                {options.map((option) => (
                   <DropdownOption
                      key={option.value}
                      value={option.value}
-                     onSelect={onSelect}
+                     onSelect={(value) => {
+                        dispatch({
+                           type: option.dispatcher,
+                        });
+                        setIsOpen(false);
+                        //onSelect(value);
+                     }}
                   >
                      {option.label}
+                     <div style={{ fontSize: "12px" }}>
+                        {option.description}
+                     </div>
                   </DropdownOption>
                ))}
             </div>
@@ -242,9 +238,18 @@ const Dropdown = ({ title, options, onSelect }) => {
 };
 
 const DropdownOption = ({ value, children, onSelect }) => (
-   <div onClick={() => onSelect(value)}>{children}</div>
+   <div
+      onClick={() => onSelect(value)}
+      onKeyDown={(e) => {
+         if (e.key === "Enter") {
+            onSelect(value);
+         }
+      }}
+   >
+      {children}
+   </div>
 );
-export function CanvaToolbar() {
+export function CanvaToolbar({ dispatch }) {
    const [selectedTool, setSelectedTool] = useState(null);
 
    return (
@@ -259,18 +264,11 @@ export function CanvaToolbar() {
             border: "1px solid black",
          }}
       >
-         <FilterToolbarItem />
-         <InsertToolbatItem />
+         {/*<FilterToolbarItem />*/}
+         <InsertToolbarItem dispatch={dispatch} />
       </div>
    );
 }
-
-type ColumnProps = {
-   key: string;
-   label: string;
-   type: string;
-   children?: ColumnProps[];
-};
 
 export const parseColumns = (
    columnsHelper: ColumnHelper<unknown>,
@@ -280,7 +278,19 @@ export const parseColumns = (
    const cols = columns.map((column) => {
       return columnsHelper.accessor(column.key, {
          id: column.key,
-         header: column.label,
+         header: () => {
+            return column.role ? (
+               <div>
+                  {column.label}
+                  <div style={{ fontSize: "12px" }}>{column.role}</div>
+               </div>
+            ) : (
+               <div>
+                  {column.label}
+                  <div style={{ fontSize: "12px" }}>{column.type}</div>
+               </div>
+            );
+         },
          cell: (props) => {
             return <div>{props.getValue()}</div>;
          },
@@ -306,62 +316,29 @@ export const parseColumns = (
    return [...cols, addCol];
 };
 
-type TableListProps = {
-   tables: Table[];
-   selectedTable: Table;
-   onSelectTable: (table: Table) => void;
-};
+function checkDuplicateColumnLabel(label, cols: ColumnProps[]): boolean {
+   return cols.some((col) => col.label === label);
+}
 
-type Table = {
-   id: string;
-   name: string;
-};
-
-export const useTableList = (projectId: string) => {
-   const [tables, setTables] = useState<Table[]>([]);
-   const { data, error } = useSWR(
-      `${mockApiBuilder(projectId)}/data/all`,
-      fetcher,
-      {
-         revalidateIfStale: false,
-         revalidateOnFocus: false,
-      }
-   );
-
-   useEffect(() => {
-      if (data) {
-         setTables(data);
-      } else if (error) {
-         console.log(error);
-      }
-   }, [data, error]);
-
-   return { tables, error };
-};
-
-export function TableEditor({ projectId, tableId }: TableEditorProps) {
-   const [canva, canvaDispatch, config, configDispatch] = useTableEditor(
+export function TableEditor({
+   projectId,
+   tableId,
+}: Readonly<TableEditorProps>) {
+   const [canva, canvaDispatch, dispatchWithTrigger] = useTableEditor(
       projectId,
       tableId
    );
 
-   const [isRowConfigOpen, setRowConfig] = useState(false);
-   const [isColumnConfigOpen, setColumnConfig] = useState(false);
    const router = useRouter();
 
    useEffect(() => {
+      console.log("called", JSON.stringify(canva.data?.columns));
       if (canva.tableId != tableId) {
          router.push(
             `${window.location.href.split("/").slice(0, -1).join("/")}/${
                canva.tableId
             }`
          );
-      }
-
-      if (canva.isRowConfigOpen) {
-         setRowConfig(true);
-      } else if (canva.isColumnConfigOpen) {
-         setColumnConfig(true);
       }
    }, [canva]);
 
@@ -374,22 +351,28 @@ export function TableEditor({ projectId, tableId }: TableEditorProps) {
             onChange={canvaDispatch}
          />
          {/* Canva for editing selected table */}
-         <TableCanva
-            state={canva}
-            dispatch={canvaDispatch}
-            setRowConfig={setRowConfig}
-            setColumnConfig={setColumnConfig}
-         />
+         <TableCanva state={canva} dispatch={canvaDispatch} />
 
          <RowConfigMenu
-            isOpen={isRowConfigOpen}
-            onClose={() => setRowConfig(false)}
+            projectId={projectId}
+            tableId={tableId}
+			rowProps={canva.data?.columns ?? {} }
+            duplicationCheck={(val) =>
+               checkDuplicateColumnLabel(val, canva.data?.columns ?? [])
+            }
+            isOpen={canva.isRowConfigOpen}
             dispatch={canvaDispatch}
+            dispatchWithTrigger={dispatchWithTrigger}
          />
          <ColumnConfigMenu
-            isOpen={isColumnConfigOpen}
-            onClose={() => setColumnConfig(false)}
+            projectId={projectId}
+            tableId={tableId}
+            isOpen={canva.isColumnConfigOpen}
+            duplicationCheck={(val) =>
+               checkDuplicateColumnLabel(val, canva.data?.columns ?? [])
+            }
             dispatch={canvaDispatch}
+            dispatchWithTrigger={dispatchWithTrigger}
          />
       </div>
    );
