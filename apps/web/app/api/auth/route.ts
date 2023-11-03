@@ -2,73 +2,36 @@ import { EnvVariable, getEnv } from "../../../utils/getEnv";
 import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
-   const baseUrl = process.env["NEXT_PUBLIC_BASE_URL"];
+   const url = new URL(request.url);
    const apiUrl = getEnv(EnvVariable.API_URL);
 
    const serverOAuthUrl = constructUrl(apiUrl, EnvVariable.LOGIN_REQUEST);
-   const serverCallbackUrl = constructUrl(apiUrl, EnvVariable.LOGIN_CALLBACK);
 
-   const successUrl = `${baseUrl}/auth/login?success=1`;
-   const failureUrl = `${baseUrl}/auth/login?success=0`;
+   const params = url.searchParams;
 
-   // get query param ?success=1
-   const incomingUrl = new URL(request.url ?? "");
-   const params = incomingUrl.searchParams;
+   if (
+      params.get("accessToken") !== null &&
+      params.get("refreshToken") !== null
+   ) {
+      // Set cookies
+      const accessToken: string = params.get("accessToken")!;
+      const refreshToken: string = params.get("refreshToken")!;
+      flushCookies();
+      setCookies({
+         access_token: accessToken,
+         refresh_token: refreshToken,
+      });
 
-   if (params.get("code")) {
-      // handle code
-      return await handleCode(
-         incomingUrl,
-         serverCallbackUrl,
-         successUrl,
-         failureUrl
-      );
+      // redirect to success
+      return Response.redirect(`${url.origin}/auth/login`, 302);
    }
 
    // redirect caller to the server oauth url
    return Response.redirect(serverOAuthUrl, 302);
 }
 
-async function handleCode(
-   url: URL,
-   callbackUrl: string,
-   successUrl: string,
-   failureUrl: string
-) {
-   const callback = appendQueryToUrl(callbackUrl, url.search);
-
-   // GET the callback url
-   const response = await fetch(callback.toString(), {
-      method: "GET",
-   })
-      .then((res) => res.json())
-      .catch((err) => {
-         return Response.redirect(failureUrl, 302);
-      });
-
-   const tokens = response.result.data;
-   const { access_token: accessToken, refresh_token: refreshToken } = tokens;
-
-   flushCookies();
-   setCookies({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-   });
-
-   // redirect to success
-   return Response.redirect(successUrl, 302);
-}
-
 function constructUrl(base, path) {
    return `${base}${getEnv(path)}`;
-}
-
-function appendQueryToUrl(url, query) {
-   const newUrl = new URL(url);
-   const [_, queryParams] = query.split("?");
-   newUrl.search = queryParams;
-
-   return newUrl.toString();
 }
 
 function setCookies(tokens: { [key: string]: string }) {
