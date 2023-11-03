@@ -10,12 +10,14 @@ import useLocalStorage from "../../hooks/useLocalStorage";
 
 export default function Layout({
    children,
+   params
 }: {
    children: React.ReactNode;
+   params: { "project-id": string }
 }): JSX.Element {
    const path = usePathname();
    // const [accessToken] = useLocalStorage<string | null>("access_token", null);
-   const accessToken: string = "";
+   const accessToken: string = "trole";
 
    if (accessToken === "" || !accessToken) redirect(`/auth/login`);
 
@@ -23,7 +25,7 @@ export default function Layout({
       <div className="main">
          <Header headerTitle="Project Name" />
          <div className="content">
-            <NavBar selectedPage={path.split("/").at(-1) ?? ""} />
+            <NavBar selectedPage={path.split("/").at(-1) ?? ""} projectId={params["project-id"]}/>
             <div className="childContainer">{children}</div>
          </div>
       </div>
