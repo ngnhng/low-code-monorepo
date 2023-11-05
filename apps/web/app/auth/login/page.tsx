@@ -51,7 +51,7 @@ export default function Page() {
 
    // If logged in, redirect to dashboard
    if (isLoggedIn) {
-      router.push("/dashboard");
+      router.push("/projects");
 
       return <div>Loading...</div>;
    }
