@@ -367,7 +367,6 @@ export async function GET(request: Request) {
    const params = url.searchParams;
 
    const { pathname } = url;
-   console.log("pathname", pathname, params);
    if (!pathname) {
       return NextResponse.json(
          { status: "error", message: "Missing path" },

@@ -10,7 +10,7 @@ export default function Page() {
    const [isLoggedIn, setIsLoggedIn] = useState(false);
    const [loading, setLoading] = useState(true);
 
-   const authUrl = "/api/auth?isLoggedIn=ask";
+   const authUrl = "/api/auth/check";
 
    const router = useRouter();
 
@@ -18,14 +18,8 @@ export default function Page() {
       fetch(authUrl)
          .then((res) => res.json())
          .then((data) => {
-            console.log(data);
-            setIsLoggedIn(data.isLoggedIn);
+            setIsLoggedIn(data.result);
             setLoading(false);
-
-            // If logged in, redirect to dashboard
-            if (data.isLoggedIn) {
-               router.push("/dashboard");
-            }
          })
          .catch((err) => {});
    }, []);
@@ -57,7 +51,9 @@ export default function Page() {
 
    // If logged in, redirect to dashboard
    if (isLoggedIn) {
-      return null;
+      router.push("/dashboard");
+
+      return <div>Loading...</div>;
    }
 
    return <div className="container">{conditionalRender()}</div>;
