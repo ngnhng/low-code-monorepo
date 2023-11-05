@@ -92,26 +92,26 @@ export function ColumnConfigMenu({
 
    return (
       <div className={`column-config-menu ${isOpen ? "open" : ""}`}>
-         {inputWarning.isWarning ? (
-            <div>{inputWarning.warningMessage}</div>
-         ) : (
-            <></>
-         )}
-
-         {error !== "" ? <div>{error}</div> : <></>}
-
-         <button
-            onClick={handleAddColumn}
-            disabled={error !== "" || inputWarning.isWarning}
+         <div
+            className="column-config-menu__header"
+            style={{
+               position: "fixed",
+               top: 0,
+               width: "100%",
+               margin: "20px",
+               borderBottom: "1px solid var(--puck-color-neutral-3)",
+            }}
          >
-            Add Column
-         </button>
-         <button onClick={() => dispatch({ type: "close-config" })}>
-            Close
-         </button>
+            Add new column
+         </div>
+         <FixedBar
+            warningMessage={inputWarning.warningMessage}
+            onSave={handleAddColumn}
+            onCancel={() => dispatch({ type: "close-config" })}
+         />
          <div className={`column-options`}>
-            <div className={`column-option`}>
-               <div className={`column-option-label`}>Column Name</div>
+            <ColumnOption label="General">
+               <div className="column-input__label">Column Name</div>
                <input
                   type="text"
                   value={columnLabel}
@@ -126,8 +126,10 @@ export function ColumnConfigMenu({
                      }
                   }}
                />
+            </ColumnOption>
 
-               <div className={`column-option-label`}>Data Type</div>
+            <ColumnOption label="Data Type">
+               <div className="column-input__label">Type</div>
                <select
                   value={dataType}
                   onChange={(e) => setDataType(e.target.value.toLowerCase())}
@@ -138,14 +140,92 @@ export function ColumnConfigMenu({
                   <option value="boolean">Boolean</option>
                </select>
 
-               <div className={`column-option-label`}>Default Value</div>
+               <div className="column-input__label">Default Value</div>
+
                <input
                   type="text"
                   value={defaultValue}
                   onChange={(e) => setDefaultValue(e.target.value)}
                />
-            </div>
+            </ColumnOption>
          </div>
       </div>
    );
 }
+
+// A fixed button menu with waring logs, save and cancel buttons
+function FixedBar({ warningMessage, onSave, onCancel }) {
+   return (
+      <div
+         style={{
+            position: "fixed",
+            bottom: 0,
+            width: "100%",
+            borderTop: "1px solid var(--puck-color-neutral-3)",
+         }}
+      >
+         {warningMessage && <p>{warningMessage}</p>}
+         <div
+            style={{
+               display: "flex",
+               justifyContent: "flex-start",
+               alignItems: "center",
+            }}
+         >
+            <button
+               onClick={onSave}
+               style={{
+                  margin: "5px",
+                  backgroundColor: "var(--puck-color-azure-3)",
+               }}
+            >
+               Save
+            </button>
+            <button
+               onClick={onCancel}
+               style={{
+                  margin: "5px",
+                  backgroundColor: "var(--puck-color-azure-3)",
+               }}
+            >
+               Cancel
+            </button>
+         </div>
+      </div>
+   );
+}
+
+const ColumnOption = ({ label, children }) => (
+   <div
+      className={`column-option`}
+      style={{
+         marginTop: "50px",
+         display: "flex",
+         flexDirection: "row",
+         justifyContent: "space-between",
+         padding: "20px",
+         borderBottom: "1px solid var(--puck-color-neutral-3)",
+      }}
+   >
+      <div
+         className={`column-option-label`}
+         style={{
+            whiteSpace: "nowrap",
+			flex: 1,
+         }}
+      >
+         {label}
+      </div>
+      <div
+         className="column-inputs"
+         style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            flex: 2,
+         }}
+      >
+         {children}
+      </div>
+   </div>
+);

@@ -1,5 +1,5 @@
 "use client";
-import { Dispatch, Reducer, useReducer, useState } from "react";
+import { Dispatch, Reducer, useEffect, useReducer, useState } from "react";
 import { ColumnProps, RowProps } from "../../../../interfaces/TableData";
 import axios from "axios";
 
@@ -53,6 +53,17 @@ export function RowConfigMenu({
    const [isLoading, setIsLoading] = useState(false);
    const [error, setError] = useState("");
 
+   const [newRow, setNewRow] = useState(
+      rowProps?.map((column) => {
+         return {
+            ...column,
+            value: "",
+         };
+      })
+   );
+
+   useEffect(() => {}, [newRow]);
+
    const handleInsertRow = async () => {
       if (rowProps === undefined) {
          return;
@@ -78,55 +89,117 @@ export function RowConfigMenu({
 
    return (
       <div className={`row-config-menu ${isOpen ? "open" : ""}`}>
-         {inputWarning.isWarning ? (
-            <div>{inputWarning.warningMessage}</div>
-         ) : (
-            <></>
-         )}
+         <FixedBar
+            warningMessage={inputWarning.warningMessage}
+            onSave={handleInsertRow}
+            onCancel={() => dispatch({ type: "close-config" })}
+         />
 
-         {error !== "" ? <div>{error}</div> : <></>}
-         <button
-            onClick={handleInsertRow}
-            disabled={error !== "" || inputWarning.isWarning}
-         >
-            Insert Row
-         </button>
-         <button onClick={() => dispatch({ type: "close-config" })}>
-            Close
-         </button>
-
-         <style jsx>{`
-            .row-config-menu {
-               position: absolute;
-               top: 0;
-               left: 0;
-               width: 100%;
-               height: 100%;
-               background-color: rgba(0, 0, 0, 0.5);
-               display: flex;
-               flex-direction: column;
-               justify-content: center;
-               align-items: center;
-               z-index: 100;
-               opacity: 0;
-               pointer-events: none;
-               transition: all 0.3s ease;
-            }
-
-            .row-config-menu.open {
-               opacity: 1;
-               pointer-events: all;
-            }
-
-            .row-config-menu > button {
-               margin: 10px;
-               padding: 10px;
-               border-radius: 5px;
-               border: 1px solid #ccc;
-               background-color: #fff;
-               cursor: pointer;
-            }
-         `}</style>
+         <div className="row-config-inputs">
+            {rowProps?.map((column, index) => {
+               return (
+                  <RowOption
+                     label={column.label}
+                     type={column.type}
+                     key={index}
+                  >
+                     <input
+                        type="text"
+                        value={newRow[index]?.value ?? ""}
+                        onChange={(e) => {
+                           setNewRow([
+                              ...newRow.slice(0, index),
+                              { ...newRow[index], value: e.target.value },
+                              ...newRow.slice(index + 1),
+                           ]);
+                        }}
+                     />
+                  </RowOption>
+               );
+            })}
+         </div>
       </div>
    );
 }
+
+function FixedBar({ warningMessage, onSave, onCancel }) {
+   return (
+      <div
+         style={{
+            position: "fixed",
+            bottom: 0,
+            width: "100%",
+            borderTop: "1px solid var(--puck-color-neutral-3)",
+            backgroundColor: "var(--puck-color-rose-8)",
+         }}
+      >
+         {warningMessage && <p>{warningMessage}</p>}
+         <div
+            style={{
+               display: "flex",
+               justifyContent: "flex-start",
+               alignItems: "center",
+            }}
+         >
+            <button
+               onClick={onSave}
+               style={{
+                  margin: "5px",
+                  backgroundColor: "var(--puck-color-azure-3)",
+               }}
+            >
+               Save
+            </button>
+            <button
+               onClick={onCancel}
+               style={{
+                  margin: "5px",
+                  backgroundColor: "var(--puck-color-azure-3)",
+               }}
+            >
+               Cancel
+            </button>
+         </div>
+      </div>
+   );
+}
+
+const RowOption = ({ label, type, children }) => (
+   <div
+      className={`row-option`}
+      style={{
+         marginTop: "50px",
+         display: "flex",
+         flexDirection: "row",
+         justifyContent: "space-between",
+         padding: "20px",
+         borderBottom: "1px solid var(--puck-color-neutral-3)",
+      }}
+   >
+      <div
+         className={`row-option-label`}
+         style={{
+            whiteSpace: "nowrap",
+            flex: 1,
+         }}
+      >
+         {label}
+         <div
+            style={{ fontSize: "12px", color: "var(--puck-color-neutral-5)" }}
+         >
+            {type}
+         </div>
+      </div>
+      <div
+         className="row-input"
+         style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            flex: 2,
+         }}
+      >
+         {children}
+      </div>
+   </div>
+);

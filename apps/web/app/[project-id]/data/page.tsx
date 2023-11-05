@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { TableList } from "./components/TableList";
+import { TableEditor } from "./components/TableEditor";
 
 export default function Page() {
    const params = useParams();
@@ -9,7 +9,10 @@ export default function Page() {
    if (params["project-id"]) {
       return (
          <>
-            <TableList projectId={params["project-id"].toString()} />
+            <TableEditor
+               projectId={params["project-id"].toString()}
+               tableId={params["table-id"]?.toString()}
+            />
          </>
       );
    } else {

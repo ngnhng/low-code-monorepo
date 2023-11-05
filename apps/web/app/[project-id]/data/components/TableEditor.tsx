@@ -11,6 +11,8 @@ import "./style.css";
 import { TableCanva } from "./TableCanva";
 import { TableEditorSidebar } from "./TableEditorSidebar";
 
+import { Key } from "react-feather";
+
 const mockApiBuilder = (projectId: string) => {
    const base = process.env["NEXT_PUBLIC_BASE_URL"];
    return `${base}/api/mock/${projectId}`;
@@ -176,7 +178,7 @@ const InsertToolbarItem = ({ dispatch }) => (
                dispatcher: "open-config-insert-row",
             },
          ]}
-         onSelect={(value) => console.log(value)}
+         onSelect={() => dispatch({ type: "close-config" })}
       />
    </div>
 );
@@ -204,10 +206,61 @@ const Dropdown = ({ title, dispatch, options, onSelect }) => {
    }, []);
 
    return (
-      <div ref={dropdownRef} className="dropdown">
+      <div ref={dropdownRef} className={`dropdown ${isOpen ? "show" : ""}`}>
+         <style jsx>{`
+            .dropdown {
+               position: relative;
+               display: inline-block;
+            }
+
+            .dropdown-header {
+               padding: 10px;
+               font-size: 16px;
+               cursor: pointer;
+            }
+
+            .dropdown-header:hover,
+            .dropdown-header:focus {
+               background-color: var(--puck-color-rose-8);
+               border-radius: 20px;
+            }
+
+            .dropdown-list {
+               display: none;
+               position: absolute;
+               background-color: #f9f9f9;
+               padding: 10px;
+               min-width: 160px;
+               box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+               z-index: 1;
+            }
+
+            .dropdown-list div {
+               color: black;
+               padding: 20px 16px;
+               text-decoration: none;
+               display: block;
+               font-size: 14px;
+               border-bottom: 1px solid #ccc;
+            }
+
+            .dropdown-list div:hover {
+               background-color: #f1f1f1;
+            }
+
+            .dropdown.show .dropdown-list {
+               display: block;
+            }
+         `}</style>
          <div
             className="dropdown-header"
+            tabIndex={0}
             onClick={() => setIsOpen((prev) => !prev)}
+            onKeyDown={(event) => {
+               if (event.key === "Enter" || event.key === " ") {
+                  setIsOpen((prev) => !prev);
+               }
+            }}
          >
             {title}
          </div>
@@ -218,11 +271,11 @@ const Dropdown = ({ title, dispatch, options, onSelect }) => {
                      key={option.value}
                      value={option.value}
                      onSelect={(value) => {
+                        onSelect();
                         dispatch({
                            type: option.dispatcher,
                         });
                         setIsOpen(false);
-                        //onSelect(value);
                      }}
                   >
                      {option.label}
@@ -239,6 +292,7 @@ const Dropdown = ({ title, dispatch, options, onSelect }) => {
 
 const DropdownOption = ({ value, children, onSelect }) => (
    <div
+      className="dropdown-option"
       onClick={() => onSelect(value)}
       onKeyDown={(e) => {
          if (e.key === "Enter") {
@@ -256,12 +310,13 @@ export function CanvaToolbar({ dispatch }) {
       <div
          className="canva-toolbar"
          style={{
+            backgroundColor: "var(--puck-color-rose-7)",
             display: "flex",
             flexDirection: "row",
             justifyContent: "flex-start",
             alignItems: "center",
             padding: "10px",
-            border: "1px solid black",
+            borderRadius: "10px",
          }}
       >
          {/*<FilterToolbarItem />*/}
@@ -269,6 +324,14 @@ export function CanvaToolbar({ dispatch }) {
       </div>
    );
 }
+const columnRoleIconMapping = (role: string) => {
+   switch (role) {
+      case "primary":
+         return <Key size={12} />;
+      default:
+         return null;
+   }
+};
 
 export const parseColumns = (
    columnsHelper: ColumnHelper<unknown>,
@@ -280,14 +343,45 @@ export const parseColumns = (
          id: column.key,
          header: () => {
             return column.role ? (
-               <div>
+               <div
+                  style={{
+                     padding: "5px",
+                     display: "flex",
+                     flexDirection: "row",
+                     alignItems: "center",
+                     justifyContent: "flex-start",
+                  }}
+               >
+                  {columnRoleIconMapping(column.role)}
                   {column.label}
-                  <div style={{ fontSize: "12px" }}>{column.role}</div>
+                  <span
+                     style={{
+                        fontSize: "12px",
+                        paddingLeft: "5px",
+                     }}
+                  >
+                     {column.type}
+                  </span>
                </div>
             ) : (
-               <div>
+               <div
+                  style={{
+                     padding: "5px",
+                     display: "flex",
+                     flexDirection: "row",
+                     alignItems: "center",
+                     justifyContent: "flex-start",
+                  }}
+               >
                   {column.label}
-                  <div style={{ fontSize: "12px" }}>{column.type}</div>
+                  <span
+                     style={{
+                        fontSize: "12px",
+                        paddingLeft: "5px",
+                     }}
+                  >
+                     {column.type}
+                  </span>
                </div>
             );
          },
@@ -332,12 +426,10 @@ export function TableEditor({
    const router = useRouter();
 
    useEffect(() => {
-      console.log("called", JSON.stringify(canva.data?.columns));
       if (canva.tableId != tableId) {
+         // [projectId/data/[tableId]]
          router.push(
-            `${window.location.href.split("/").slice(0, -1).join("/")}/${
-               canva.tableId
-            }`
+            `${window.location.origin}/${projectId}/data/${canva.tableId}`
          );
       }
    }, [canva]);
@@ -351,12 +443,29 @@ export function TableEditor({
             onChange={canvaDispatch}
          />
          {/* Canva for editing selected table */}
-         <TableCanva state={canva} dispatch={canvaDispatch} />
+         {tableId ? (
+            <TableCanva state={canva} dispatch={canvaDispatch} />
+         ) : (
+            <div
+               style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  flexGrow: 1,
+                  alignItems: "center",
+                  height: "100vh",
+                  fontSize: "20px",
+                  color: "#333",
+                  backgroundColor: "#f5f5f5",
+               }}
+            >
+               Select a Table
+            </div>
+         )}
 
          <RowConfigMenu
             projectId={projectId}
             tableId={tableId}
-			rowProps={canva.data?.columns ?? {} }
+            rowProps={canva.data?.columns ?? []}
             duplicationCheck={(val) =>
                checkDuplicateColumnLabel(val, canva.data?.columns ?? [])
             }
