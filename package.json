@@ -1,45 +1,45 @@
 {
-  "private": true,
-  "scripts": {
-    "build": "turbo run build --filter=web...",
-    "dev": "turbo run dev --filter=web...",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
-  },
-  "devDependencies": {
-    "eslint": "^8.48.0",
-    "eslint-config-custom": "*",
-    "lerna": "^7.3.0",
-    "prettier": "^3.0.3",
-    "tsconfig": "*",
-    "turbo": "latest"
-  },
-  "name": "my-turborepo",
-  "packageManager": "yarn@1.22.19",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "dependencies": {},
-  "prettier": {
-    "arrowParens": "always",
-    "bracketSpacing": true,
-    "endOfLine": "lf",
-    "htmlWhitespaceSensitivity": "css",
-    "insertPragma": false,
-    "singleAttributePerLine": false,
-    "bracketSameLine": false,
-    "jsxBracketSameLine": false,
-    "jsxSingleQuote": false,
-    "printWidth": 80,
-    "proseWrap": "preserve",
-    "quoteProps": "as-needed",
-    "requirePragma": false,
-    "semi": true,
-    "singleQuote": false,
-    "tabWidth": 3,
-    "trailingComma": "es5",
-    "useTabs": false,
-    "embeddedLanguageFormatting": "auto"
-  }
+   "private": true,
+   "scripts": {
+      "build": "turbo run build --filter=web...",
+      "dev": "turbo run dev --filter=web...",
+      "lint": "turbo run lint",
+      "format": "prettier --write \"**/*.{ts,tsx,md}\""
+   },
+   "devDependencies": {
+      "eslint": "^8.48.0",
+      "eslint-config-custom": "*",
+      "lerna": "^7.3.0",
+      "prettier": "^3.0.3",
+      "tsconfig": "*",
+      "turbo": "latest"
+   },
+   "name": "my-turborepo",
+   "packageManager": "yarn@1.22.19",
+   "workspaces": [
+      "apps/*",
+      "packages/*"
+   ],
+   "dependencies": {},
+   "prettier": {
+      "arrowParens": "always",
+      "bracketSpacing": true,
+      "endOfLine": "lf",
+      "htmlWhitespaceSensitivity": "css",
+      "insertPragma": false,
+      "singleAttributePerLine": false,
+      "bracketSameLine": false,
+      "jsxBracketSameLine": false,
+      "jsxSingleQuote": false,
+      "printWidth": 80,
+      "proseWrap": "preserve",
+      "quoteProps": "as-needed",
+      "requirePragma": false,
+      "semi": true,
+      "singleQuote": false,
+      "tabWidth": 4,
+      "trailingComma": "es5",
+      "useTabs": true,
+      "embeddedLanguageFormatting": "auto"
+   }
 }
