@@ -1,3 +1,106 @@
+"use client";
+
+import { ReactFlowProvider } from "reactflow";
+import Sidebar from "./components/Sidebar/Sidebar";
+import "reactflow/dist/style.css";
+import "./style.css";
+import { DnDFlow } from "./components/DnDFlow/DnDFlow";
+
 export default function Page() {
-    return <></>
+   return (
+      <div className="dndflow">
+         <ReactFlowProvider>
+            <Sidebar />
+            <DnDFlow />
+         </ReactFlowProvider>
+      </div>
+   );
 }
+
+/* 
+* The ReactFlowInstance provides a collection of methods to query and manipulate the internal state of your flow
+
+* NOTE: QUITE SAME WITH THE WORKFLOW BUILDER OF REACT-FLOW-PRO
+
+const [addNode, setAddNode] = useState<boolean>(false);
+const [addChildNode, setAddChildNode] = useState<boolean>(false);
+const [parentNode, setParentNode] = useState<Node | null>(null);
+
+useEffect(() => {
+   if (addNode) {
+      const findFirstNode = nodes.find(
+         (item) => item.id === initialEdge.target
+      );
+      setEdges((eds) =>
+         eds.concat({
+            ...initialEdge,
+            // source: parentNode.id,
+         })
+      );
+      setAddNode(false);
+      setParentNode(null);
+   }
+
+   if (addChildNode) {
+      setEdges((eds) =>
+         eds.concat({
+            id: String(parseInt(`${Math.random() * 1000000}`)),
+            source: parentNode.id,
+            target: nodes[nodes.length - 1].id,
+            label: "+",
+            labelBgPadding: [8, 4],
+            labelBgBorderRadius: 4,
+            labelBgStyle: { fill: "#FFCC00", color: "#fff", fillOpacity: 0.7 },
+            markerEnd: {
+               type: MarkerType.ArrowClosed,
+            },
+         })
+      );
+      setAddChildNode(false);
+      setParentNode(null);
+   }
+}, [nodes]);
+
+const handleEdgeClick = (event, data: Edge) => {
+   const findSourceNode: Node | undefined = nodes.find(
+      (item) => item.id === data.source
+   );
+
+   if (findSourceNode) {
+      setNodes((nds) =>
+         nds.concat({
+            ...initialNodeType,
+            parentNode: data.target,
+            data: { parentId: data.target, ...initialNodeType.data },
+         })
+      );
+
+      setParentNode(findSourceNode);
+      setAddNode(true);
+   }
+   return;
+};
+
+const handleNodeClick = (event, data: Node) => {
+   const filterNodesWithSameSource = nodes.filter((node) => {
+      node.parentNode === data?.id;
+   });
+
+   const newNode: Node = {
+      id: getId(),
+      type: "default",
+      position: {
+         x: data.position.x + filterNodesWithSameSource.length * 160,
+         y: data.position.y + 100,
+      },
+      data: { label: "New Node", parentId: data.id },
+      parentNode: data.id,
+      width: 150,
+   };
+
+   setNodes((nds) => nds.concat(newNode));
+   setAddChildNode(true);
+   setParentNode(data);
+};
+
+*/
