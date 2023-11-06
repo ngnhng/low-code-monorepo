@@ -20,8 +20,8 @@ export default function RootLayout({
 }): JSX.Element {
 	const path = usePathname();
 	const router = useRouter();
-	// const [authState] = useAuth();
-	const authState: AuthState = AuthState.LOGGED_IN;
+	const [authState] = useAuth();
+	// const authState: AuthState = AuthState.LOGGED_IN;
 
 	const navigations: NavigationProps[] = [
 		{
