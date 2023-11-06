@@ -1,10 +1,10 @@
-import "./NavBar.css";
+import "./MenuBar.css";
 
 import Link from "next/link";
 import Image from "next/image";
 import { NavigationProps } from "../../../config/types/Navigation";
 
-export default function NavBar({
+export default function MenuBar({
    selectedPage,
    projectId,
 }: {

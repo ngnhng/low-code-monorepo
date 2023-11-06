@@ -3,7 +3,7 @@
 import "./style.css";
 
 import Header from "./components/Header";
-import NavBar from "./components/NavBar";
+import MenuBar from "./components/MenuBar";
 
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -49,7 +49,7 @@ export default function Layout({
          <div className="main">
             <Header headerTitle="Project Name" />
             <div className="content">
-               <NavBar
+               <MenuBar
                   selectedPage={path.split("/").at(-1) ?? ""}
                   projectId={params["project-id"]}
                />
