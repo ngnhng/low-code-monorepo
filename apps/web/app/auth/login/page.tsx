@@ -2,6 +2,7 @@
 
 import "./style.css";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -23,38 +24,37 @@ export default function Page() {
          .catch((err) => {});
    }, []);
 
-   if (loading) {
-      return <div>Loading...</div>;
-   }
+   const conditionalRender = () => {
+      if (loading) {
+         return <div>Loading...</div>;
+      }
+
+      return (
+         <div className="form-container">
+            <div className="loginLabel">Sign in with:</div>
+            <div className="methodsList">
+               <Link href="/api/auth" className="g-login-button">
+                  <div className="content-wrapper">
+                     <Image
+                        src="/g-logo.png"
+                        alt="Google logo"
+                        width={30}
+                        height={30}
+                     />
+                     <span className="text-container">Google</span>
+                  </div>
+               </Link>
+            </div>
+         </div>
+      );
+   };
 
    // If logged in, redirect to dashboard
    if (isLoggedIn) {
-      router.push("/dashboard");
+      router.push("/projects");
 
       return <div>Loading...</div>;
    }
 
-   return (
-      <div className="container">
-         <div className="form-container">
-            <h1>Login</h1>
-            <div className="form">
-               <p>Access feature by google login</p>
-               <a href="/api/auth" className="g-login-button">
-                  <div className="content-wrapper">
-                     <div className="logo-wrapper">
-                        <Image
-                           src="/g-logo.png"
-                           alt="Google logo"
-                           width={24}
-                           height={24}
-                        />
-                     </div>
-                     <span className="text-container">Sign in with Google</span>
-                  </div>
-               </a>
-            </div>
-         </div>
-      </div>
-   );
+   return <div className="container">{conditionalRender()}</div>;
 }
