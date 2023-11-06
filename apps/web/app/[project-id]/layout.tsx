@@ -5,9 +5,7 @@ import "./style.css";
 import Header from "./components/Header";
 import MenuBar from "./components/MenuBar";
 
-import { usePathname, redirect } from "next/navigation";
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { usePathname, useRouter } from "next/navigation";
 
 import useAuth from "../../hooks/useAuth";
 import { AuthState } from "../../hooks/useAuth";
@@ -21,7 +19,11 @@ export default function Layout({
 }>): JSX.Element {
    const path = usePathname();
    const [authState] = useAuth();
+   const router = useRouter();
+
    const loginRedirectUrl = "/auth/login";
+
+
 
    const conditionalRender = () => {
       switch (authState) {
@@ -41,7 +43,8 @@ export default function Layout({
                </div>
             );
          case AuthState.LOGGED_OUT:
-            redirect(loginRedirectUrl);
+            router.push(loginRedirectUrl);
+			return <></>;
       }
    };
 
