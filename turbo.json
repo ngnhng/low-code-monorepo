@@ -11,7 +11,7 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "dotEnv": ["**/.env.*local"]
+      "dotEnv": ["apps/web/.env.*local"]
     }
   }
 }

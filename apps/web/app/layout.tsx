@@ -1,4 +1,3 @@
-import "@measured/puck/styles.css";
 import "./globals.css";
 import type { Metadata } from "next";
 import { Gabarito } from "next/font/google";
