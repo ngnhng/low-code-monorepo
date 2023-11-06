@@ -2,25 +2,32 @@
 
 import "./styles.css";
 
-import { useEffect } from "react";
-import useLocalStorage from "../../hooks/useLocalStorage";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+
+import useAuth from "../../hooks/useAuth";
+import { AuthState } from "../../hooks/useAuth";
 
 import Sidebar from "./components/Sidebar";
 
 export default function Page() {
-   // const [accessToken] = useLocalStorage<string | null>("access_token", null);
-   const accessToken: string = "trole1234";
+   const router = useRouter();
+   // const [authState] = useAuth();
+   const authState: AuthState = AuthState.LOGGED_IN;
 
-   if (accessToken === "" || !accessToken) redirect(`/auth/login`);
-   if (accessToken === null) return <div className="content"></div>;
-
-   return (
-      <div className="content">
-         <Sidebar />
-         <div className="page">
-            <div className="lePage"></div>
-         </div>
-      </div>
-   );
+   switch (authState) {
+      case AuthState.LOGGED_IN:
+         return (
+            <div className="content">
+               <Sidebar />
+               <div className="page">
+                  <div className="lePage"></div>
+               </div>
+            </div>
+         );
+      case AuthState.LOGGED_OUT:
+         router.push("/auth/login");
+         return <div className="content"></div>;
+      default:
+         return <div className="content"></div>;
+   }
 }

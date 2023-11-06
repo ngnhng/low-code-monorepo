@@ -3,7 +3,7 @@
 import "./style.css";
 
 import Header from "./components/Header";
-import MenuBar from "./components/MenuBar";
+import Sidebar from "../components/Sidebar";
 
 import { usePathname, useRouter } from "next/navigation";
 
@@ -18,12 +18,35 @@ export default function Layout({
    params: { "project-id": string };
 }>): JSX.Element {
    const path = usePathname();
-   const [authState] = useAuth();
    const router = useRouter();
 
+   // const [authState] = useAuth();
+   const authState = AuthState.LOGGED_IN;
+
+   const navigations = [
+      {
+         url: `/${params["project-id"]}/edit`,
+         title: "UI Editor",
+         image: "edit.png",
+      },
+      {
+         url: `/${params["project-id"]}/data`,
+         title: "Database",
+         image: "db.png",
+      },
+      {
+         url: `/${params["project-id"]}/workflow`,
+         title: "Workflow",
+         image: "workflow.png",
+      },
+      {
+         url: `/${params["project-id"]}/settings`,
+         title: "Project Settings",
+         image: "settings.png",
+      },
+   ];
+
    const loginRedirectUrl = "/auth/login";
-
-
 
    const conditionalRender = () => {
       switch (authState) {
@@ -34,9 +57,9 @@ export default function Layout({
                <div className="main">
                   <Header headerTitle="Project Name" />
                   <div className="content">
-                     <MenuBar
-                        selectedPage={path.split("/").at(-1) ?? ""}
-                        projectId={params["project-id"]}
+                     <Sidebar
+                        selectedPage={path ?? ""}
+                        navigations={navigations}
                      />
                      <div className="childContainer">{children}</div>
                   </div>
@@ -44,7 +67,7 @@ export default function Layout({
             );
          case AuthState.LOGGED_OUT:
             router.push(loginRedirectUrl);
-			return <></>;
+            return <>Loading...</>;
       }
    };
 
