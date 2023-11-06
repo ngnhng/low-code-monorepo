@@ -13,10 +13,12 @@ import { VerticalSpace, VerticalSpaceProps } from "./blocks/VerticalSpace";
 import Root, { RootProps } from "./root";
 import { Table, TableProps } from "./blocks/Table";
 import { Kanban, KanbanProps } from "./blocks/Kanban";
+import { Chart, ChartProps } from "./blocks/Chart";
 
 type Props = {
    Table: TableProps;
    Kanban: KanbanProps;
+   Chart: ChartProps;
    ButtonGroup: ButtonGroupProps;
    Card: CardProps;
    Columns: ColumnsProps;
@@ -37,6 +39,7 @@ export const conf: Config<Props, RootProps> = {
    components: {
       Table,
       Kanban,
+      Chart,
       ButtonGroup,
       Card,
       Columns,
@@ -54,16 +57,13 @@ export const initialData: Record<string, Data> = {
    "/": {
       content: [
          {
-            type: "Kanban",
+            type: "Chart",
             props: {
                id: "test",
                config: {
                   url: "https://tryz.vercel.app/api/test",
-                  groupBy: "id",
-                  headerField: "username",
-                  customHeaderField: "{value}",
-                  secondaryField: "user_achievements",
-                  customSecondaryField: "{value}",
+                  title: "",
+                  chartType: ""
                },
             },
          },

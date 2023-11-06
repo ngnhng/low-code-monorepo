@@ -1,7 +1,13 @@
+"use client";
+
+import "./styles.css";
+
+import NavBar from "./components/NavBar";
+
 export default function Page() {
-    return (
-        <div>
-            Placeholder for Projects Management Page
-        </div>
-    );
+   return (
+      <>
+         <NavBar />
+      </>
+   );
 }
