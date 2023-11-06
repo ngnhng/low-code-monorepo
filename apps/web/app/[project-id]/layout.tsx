@@ -9,6 +9,9 @@ import { usePathname, redirect } from "next/navigation";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+import useAuth from "../../hooks/useAuth";
+import { AuthState } from "../../hooks/useAuth";
+
 export default function Layout({
    children,
    params,
@@ -17,43 +20,29 @@ export default function Layout({
    params: { "project-id": string };
 }>): JSX.Element {
    const path = usePathname();
-   const [isLoggedIn, setIsLoggedIn] = useState(false);
-   const [loading, setLoading] = useState(true);
-
-   const authUrl = "/api/auth/check";
+   const [authState] = useAuth();
    const loginRedirectUrl = "/auth/login";
 
-   useEffect(() => {
-      axios
-         .get(authUrl)
-         .then((res) => {
-            setIsLoggedIn(res.data.result);
-            setLoading(false);
-         })
-         .catch((err) => {});
-   }, []);
-
    const conditionalRender = () => {
-      if (loading) {
-         return <div>Loading...</div>;
+      switch (authState) {
+         case AuthState.LOADING:
+            return <div>Loading...</div>;
+         case AuthState.LOGGED_IN:
+            return (
+               <div className="main">
+                  <Header headerTitle="Project Name" />
+                  <div className="content">
+                     <MenuBar
+                        selectedPage={path.split("/").at(-1) ?? ""}
+                        projectId={params["project-id"]}
+                     />
+                     <div className="childContainer">{children}</div>
+                  </div>
+               </div>
+            );
+         case AuthState.LOGGED_OUT:
+            redirect(loginRedirectUrl);
       }
-
-      if (!isLoggedIn) {
-         redirect(loginRedirectUrl); // Redirect to login page if not logged in
-      }
-
-      return (
-         <div className="main">
-            <Header headerTitle="Project Name" />
-            <div className="content">
-               <MenuBar
-                  selectedPage={path.split("/").at(-1) ?? ""}
-                  projectId={params["project-id"]}
-               />
-               <div className="childContainer">{children}</div>
-            </div>
-         </div>
-      );
    };
 
    return conditionalRender();
