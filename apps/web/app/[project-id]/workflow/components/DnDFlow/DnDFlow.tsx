@@ -20,11 +20,14 @@ import ReactFlow, {
    getConnectedEdges,
    Background,
    BackgroundVariant,
+   Panel,
 } from "reactflow";
 import { v4 as uuidv4 } from "uuid";
 import { initialEdges, initialNodes } from "../../data";
 import { createEdge, createNode, CustomNode } from "../../utils";
 import ConfigPanel from "../ConfigPanel/ConfigPanel";
+// edge custom
+// import ButtonMarkerEdge from "../CustomEdge/ButtonMarkerEdge";
 
 const flowKey = "example-flow";
 
@@ -32,6 +35,7 @@ const getId = () => `${uuidv4()}`;
 
 export const DnDFlow = () => {
    const nodeTypes = useMemo(() => CustomNode, []);
+   // const edgeTypes = useMemo(() => ({default: ButtonMarkerEdge}), [])
 
    const reactFlowWrapper = useRef<HTMLParagraphElement>(null);
    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -202,9 +206,10 @@ export const DnDFlow = () => {
             nodes={nodes}
             edges={edges}
             nodeTypes={nodeTypes}
+            // edgeTypes={edgeTypes}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
-            onNodeClick={handleNodeClick}
+            // onNodeClick={handleNodeClick}
             onEdgeClick={handleEdgeClick}
             onNodesDelete={onNodesDelete}
             onDrop={onDrop}
@@ -213,20 +218,20 @@ export const DnDFlow = () => {
             onConnect={onConnect}
             fitView
          >
-            {/*<Panel position="bottom-left">
-				<button onClick={onSave}>save</button>
-				<button onClick={onRestore}>restore</button>
-			 </Panel>*/}
+            <Panel position="bottom-right">
+				   <button onClick={onSave}>save</button>
+				   <button onClick={onRestore}>restore</button>
+			   </Panel>
             <Controls position="bottom-left" />
             <Background variant={BackgroundVariant.Lines} gap={12} size={1} />
          </ReactFlow>
-         <ConfigPanel
+         {/* <ConfigPanel
             id="abc"
             label="abc"
             setNodes={setNodes}
             onSave={onSave}
             onRestore={onRestore}
-         />
+         /> */}
       </div>
    );
 };

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+// import Dropdown from "../CustomEdge/Dropdown";
 
 const FloatingPanel = ({ children, top }) => {
    return (
@@ -6,7 +7,7 @@ const FloatingPanel = ({ children, top }) => {
          style={{
             position: "fixed",
             top: top,
-            right: "20px",
+            right: "-200px",
             backgroundColor: "#fff",
             padding: "10px",
             borderRadius: "5px",
@@ -21,16 +22,24 @@ const FloatingPanel = ({ children, top }) => {
    );
 };
 
-const ConfigPanel = ({ id, label, setNodes, onSave, onRestore }) => {
-   const [nodeName, setNodeName] = useState("Node 1");
+const ConfigPanel = ({ id, label, open, setLabel }) => {
+   const [nodeName, setNodeName] = useState(label);
 
    return (
-      <>
+      <div className={`configPanel ${open ? 'active' : 'inactive'}`}>
+         {/* the ref of the canvas make the logic dropdown failed */}
+         {/* <FloatingPanel top='100%'>
+            <Dropdown></Dropdown>
+         </FloatingPanel> */}
+
          <FloatingPanel top="50%">
             <label>Label:</label>
             <input
-               value={`test`}
-               onChange={() => {}}
+               value={nodeName}
+               onChange={(e) => {
+                  setNodeName(e.target.value);
+                  setLabel(e.target.value);
+               }}
                style={{
                   padding: "5px",
                   borderRadius: "3px",
@@ -39,41 +48,17 @@ const ConfigPanel = ({ id, label, setNodes, onSave, onRestore }) => {
                   width: "100%",
                }}
             />
-
-            <label className="configNodePanel_bg">Background:</label>
-            <input
-               value={`temp`}
-               onChange={() => {}}
-               style={{
-                  padding: "5px",
-                  borderRadius: "3px",
-                  border: "1px solid #ccc",
-                  marginBottom: "10px",
-                  width: "100%",
-               }}
-            />
-
-            <div className="configNodePanel_check">
-               <label>Hidden?:</label>
-               <input
-                  type="checkbox"
-                  checked={true}
-                  onChange={(evt) => {}}
-                  style={{
-                     marginRight: "10px",
-                  }}
-               />
-            </div>
+            {/* <Dropdown></Dropdown> */}
          </FloatingPanel>
 
-         <FloatingPanel top="70%">
+         {/* <FloatingPanel top="100%">
 			<div
 				style={{
 					margin: "10px",
 				}}
 			>
             <button
-               onClick={onSave}
+               // onClick={onSave}
                style={{
                   borderRadius: "5px",
                   border: "none",
@@ -88,7 +73,7 @@ const ConfigPanel = ({ id, label, setNodes, onSave, onRestore }) => {
                Save
             </button>
             <button
-               onClick={onRestore}
+               // onClick={onRestore}
                style={{
                   borderRadius: "5px",
                   border: "none",
@@ -103,8 +88,8 @@ const ConfigPanel = ({ id, label, setNodes, onSave, onRestore }) => {
                Restore
             </button>
 			</div>
-         </FloatingPanel>
-      </>
+         </FloatingPanel> */}
+      </div>
    );
 };
 
