@@ -5,7 +5,7 @@ import "./style.css";
 import Header from "./components/Header";
 import MenuBar from "./components/MenuBar";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, redirect } from "next/navigation";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -23,8 +23,6 @@ export default function Layout({
    const authUrl = "/api/auth/check";
    const loginRedirectUrl = "/auth/login";
 
-   const router = useRouter();
-
    useEffect(() => {
       axios
          .get(authUrl)
@@ -41,8 +39,7 @@ export default function Layout({
       }
 
       if (!isLoggedIn) {
-         router.push(loginRedirectUrl); // Redirect to login page if not logged in
-         return <></>;
+         redirect(loginRedirectUrl); // Redirect to login page if not logged in
       }
 
       return (
