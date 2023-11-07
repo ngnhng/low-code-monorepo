@@ -1,0 +1,9 @@
+.sideBar {
+    width: 300px;
+    height: 100%;
+
+    padding: 20px;
+
+    transition: ease-in-out 200ms;
+    /* border-right: solid 1px #ddd; */
+}
