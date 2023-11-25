@@ -3,11 +3,7 @@ import { Dispatch, Reducer, useReducer, useState } from "react";
 import { ColumnProps } from "../../../../interfaces/TableData";
 import axios from "axios";
 import Drawer from "./Drawer";
-
-const mockApiBuilder = (projectId: string) => {
-	const base = process.env["NEXT_PUBLIC_BASE_URL"];
-	return `${base}/api/mock/${projectId}`;
-};
+import { mockApiBuilder } from "../utils";
 
 type MenuState = {
 	isWarning?: boolean;
@@ -104,20 +100,22 @@ export function ColumnConfigMenu({
 					<div
 						className="column-config-menu__header"
 						style={{
-							position: "fixed",
-							top: 0,
 							margin: "20px",
 							borderBottom: "1px solid grey",
+							width: "100%",
 						}}
 					>
 						Add new column
 					</div>
-					<FixedBar
-						warningMessage={inputWarning.warningMessage}
-						onSave={handleAddColumn}
-						onCancel={() => dispatch({ type: "close-config" })}
-					/>
-					<div className={`column-options`}>
+
+					<div
+						className={`column-options`}
+						style={{
+							width: "100%",
+							height: "100%",
+							overflowY: "auto",
+						}}
+					>
 						<ColumnOption label="General">
 							<div className="column-input__label">
 								Column Name
@@ -167,6 +165,11 @@ export function ColumnConfigMenu({
 							/>
 						</ColumnOption>
 					</div>
+					<FixedBar
+						warningMessage={inputWarning.warningMessage}
+						onSave={handleAddColumn}
+						onCancel={() => dispatch({ type: "close-config" })}
+					/>
 				</Drawer>
 				<style jsx>
 					{`
@@ -193,9 +196,8 @@ function FixedBar({ warningMessage, onSave, onCancel }) {
 	return (
 		<div
 			style={{
-				position: "fixed",
-				bottom: 0,
 				borderTop: "1px solid grey",
+				width: "100%",
 			}}
 		>
 			{warningMessage && <p>{warningMessage}</p>}

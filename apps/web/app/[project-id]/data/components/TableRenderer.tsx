@@ -7,6 +7,7 @@ import {
 	ColumnResizeMode,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { ID_COLUMN, SELECTOR_COLUMN } from "../types";
 import { parseColumns } from "./TableEditor";
 
 export function TableRenderer({ data, dispatch }) {
@@ -45,7 +46,6 @@ export function TableRenderer({ data, dispatch }) {
 			}}
 			style={{
 				border: "1px solid #ddd",
-				borderRadius: "10px",
 			}}
 		>
 			<table
@@ -64,42 +64,63 @@ export function TableRenderer({ data, dispatch }) {
 									{...{
 										colSpan: header.colSpan,
 										style: {
-											width: header.getSize(),
+											width:
+												header.id !== SELECTOR_COLUMN
+													? header.getSize()
+													: "100px",
 										},
 									}}
 								>
-									{header.isPlaceholder ? null : (
-										<div>
-											{flexRender(
-												header.column.columnDef.header,
-												header.getContext()
-											)}
-										</div>
-									)}
-
+									{" "}
 									<div
-										onMouseDown={header.getResizeHandler()}
-										onTouchStart={header.getResizeHandler()}
-										className={`resizer ${
-											header.column.getIsResizing()
-												? "isResizing"
-												: ""
-										}`}
-										{...{
-											style: {
-												transform:
-													columnResizeMode ===
-														"onEnd" &&
-													header.column.getIsResizing()
-														? `translateX(${
-																table.getState()
-																	.columnSizingInfo
-																	.deltaOffset
-														  }px)`
-														: "",
-											},
+										className="header-cell"
+										style={{
+											display: "flex",
+											alignItems: "center",
+											justifyContent:
+												header.column.id ===
+												SELECTOR_COLUMN
+													? "center"
+													: "space-between",
+											height: "24px",
 										}}
-									/>
+									>
+										{header.isPlaceholder ? null : (
+											<div>
+												{flexRender(
+													header.column.columnDef
+														.header,
+													header.getContext()
+												)}
+											</div>
+										)}
+
+										{header.id != SELECTOR_COLUMN && (
+											<div
+												onMouseDown={header.getResizeHandler()}
+												onTouchStart={header.getResizeHandler()}
+												className={`resizer ${
+													header.column.getIsResizing()
+														? "isResizing"
+														: ""
+												}`}
+												{...{
+													style: {
+														transform:
+															columnResizeMode ===
+																"onEnd" &&
+															header.column.getIsResizing()
+																? `translateX(${
+																		table.getState()
+																			.columnSizingInfo
+																			.deltaOffset
+																  }px)`
+																: "",
+													},
+												}}
+											/>
+										)}
+									</div>
 								</th>
 							))}
 						</tr>
@@ -109,9 +130,8 @@ export function TableRenderer({ data, dispatch }) {
 					{table.getRowModel().rows.map((row, index) => (
 						<tr key={row.id}>
 							{row.getVisibleCells().map((cell) => {
-								console.log(cell);
-								return cell.column.id !== "multi-select" &&
-									cell.column.id !== "id" ? (
+								return cell.column.id !== SELECTOR_COLUMN &&
+									cell.column.id !== ID_COLUMN ? (
 									<td key={cell.id}>
 										{flexRender(
 											cell.column.columnDef.cell,

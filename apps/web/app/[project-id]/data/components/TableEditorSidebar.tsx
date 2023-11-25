@@ -2,17 +2,12 @@
 
 import { useState, useEffect } from "react";
 import useSWR from "swr";
+import { mockApiBuilder } from "../utils";
 
 type Table = {
    id: string;
    name: string;
 };
-
-const mockApiBuilder = (projectId: string) => {
-   const base = process.env["NEXT_PUBLIC_BASE_URL"];
-   return `${base}/api/mock/${projectId}`;
-};
-
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export const useTableList = (projectId: string) => {

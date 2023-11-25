@@ -1,14 +1,36 @@
 "use client";
+import { TableCanvaProps } from "../types";
+import { CanvaToolbar } from "./CanvaToolbar";
+import { DatabaseQueryBuilder } from "./DatabaseQueryBuilder";
 import { TableRenderer } from "./TableRenderer";
-import { TableCanvaProps, CanvaToolbar } from "./TableEditor";
 
-export function TableCanva({ state, dispatch }: TableCanvaProps) {
-   return (
-      <div className="canva">
-         <div style={{ backgroundColor: "rgb(var(--background))" }}>
-            <CanvaToolbar dispatch={dispatch} />
-         </div>
-         <TableRenderer data={state.data} dispatch={dispatch} />
-      </div>
-   );
+export function TableCanva({
+	state,
+	dispatch,
+	dispatchForceTrigger,
+}: Readonly<TableCanvaProps>) {
+	return (
+		<div className="canva">
+			<div
+				className="canva__wrapper"
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					height: "100vh",
+					width: "100%",
+					overflow: "auto",
+				}}
+			>
+				<CanvaToolbar state={state} dispatch={dispatch} />
+				<DatabaseQueryBuilder
+					projectId={state.projectId}
+					tableId={state.tableId}
+					isOpen={state.isQueryBuilderOpen}
+					dispatch={dispatch}
+					dispatchWithTrigger={dispatchForceTrigger}
+				/>
+				<TableRenderer data={state.data} dispatch={dispatch} />
+			</div>
+		</div>
+	);
 }

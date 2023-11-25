@@ -17,14 +17,26 @@ export function DatabaseQueryBuilder({
 		// You can also dispatch an action here to update the query in your state management system
 	};
 
+	// TODO: move query to the dropdown 
+	// make header and bottom control sticky
+	// rework canva menu buttons
 	return (
 		isOpen && (
-			<div className="modal">
-				<Drawer
-					anchor="right"
-					dispatch={dispatch}
-					onClose={() => {
-						dispatch({ type: "close-database-query-builder" });
+			<div
+				className="query-builder__wrapper"
+				style={{
+					maxHeight: "235px",
+					transition: "height 0.5s ease-in-out",
+					height: isOpen ? "auto" : "0",
+					padding: "20px",
+					display: "flex",
+				}}
+			>
+				<div
+					className="query-builder__queries"
+					style={{
+						flex: 1,
+						overflow: "auto",
 					}}
 				>
 					<QueryBuilder
@@ -35,23 +47,22 @@ export function DatabaseQueryBuilder({
 						}
 						onQueryChange={handleQueryChange}
 					/>
-					{/*<div> {formatQuery(query ?? "",)}</div>*/}
-				</Drawer>
-				<style jsx>
-					{`
-						.modal {
-							left: 0;
-							position: fixed;
-							top: 0;
-
-							height: 100%;
-							width: 100%;
-
-							background: rgba(51 65 85 / 0.7);
-							z-index: 999;
-						}
-					`}
-				</style>
+				</div>
+				<div
+					className="query-builder__actions"
+					style={{
+						flex: 0.5,
+						paddingLeft: "20px",
+						overflow: "hidden",
+					}}
+				>
+					<div>
+						<input
+							type={"text"}
+							placeholder={"Name your query"}
+						></input>
+					</div>
+				</div>
 			</div>
 		)
 	);

@@ -1,12 +1,7 @@
 "use client";
 import { Dispatch, Reducer, useEffect, useReducer, useState } from "react";
-import { ColumnProps, RowProps } from "../../../../interfaces/TableData";
 import axios from "axios";
-
-const mockApiBuilder = (projectId: string) => {
-   const base = process.env["NEXT_PUBLIC_BASE_URL"];
-   return `${base}/api/mock/${projectId}`;
-};
+import { mockApiBuilder } from "../utils";
 
 type MenuState = {
    isWarning?: boolean;
