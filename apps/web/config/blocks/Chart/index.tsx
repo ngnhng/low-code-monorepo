@@ -163,7 +163,6 @@ export const Charts: ComponentConfig<ChartsProps> = {
 				}}
 			>
 				<div
-					className="chartWrapper"
 					style={{
 						maxWidth: "1280px",
 						width: config.width,
@@ -195,7 +194,6 @@ export const Charts: ComponentConfig<ChartsProps> = {
 					/>
 				</div>
 				<div
-					className="chartTitle"
 					style={{
 						fontSize: "1.5rem",
 					}}
