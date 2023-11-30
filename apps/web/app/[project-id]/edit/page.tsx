@@ -31,7 +31,7 @@ export default function Page({ params }: { params: { "project-id": string } }) {
       }
    });
 
-   const [isEdit, setIsEdit] = useState<boolean>(false);
+   const [isEdit, setIsEdit] = useState<boolean>(true);
 
    const handleToggle = () => {
       setIsEdit(!isEdit);

@@ -13,12 +13,12 @@ import { VerticalSpace, VerticalSpaceProps } from "./blocks/VerticalSpace";
 import Root, { RootProps } from "./root";
 import { Table, TableProps } from "./blocks/Table";
 import { Kanban, KanbanProps } from "./blocks/Kanban";
-import { Chart, ChartProps } from "./blocks/Chart";
+import { Charts, ChartsProps } from "./blocks/Chart";
 
 type Props = {
    Table: TableProps;
    Kanban: KanbanProps;
-   Chart: ChartProps;
+   Charts: ChartsProps;
    ButtonGroup: ButtonGroupProps;
    Card: CardProps;
    Columns: ColumnsProps;
@@ -39,7 +39,7 @@ export const conf: Config<Props, RootProps> = {
    components: {
       Table,
       Kanban,
-      Chart,
+      Charts,
       ButtonGroup,
       Card,
       Columns,
@@ -57,13 +57,15 @@ export const initialData: Record<string, Data> = {
    "/": {
       content: [
          {
-            type: "Chart",
+            type: "Charts",
             props: {
                id: "test",
                config: {
                   url: "https://tryz.vercel.app/api/test",
-                  title: "",
-                  chartType: ""
+                  title: "Title",
+                  chartType: "bar",
+                  width: "100%",
+                  height: "600px",
                },
             },
          },
