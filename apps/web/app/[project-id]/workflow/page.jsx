@@ -1,21 +1,81 @@
 "use client";
 
-import { ReactFlowProvider } from "reactflow";
-import Sidebar from "./components/Sidebar/Sidebar";
-import "reactflow/dist/style.css";
-import "./style.css";
-import { DnDFlow } from "./components/DnDFlow/DnDFlow";
+import React, { useState, useEffect} from 'react';
+// import { QueryBuilder } from 'react-querybuilder';
+// import 'react-querybuilder/dist/query-builder.css';
+import Modeler from "bpmn-js/lib/Modeler";
+import axios from 'axios';
+import "bpmn-js/dist/assets/diagram-js.css";
+import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 
-export default function Page() {
-   return (
-      <div className="dndflow">
-         <ReactFlowProvider>
-            <Sidebar />
-            <DnDFlow />
-         </ReactFlowProvider>
-      </div>
-   );
+const Page = () => {
+  const [diagram, diagramSet] = useState("");
+  const container = document.getElementById("bpmn-container");
+
+  useEffect(() => {
+    if (diagram.length === 0) {
+      axios
+        .get(
+          "https://cdn.statically.io/gh/camunda/camunda-modeler/v3.5.0/resources/diagram/simple.bpmn"
+        )
+        .then((r) => {
+          diagramSet(r.data);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  }, [diagram]);
+
+  if (diagram.length > 0) {
+    const modeler = new Modeler({
+      container,
+      keyboard: {
+        bindTo: document
+      }
+    });
+
+    modeler.createDiagram();
+  }
+
+
+  return (
+    <div>
+      <header>BPMN.io</header>
+
+      <div
+        id="bpmn-container"
+        style={{
+          border: "1px solid #000000",
+          height: "90vh",
+          width: "90vw",
+          margin: "auto"
+        }}
+      ></div>
+    </div>
+  )
 }
+
+export default Page;
+
+
+
+// import { ReactFlowProvider } from "reactflow";
+// import Sidebar from "./components/Sidebar/Sidebar";
+// import "reactflow/dist/style.css";
+// import "./style.css";
+// import { DnDFlow } from "./components/DnDFlow/DnDFlow";
+
+// export default function Page() {
+//    return (
+//       <div className="dndflow">
+//          <ReactFlowProvider>
+//             <Sidebar />
+//             <DnDFlow />
+//          </ReactFlowProvider>
+//       </div>
+//    );
+// }
 
 /* 
 * The ReactFlowInstance provides a collection of methods to query and manipulate the internal state of your flow

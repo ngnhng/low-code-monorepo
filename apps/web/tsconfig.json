@@ -5,6 +5,6 @@
     "allowJs": true,
     "checkJs": false
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/[project-id]/bpmn/page.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/[project-id]/(bpmn)/2.tsx", "app/[project-id]/workflow/page.jsx"],
   "exclude": ["node_modules"]
 }
