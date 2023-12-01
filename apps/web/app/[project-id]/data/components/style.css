@@ -1,0 +1,178 @@
+.editor-container {
+   width: 100%;
+   height: 100%;
+
+   display: flex;
+   flex-direction: row;
+}
+
+.editor-container .sidebar {
+   width: 300px;
+   height: 100%;
+
+   display: flex;
+   flex-direction: column;
+
+   /*background-color: lightskyblue;*/
+}
+
+.editor-container .canva {
+   flex: 1;
+   height: 100%;
+}
+
+.editor-container .canva .canva-toolbar {
+   width: 100%;
+   height: 50px;
+
+   display: flex;
+   flex-direction: row;
+   align-items: center;
+   justify-content: space-between;
+
+   /*background-color: lightcoral*/
+}
+
+.editor-container .canva .table-container {
+   width: 100%;
+   height: calc(100% - 50px);
+
+   display: flex;
+   flex-direction: row;
+
+   /*background-color: antiquewhite;*/
+}
+
+.editor-container .row-config-menu,
+.editor-container .column-config-menu {
+   position: fixed;
+   right: 0;
+   top: 0;
+   width: 0;
+   height: 100vh;
+   overflow-y: scroll;
+   overflow-x: hidden;
+   transition: width 0.5s ease;
+}
+
+.editor-container .row-config-menu.open,
+.editor-container .column-config-menu.open {
+   width: 700px;
+   padding: 20px;
+   background-color: var(--puck-color-rose-8);
+   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.column-config-menu .column-options {
+   margin-top: 20px;
+}
+
+.column-config-menu .column-option {
+   margin-bottom: 20px;
+}
+
+.row-config-menu .row-option-label,
+.column-config-menu .column-option-label {
+   font-weight: bold;
+   margin-bottom: 5px;
+}
+
+.row-config-menu input,
+.row-config-menu select,
+.column-config-menu input,
+.column-config-menu select {
+   width: 100%;
+   padding: 10px;
+   border: 1px solid #ddd;
+   border-radius: 5px;
+}
+
+.row-config-menu button,
+.column-config-menu button {
+   padding: 10px 20px;
+   border: none;
+   border-radius: 5px;
+   background-color: var(--puck-color-rose-7);
+   color: white;
+   cursor: pointer;
+}
+
+.row-config-menu button:disabled,
+.column-config-menu button:disabled {
+   background-color: #ddd;
+   cursor: not-allowed;
+}
+
+.resizer {
+   position: absolute;
+   right: 0;
+   top: 0;
+   height: 100%;
+   width: 5px;
+   background: rgba(193, 20, 20, 0.5);
+   cursor: col-resize;
+   user-select: none;
+   touch-action: none;
+}
+
+.resizer.isResizing {
+   background: blue;
+   opacity: 1;
+}
+
+@media (hover: hover) {
+   .resizer {
+      opacity: 0;
+   }
+
+   *:hover > .resizer {
+      opacity: 1;
+   }
+}
+.table {
+   width: 1121px;
+   height: 100%;
+   overflow-x: scroll;
+   overflow-y: auto;
+   border-radius: 5px;
+}
+
+table {
+   border-collapse: collapse;
+}
+
+.tr {
+   display: flex;
+   border: 1px solid #ddd;
+}
+
+tr:hover,
+.tr:hover {
+   background-color: #f5f5f5;
+}
+
+th,
+.th,
+td,
+.td {
+   padding: 0.25rem;
+   text-align: left;
+   border: 1px solid #ddd;
+}
+
+/* Style the table headers */
+th,
+.th {
+   padding: 2px 4px;
+   position: relative;
+   font-weight: bold;
+   text-align: center;
+   height: 30px;
+   background-color: var(--puck-color-rose-8);
+   color: rgb(0, 0, 0);
+}
+
+td,
+.td {
+   height: 30px;
+}

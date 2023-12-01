@@ -1,16 +1,18 @@
+"use client"
+
 import "./NavBar.css";
 
 import Link from "next/link";
 import Image from "next/image";
 
-import useLocalStorage from "../../hooks/useLocalStorage";
+import useAuth from "../../hooks/useAuth";
+import { AuthState } from "../../hooks/useAuth";
 
 export default function NavBar() {
-   // const [accessToken] = useLocalStorage("access_token", "");
-   const accessToken: string = "";
+   const [authState] = useAuth();
 
    const renderNav = () => {
-      if (accessToken !== "")
+      if (authState === AuthState.LOGGED_IN)
          return (
             <>
                <Link href="./projects">
@@ -32,7 +34,7 @@ export default function NavBar() {
    };
 
    const renderUser = () => {
-      if (accessToken !== "") {
+      if (authState === AuthState.LOGGED_IN) {
          return (
             <div className="user">
                <Image src="/g-logo.png" width={30} height={30} alt="" />
@@ -43,6 +45,7 @@ export default function NavBar() {
             </div>
          );
       }
+
       return (
          <Link href="./auth/login">
             <div className="navItem">Sign in</div>

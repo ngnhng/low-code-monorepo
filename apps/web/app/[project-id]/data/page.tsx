@@ -1,3 +1,21 @@
+"use client";
+
+import { useParams, useRouter } from "next/navigation";
+import { TableEditor } from "./components/TableEditor";
+
 export default function Page() {
-    return <></>
+   const params = useParams();
+   const router = useRouter();
+   if (params["project-id"]) {
+      return (
+         <>
+            <TableEditor
+               projectId={params["project-id"].toString()}
+               tableId={params["table-id"]?.toString()}
+            />
+         </>
+      );
+   } else {
+      router.push("/projects");
+   }
 }

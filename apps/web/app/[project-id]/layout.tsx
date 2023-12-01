@@ -3,11 +3,12 @@
 import "./style.css";
 
 import Header from "./components/Header";
-import NavBar from "./components/NavBar";
+import Sidebar from "../components/Sidebar";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import axios from "axios";
+
+import useAuth from "../../hooks/useAuth";
+import { AuthState } from "../../hooks/useAuth";
 
 export default function Layout({
    children,
@@ -17,46 +18,57 @@ export default function Layout({
    params: { "project-id": string };
 }>): JSX.Element {
    const path = usePathname();
-   const [isLoggedIn, setIsLoggedIn] = useState(false);
-   const [loading, setLoading] = useState(true);
-
-   const authUrl = "/api/auth/check";
-   const loginRedirectUrl = "/auth/login";
-
    const router = useRouter();
 
-   useEffect(() => {
-      axios
-         .get(authUrl)
-         .then((res) => {
-            setIsLoggedIn(res.data.result);
-            setLoading(false);
-         })
-         .catch((err) => {});
-   }, []);
+   const [authState] = useAuth();
+   // const authState = AuthState.LOGGED_IN;
+
+   const navigations = [
+      {
+         url: `/${params["project-id"]}/edit`,
+         title: "UI Editor",
+         image: "edit.png",
+      },
+      {
+         url: `/${params["project-id"]}/data`,
+         title: "Database",
+         image: "db.png",
+      },
+      {
+         url: `/${params["project-id"]}/workflow`,
+         title: "Workflow",
+         image: "workflow.png",
+      },
+      {
+         url: `/${params["project-id"]}/settings`,
+         title: "Project Settings",
+         image: "settings.png",
+      },
+   ];
+
+   const loginRedirectUrl = "/auth/login";
 
    const conditionalRender = () => {
-      if (loading) {
-         return <div>Loading...</div>;
+      switch (authState) {
+         case AuthState.LOADING:
+            return <div>Loading...</div>;
+         case AuthState.LOGGED_IN:
+            return (
+               <div className="main">
+                  <Header headerTitle="Project Name" />
+                  <div className="content">
+                     <Sidebar
+                        selectedPage={path ?? ""}
+                        navigations={navigations}
+                     />
+                     <div className="childContainer">{children}</div>
+                  </div>
+               </div>
+            );
+         case AuthState.LOGGED_OUT:
+            router.push(loginRedirectUrl);
+            return <>Loading...</>;
       }
-
-      if (!isLoggedIn) {
-         router.push(loginRedirectUrl); // Redirect to login page if not logged in
-         return <></>;
-      }
-
-      return (
-         <div className="main">
-            <Header headerTitle="Project Name" />
-            <div className="content">
-               <NavBar
-                  selectedPage={path.split("/").at(-1) ?? ""}
-                  projectId={params["project-id"]}
-               />
-               <div className="childContainer">{children}</div>
-            </div>
-         </div>
-      );
    };
 
    return conditionalRender();

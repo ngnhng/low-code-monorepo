@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 // import headingAnalyzer from "@measured/puck-plugin-heading-analyzer/src/HeadingAnalyzer";
 import config, { initialData } from "../../../config";
 import Image from "next/image";
+import Icon from "../../components/Icon";
 
 const isBrowser = typeof window !== "undefined";
 
@@ -30,7 +31,7 @@ export default function Page({ params }: { params: { "project-id": string } }) {
       }
    });
 
-   const [isEdit, setIsEdit] = useState<boolean>(false);
+   const [isEdit, setIsEdit] = useState<boolean>(true);
 
    const handleToggle = () => {
       setIsEdit(!isEdit);
@@ -44,9 +45,7 @@ export default function Page({ params }: { params: { "project-id": string } }) {
 
    return (
       <div className="editor">
-         <div className="toolbar">
-            <Toolbar items={toolbarItems} />
-         </div>
+         <Toolbar items={toolbarItems} />
          <div className="puckContainer">
             {isEdit ? (
                <Puck
@@ -90,7 +89,12 @@ function Toolbar({ items }: ToolbarProps) {
       <div className="toolbar">
          {items.map((item) => (
             <div className="toolbar-item" key={item.key}>
-               <Image src={item.icon} width={14} height={14} alt="" />
+               <Icon
+                  src={item.icon}
+                  width={20}
+                  height={20}
+                  color="rgb(141, 98, 134)"
+               />
                {item.component}
             </div>
          ))}

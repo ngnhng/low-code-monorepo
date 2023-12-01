@@ -2,25 +2,85 @@
 
 import "./styles.css";
 
-import { useEffect } from "react";
-import useLocalStorage from "../../hooks/useLocalStorage";
-import { redirect } from "next/navigation";
+import Link from "next/link";
 
-import Sidebar from "./components/Sidebar";
+import Icon from "../components/Icon";
+
+const TableCell = ({
+	projectId,
+	children,
+}: {
+	projectId: string;
+	children?: JSX.Element | string;
+}) => {
+	return (
+		<td>
+			<Link href={`/${projectId}`}>{children}</Link>
+		</td>
+	);
+};
 
 export default function Page() {
-   // const [accessToken] = useLocalStorage<string | null>("access_token", null);
-   const accessToken: string = "trole1234";
-
-   if (accessToken === "" || !accessToken) redirect(`/auth/login`);
-   if (accessToken === null) return <div className="content"></div>;
-
-   return (
-      <div className="content">
-         <Sidebar />
-         <div className="page">
-            <div className="lePage"></div>
-         </div>
-      </div>
-   );
+	return (
+		<div className="page">
+			<div className="labels">
+				<div className="bigLabel">Projects Manager</div>
+				<div className="motto">What do you want to do today?</div>
+			</div>
+			<table className="projectList">
+				<thead>
+					<tr>
+						<th></th>
+						<th>Project Name</th>
+						<th>Last edited</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<TableCell projectId="trollface">
+							<Icon src="/project.png" width={20} height={20} />
+						</TableCell>
+						<TableCell projectId="trollface">
+							This is a project name
+						</TableCell>
+						<TableCell projectId="trollface">1 month ago</TableCell>
+						<td>
+							<button>
+								<Icon src="/more.png" width={20} height={20} />
+							</button>
+						</td>
+					</tr>
+					<tr>
+						<TableCell projectId="trollface">
+							<Icon src="/project.png" width={20} height={20} />
+						</TableCell>
+						<TableCell projectId="trollface">
+							This is a project name
+						</TableCell>
+						<TableCell projectId="trollface">1 month ago</TableCell>
+						<td>
+							<button>
+								<Icon src="/more.png" width={20} height={20} />
+							</button>
+						</td>
+					</tr>
+					<tr>
+						<TableCell projectId="trollface">
+							<Icon src="/project.png" width={20} height={20} />
+						</TableCell>
+						<TableCell projectId="trollface">
+							This is a project name
+						</TableCell>
+						<TableCell projectId="trollface">1 month ago</TableCell>
+						<td>
+							<button>
+								<Icon src="/more.png" width={20} height={20} />
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	);
 }
