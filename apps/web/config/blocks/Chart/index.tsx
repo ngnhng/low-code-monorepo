@@ -40,7 +40,7 @@ const chartTypes = [
 	"polarArea",
 	"radar",
 	"scatter",
-	"bubblwe",
+	"bubble",
 ];
 
 export const Charts: ComponentConfig<ChartsProps> = {
@@ -163,7 +163,6 @@ export const Charts: ComponentConfig<ChartsProps> = {
 				}}
 			>
 				<div
-					className="chartWrapper"
 					style={{
 						maxWidth: "1280px",
 						width: config.width,
@@ -173,18 +172,11 @@ export const Charts: ComponentConfig<ChartsProps> = {
 					<Chart
 						type={config.chartType as keyof ChartTypeRegistry}
 						data={{
-							labels: [
-								"Red",
-								"Blue",
-								"Yellow",
-								"Green",
-								"Purple",
-								"Orange",
-							],
+							labels: [],
 							datasets: [
 								{
-									label: "# of Votes",
-									data: [12, 19, 3, 5, 2, 3],
+									label: "",
+									data: [],
 									borderWidth: 1,
 								},
 							],
@@ -195,7 +187,6 @@ export const Charts: ComponentConfig<ChartsProps> = {
 					/>
 				</div>
 				<div
-					className="chartTitle"
 					style={{
 						fontSize: "1.5rem",
 					}}
