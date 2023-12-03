@@ -20,8 +20,8 @@ export default function Layout({
    const path = usePathname();
    const router = useRouter();
 
-//   const [authState] = useAuth();
-    const authState = AuthState.LOGGED_IN;
+   const [authState] = useAuth();
+    //const authState = AuthState.LOGGED_IN;
 
    const navigations = [
       {
