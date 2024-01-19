@@ -1,0 +1,71 @@
+.Table {
+}
+
+.Table-renderer {
+   display: flex;
+   flex-direction: column;
+   width: 100%;
+   max-height: 600px;
+   overflow-x: auto;
+   overflow-y: auto;
+}
+
+.Table-table {
+   width: 100%;
+   border: 1px solid rgb(36, 37, 38);
+   border-spacing: 0;
+}
+
+/* thead */
+.Table-head {
+   border-bottom: 1px solid rgb(229, 231, 235);
+   color: rgb(117, 23, 193);
+   font-size: 0.875rem;
+   font-weight: 500;
+   line-height: 1.25rem;
+   text-transform: uppercase;
+}
+
+.Table-head tr {
+   border-bottom: 1px solid rgb(229, 231, 235);
+}
+
+.Table-head tr th {
+   border: 1px solid rgb(229, 231, 235);
+   padding: 0.75rem 1rem;
+   text-align: center;
+}
+
+/* tbody */
+.Table-body {
+   font-size: 0.875rem;
+   font-weight: 400;
+}
+
+/* tr */
+.Table-row {
+   border-bottom: 1px solid rgb(229, 231, 235);
+}
+
+/* td */
+.Table-cell {
+   padding: 0.75rem 1rem;
+   text-align: center;
+   min-width: 200px;
+   max-width: 300px;
+   white-space: nowrap;
+}
+
+
+/* Table controller */
+.Table-pagination {
+   margin-top: 1rem;
+   margin-bottom: 1rem;
+
+   display: flex;
+   flex-direction: column;
+
+   position: sticky;
+   bottom: 0;
+   left: 0;
+}

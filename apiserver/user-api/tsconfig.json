@@ -1,0 +1,71 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"declaration": false,
+		"removeComments": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"target": "ES2021",
+		"sourceMap": true,
+		"outDir": "./dist",
+		"baseUrl": "./",
+		"incremental": true,
+		"skipLibCheck": true,
+		"strictNullChecks": true,
+		"noImplicitAny": false,
+		"strictBindCallApply": false,
+		"forceConsistentCasingInFileNames": false,
+		"noFallthroughCasesInSwitch": false,
+		"paths": {
+			"@modules/*": [
+				"src/modules/*"
+			],
+			"@services/*": [
+				"src/modules/user/services/*",
+				"src/modules/auth/services/*"
+			],
+			"@controllers/*": [
+				"src/modules/user/controllers/*",
+				"src/modules/auth/controllers/*"
+			],
+			"@configs/*": [
+				"src/configs/*"
+			],
+			"@repositories/*": [
+				"src/repositories/*"
+			],
+			"@interfaces/*": [
+				"src/interfaces/*",
+				"src/modules/auth/interfaces/*"
+			],
+			"@shared/*": [
+				"src/shared/*",
+				"src/shared/services/*"
+			],
+			"@strategies/*": [
+				"src/strategies/*",
+				"src/modules/auth/strategies/*"
+			],
+			"@dtos/*": [
+				"src/dtos/*"
+			],
+			"@constants/*": [
+				"src/constants/*",
+				"src/constants"
+			],
+			"@decorators/*": [
+				"src/decorators/*"
+			],
+			"@guards/*": [
+				"src/guards/*"
+			],
+			"@exceptions/*": [
+				"src/exceptions/*"
+			],
+			"@filters/*": [
+				"src/filters/*"
+			]
+		}
+	}
+}

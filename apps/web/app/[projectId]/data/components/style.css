@@ -1,0 +1,178 @@
+.editor-container {
+	width: 100%;
+	height: 100%;
+
+	display: flex;
+	flex-direction: row;
+}
+
+.editor-container .sidebar {
+	width: 300px;
+	height: 100%;
+
+	display: flex;
+	flex-direction: column;
+
+	/*background-color: lightskyblue;*/
+}
+
+.editor-container .canva {
+	flex: 1;
+	height: 100%;
+}
+
+.editor-container .canva .canva-toolbar {
+	width: 100%;
+	height: 50px;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.editor-container .canva .table-container {
+	width: 100%;
+	height: calc(100% - 50px);
+	display: flex;
+	flex-direction: row;
+}
+
+.drawer {
+	display: flex;
+	flex-direction: row-reverse;
+	height: 100%;
+	width: 100%;
+}
+
+.editor-container .row-config-menu {
+	position: fixed;
+	right: 0;
+	top: 0;
+	width: 700px;
+	height: 100vh;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	z-index: 999;
+
+	padding: 20px;
+	background-color: rgb(var(--app));
+	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.column-config-menu .column-options {
+	margin-top: 20px;
+}
+
+.column-config-menu .column-option {
+	margin-bottom: 20px;
+}
+
+.row-config-menu .row-option-label,
+.column-config-menu .column-option-label {
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+.row-config-menu input,
+.row-config-menu select,
+.column-config-menu input,
+.column-config-menu select {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+}
+
+.row-config-menu button,
+.column-config-menu button {
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	color: white;
+	cursor: pointer;
+}
+
+.row-config-menu button:disabled,
+.column-config-menu button:disabled {
+	background-color: #ddd;
+	cursor: not-allowed;
+}
+
+.resizer {
+	order: 2;
+	height: 100%;
+	width: 5px;
+	background: rgba(193, 20, 20, 0.5);
+	cursor: col-resize;
+	user-select: none;
+	touch-action: none;
+}
+
+.resizer.isResizing {
+	background: blue;
+	opacity: 1;
+}
+
+@media (hover: hover) {
+	.resizer {
+		opacity: 0;
+	}
+
+	*:hover > .resizer {
+		opacity: 1;
+	}
+}
+.table {
+	width: 1121px;
+	height: 100%;
+	overflow-x: scroll;
+	overflow-y: auto;
+}
+
+table {
+	white-space: nowrap;
+	margin: 0;
+	border-collapse: separate;
+	border-spacing: 0;
+	table-layout: auto;
+}
+
+table td {
+	background: #fff;
+	padding: 4px 5px;
+	text-align: left;
+}
+
+table td,
+table th {
+	border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+table tbody th {
+	font-weight: 100;
+	text-align: center;
+	position: relative;
+}
+
+table thead th {
+	background: white;
+}
+
+table tbody th:first-child,
+table thead th:first-child {
+	position: sticky;
+	left: 0;
+	background: white;
+	z-index: 2;
+}
+
+table tbody th:nth-child(2),
+table thead th:nth-child(2) {
+	position: sticky;
+	left: 89px; 
+	background: white;
+	z-index: 1;
+	border-right: 3px solid #ddd;
+}
+/* TODO: figure out how to avoid hard coding the width left */

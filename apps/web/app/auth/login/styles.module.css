@@ -1,0 +1,65 @@
+.container {
+   width: 100%;
+   height: 100%;
+
+   background: linear-gradient(to right, #e2e2e2, #c9d6ff);
+
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.formContainer {
+   width: 400px;
+
+   background: white;
+   border-radius: 10px;
+   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+
+   padding: 20px;
+
+   display: flex;
+   flex-direction: column;
+}
+
+.loginLabel {
+   /* text-align: center; */
+   padding: 10px;
+   font-size: 1.3rem;
+}
+
+.methodsList {
+   width: 100%;
+   padding: 10px;
+
+   display: flex;
+   flex-direction: column;
+}
+
+.gLoginButton {
+   width: 100%;
+   padding: 10px;
+
+   background-color: white;
+   border-radius: 5px;
+
+   border: solid 1px #ddd;
+}
+
+.gLoginButton:hover {
+   cursor: pointer;
+   background-color: color-mix(in srgb, black 3%, white);
+}
+
+.gLoginButton .content-wrapper {
+   width: 100%;
+
+   display: flex;
+   align-items: center;
+   gap: 20px;
+}
+
+.textContainer {
+   font-weight: 400;
+   font-size: 1rem;
+}
