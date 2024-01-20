@@ -2,37 +2,33 @@
 
 import './style.css';
 
-import React, { useEffect, useMemo } from 'react';
-import './style.css';
-import { usePathname, useRouter } from 'next/navigation';
+import React, { useMemo } from 'react';
 import Sidebar from 'components/menus/sidebar/sidebar';
 import Header from './components/Header';
-import { useMobxStore } from '../../lib/mobx/store-provider';
 import { NavigationMenuProps as NavigationMenuProperties } from '../../types/navigation';
+import { UserAuthWrapper } from '../../lib/wrappers/user-auth-wrapper';
 
-const loginRedirectUrl = '/auth/login';
-
-function useNavigation(params: { 'project-id': string }) {
+function useNavigation(params: { projectId: string }) {
   return useMemo(
     () => ({
       items: [
         {
-          href: `/${params['project-id']}/edit`,
+          href: `/${params['projectId']}/edit`,
           label: 'UI Editor',
           image: 'edit.png',
         },
         {
-          href: `/${params['project-id']}/data`,
+          href: `/${params['projectId']}/data`,
           label: 'Database',
           image: 'db.png',
         },
         {
-          href: `/${params['project-id']}/workflow`,
+          href: `/${params['projectId']}/workflow`,
           label: 'Workflow',
           image: 'workflow.png',
         },
         {
-          href: `/${params['project-id']}/settings`,
+          href: `/${params['projectId']}/settings`,
           label: 'Project Settings',
           image: 'settings.png',
         },
@@ -42,43 +38,18 @@ function useNavigation(params: { 'project-id': string }) {
   );
 }
 
-function useAuthRedirect(isLoggedIn: boolean | undefined = false, router: any) {
-  useEffect(() => {
-    if (isLoggedIn === false) {
-      router.push(loginRedirectUrl);
-    }
-  }, [isLoggedIn, router]);
-}
-
 export default function Layout({
   children,
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: { 'project-id': string };
+  params: { projectId: string };
 }>): JSX.Element {
-  const path = usePathname();
-  const router = useRouter();
-  const {
-    appConfig: { envConfig },
-    user: { isLoggedIn },
-  } = useMobxStore();
-
-  const navigations = useNavigation(params);
-
-  useAuthRedirect(isLoggedIn, router);
-
-  if (envConfig?.mode.no_auth) {
-    return renderContent(navigations, path, children);
-  }
-
-  if (isLoggedIn) {
-    return renderContent(navigations, path, children);
-  }
-
-  // At this point, if the user is not logged in, they will be redirected
-  // and the following will only be displayed briefly.
-  return <>Loading...</>;
+  return (
+    <UserAuthWrapper>
+      {renderContent(useNavigation(params), params.projectId, children)}
+    </UserAuthWrapper>
+  );
 }
 
 function renderContent(

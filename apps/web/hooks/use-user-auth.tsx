@@ -1,19 +1,18 @@
-"use client"
+'use client';
 
-import { useMobxStore } from "lib/mobx/store-provider";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import useSWR from "swr";
+import { useMobxStore } from 'lib/mobx/store-provider';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import useSWR from 'swr';
 
-export const useUserAuth = (route: "sign-in" | "sign-out" | "revalidate" | null = "revalidate") => {
-
+export const useUserAuth = (
+  route: 'sign-in' | 'sign-out' | 'revalidate' | null = 'revalidate',
+) => {
   const router = useRouter();
- 
+
   const {
     user: { fetchCurrentUser },
-	appConfig: { 
-		envConfig
-	 }
+    appConfig: { envConfig },
   } = useMobxStore();
 
   const {
@@ -21,25 +20,27 @@ export const useUserAuth = (route: "sign-in" | "sign-out" | "revalidate" | null 
     isLoading,
     error,
     mutate,
-  } = useSWR("CURRENT_USER_DETAILS", () => fetchCurrentUser(), {
+  } = useSWR('CURRENT_USER_DETAILS', () => fetchCurrentUser(), {
     refreshInterval: 0,
-    shouldRetryOnError: false,
-  })
+    shouldRetryOnError: true,
+	revalidateOnFocus: false,
+  });
 
   useEffect(() => {
-	console.log("useUserAuth", route, user, envConfig);
+    console.log('useUserAuth', route, user, envConfig);
 
-	if (route == "revalidate" && !user) {
-		router.push("/auth/login");
-	}
-	if (route == "sign-in" && user) {
-		router.push("/projects");
-	}
-  })
+    if (route == 'revalidate' && !user && !isLoading) {
+      router.push('/auth/login?error=revalidate');
+    }
+    if (route == 'sign-in' && user) {
+      router.push('/projects');
+    }
+  }, [user, envConfig, isLoading]);
 
   return {
-    isLoading,  
+    isLoading,
     user,
-    mutate
-  }
-}
+	error,
+    mutate,
+  };
+};

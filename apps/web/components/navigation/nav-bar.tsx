@@ -1,66 +1,62 @@
 'use client';
 
-import styles from "./style.module.css";
+import styles from './style.module.css';
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useUserAuth } from 'hooks/use-user-auth';
+
+const NavLink = ({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) => (
+  <Link href={href}>
+    <div className={styles.navItem}>{children}</div>
+  </Link>
+);
 
 export default function NavBar() {
-  const { isLoading, user } = useUserAuth();
 
-  const renderNav = () => {
-    if (user)
-      return (
-        <>
-          <Link href="./projects">
-            <div className="navItem">Projects</div>
-          </Link>
-          <Link href="./">
-            <div className="navItem">Placeholder #1</div>
-          </Link>
-          <Link href="./">
-            <div className="navItem">Placeholder #2</div>
-          </Link>
-          <Link href="./">
-            <div className="navItem">Placeholder #3</div>
-          </Link>
-        </>
-      );
-
-    return '';
-  };
-
-  const renderUser = () => {
-    if (user) {
-      return (
-        <div className="user">
-          <Image src="/g-logo.png" width={30} height={30} alt="" />
-          <div className="userInfo">
-            <div className="welcome">Welcome back</div>
-            <div className="userName">{'Test userName'}</div>
-          </div>
-        </div>
-      );
-    }
-
+  const renderNavLinks = () => {
     return (
-      <Link href="./auth/login">
-        <div className="navItem">Sign in</div>
-      </Link>
+      <>
+        <NavLink href="./projects">Projects</NavLink>
+        <NavLink href="./">Placeholder #1</NavLink>
+        <NavLink href="./">Placeholder #2</NavLink>
+        <NavLink href="./">Placeholder #3</NavLink>
+      </>
     );
   };
 
-  return (
-    <div className="navBar">
-      <div className="left">
-        <Link href="./">
-          <div className="home"></div>
-        </Link>
-        {renderNav()}
-      </div>
+  const renderUserSection = () => {
+      return (
+        <div className={styles.user}>
+          <Image
+            src="/g-logo.png"
+            width={30}
+            height={30}
+            alt="User profile"
+            priority
+          />
+          <div className={styles.userInfo}>
+            <div className={styles.welcome}>Welcome back</div>
+            <div className={styles.userName}>Test userName</div>
+          </div>
+        </div>
+      );
+  };
 
-      <div className="right">{renderUser()}</div>
-    </div>
+  return (
+    <nav className={styles.navBar}>
+      <div className={styles.left}>
+        <NavLink href="./">
+          <div className={styles.home}></div>
+        </NavLink>
+        {renderNavLinks()}
+      </div>
+      <div className={styles.right}>{renderUserSection()}</div>
+    </nav>
   );
 }

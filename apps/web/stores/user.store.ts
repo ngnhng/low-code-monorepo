@@ -1,9 +1,10 @@
+'use client';
+
 import { action, makeObservable, observable, runInAction } from 'mobx';
 import { AuthService } from 'services/auth.service';
 import { UserService } from 'services/user.service';
 import { IUser } from 'types/user';
 import { RootStore } from './root';
-import { AppConfigService } from '../services/app-config.service';
 
 export interface IUserStore {
   isLoggedIn: boolean | undefined;
@@ -32,7 +33,6 @@ export class UserStore {
   //service
   userService: UserService;
   authService: AuthService;
-  appConfigService: AppConfigService;
 
   constructor(_rootStore: RootStore) {
     makeObservable(this, {
@@ -49,7 +49,6 @@ export class UserStore {
     this.rootStore = _rootStore;
     this.userService = new UserService();
     this.authService = new AuthService();
-    this.appConfigService = new AppConfigService();
 
     this.isLoggedIn = undefined;
     this.currentUser = undefined;

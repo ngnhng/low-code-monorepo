@@ -1,4 +1,4 @@
-import { FC, ReactNode } from 'react';
+import { FC, ReactNode, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useMobxStore } from '../mobx/store-provider';
 import { useRouter } from 'next/navigation';
@@ -15,23 +15,33 @@ export const UserAuthWrapper: FC<IUserAuthWrapper> = observer((properties) => {
 
   //store
   const {
-    user: { currentUser, currentUserError, fetchCurrentUser },
+    user: { currentUser, fetchCurrentUser },
     appConfig: { envConfig },
   } = useMobxStore();
 
-  useSWR('CURRENT_USER_DETAILS', () => fetchCurrentUser(), {
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useSWR('CURRENT_USER_DETAILS', () => fetchCurrentUser(), {
     refreshInterval: 0,
-    shouldRetryOnError: false,
+    shouldRetryOnError: true,
+    revalidateOnFocus: false,
   });
 
-  if (!currentUser && !currentUserError) {
-    // TODO: show loading indicator
-    return <></>;
-  }
+  useEffect(() => {
+    if (error !== undefined || (!user && !isLoading)) {
+      router.push('/auth/login?error=unauthorized');
+    }
+  }, [error, user]);
 
-  if (currentUserError) {
-    router.replace('/auth/login');
-    return <></>;
+  if (isLoading) {
+    // TODO: show loading indicator
+    return (
+      <>
+        <div>Loading...</div>
+      </>
+    );
   }
 
   return <>{children}</>;

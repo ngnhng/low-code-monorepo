@@ -1,5 +1,3 @@
-import './Sidebar.css';
-
 import styles from './styles.module.css';
 
 import Link from 'next/link';

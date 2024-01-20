@@ -6,11 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-	"format": "prettier --write .",
+    "format": "prettier --write .",
     "lint": "eslint . --max-warnings 0"
   },
   "prettier": "@vercel/style-guide/prettier",
   "dependencies": {
+    "@measured/puck": "^0.13.1",
     "@repo/ui": "*",
     "@tanstack/match-sorter-utils": "^8.8.4",
     "@tanstack/react-table": "^8.10.6",

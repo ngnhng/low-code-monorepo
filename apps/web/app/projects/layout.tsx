@@ -39,7 +39,7 @@ export default function RootLayout({
                   {
                     href: '/projects',
                     label: 'Projects',
-                    image: 'projects.png',
+                    image: 'project.png',
                   },
                 ],
               }}
