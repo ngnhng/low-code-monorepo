@@ -1,87 +1,87 @@
-import type { Config, Data } from "@measured/puck";
-import { ButtonGroup, ButtonGroupProps } from "./blocks/ButtonGroup";
-import { Card, CardProps } from "./blocks/Card";
-import { Columns, ColumnsProps } from "./blocks/Columns";
-import { Hero, HeroProps } from "./blocks/Hero";
-import { Heading, HeadingProps } from "./blocks/Heading";
-import { Flex, FlexProps } from "./blocks/Flex";
-import { Logos, LogosProps } from "./blocks/Logos";
-import { Stats, StatsProps } from "./blocks/Stats";
-import { Text, TextProps } from "./blocks/Text";
-import { VerticalSpace, VerticalSpaceProps } from "./blocks/VerticalSpace";
-import type { RootProps } from "./root";
-import Root from "./root";
-import type { TableProps } from "./blocks/Table";
-import { Table } from "./blocks/Table";
-import { Kanban, KanbanProps } from "./blocks/Kanban";
-import { Charts, ChartsProps } from "./blocks/Chart";
+import type { Config, Data } from '@measured/puck';
+import {
+  ButtonGroup,
+  ButtonGroupProps,
+} from '../components/gui-editor/blocks/ButtonGroup';
+import { Card, CardProps } from '../components/gui-editor/blocks/Card';
+import { Columns, ColumnsProps } from '../components/gui-editor/blocks/Columns';
+import { Flex, FlexProps } from '../components/gui-editor/blocks/Flex';
+import { Logos, LogosProps } from '../components/gui-editor/blocks/Logos';
+import { Stats, StatsProps } from '../components/gui-editor/blocks/Stats';
+import { Text, TextProps } from '../components/gui-editor/blocks/Text';
+import {
+  VerticalSpace,
+  VerticalSpaceProps,
+} from '../components/gui-editor/blocks/VerticalSpace';
+import type { RootProps } from './root';
+import Root from './root';
+import type { TableProps } from '../components/gui-editor/blocks/Table';
+import { Table } from '../components/gui-editor/blocks/Table';
+import { Kanban, KanbanProps } from '../components/gui-editor/blocks/Kanban';
+import { Charts, ChartsProps } from '../components/gui-editor/blocks/Chart';
 
 interface CProps {
-   Table: TableProps;
-//   Kanban: KanbanProps;
-//   Charts: ChartsProps;
-//   ButtonGroup: ButtonGroupProps;
-//   Card: CardProps;
-//   Columns: ColumnsProps;
-//   Hero: HeroProps;
-//   Heading: HeadingProps;
-//   Flex: FlexProps;
-//   Logos: LogosProps;
-//   Stats: StatsProps;
-//   Text: TextProps;
-//   VerticalSpace: VerticalSpaceProps;
+  Table: TableProps;
+  Kanban: KanbanProps;
+  Charts: ChartsProps;
+  ButtonGroup: ButtonGroupProps;
+  Card: CardProps;
+  Columns: ColumnsProps;
+  Flex: FlexProps;
+  Logos: LogosProps;
+  Stats: StatsProps;
+  Text: TextProps;
+  VerticalSpace: VerticalSpaceProps;
 }
 
 // We avoid the name config as next gets confused
 export const conf: Config<CProps, RootProps> = {
-   root: {
-      render: Root,
-   },
-   components: {
-      Table,
-    //  Kanban,
-    //  Charts,
-    //  ButtonGroup,
-    //  Card,
-    //  Columns,
-    //  Hero,
-    //  Heading,
-    //  Flex,
-    //  Logos,
-    //  Stats,
-    //  Text,
-    //  VerticalSpace,
-   },
+  root: {
+    render: Root,
+  },
+  components: {
+    Table,
+    Kanban,
+    Charts,
+    ButtonGroup,
+    Card,
+    Columns,
+    Flex,
+    Logos,
+    Stats,
+    Text,
+    VerticalSpace,
+  },
 };
 
 export const initialData: Record<string, Data> = {
-   "/": {
-      content: [
-         {
-            type: "Charts",
-            props: {
-               id: "test",
-               config: {
-                  url: "https://tryz.vercel.app/api/test",
-                  title: "Title",
-                  chartType: "bar",
-                  width: "100%",
-                  height: "600px",
-               },
-            },
-         },
-      ],
-      root: { title: "" },
-      zones: {},
-   },
-   "/pricing": {
-      content: [],
-      root: { title: "Pricing" },
-   },
-   "/about": {
-      content: [],
-      root: { title: "About Us" },
-   },
+  '/': {
+    content: [
+      //  {
+      //    //type: 'Charts',
+      //    //props: {
+      //    //  id: 'test',
+      //    //  config: {
+      //    //    url: 'https://tryz.vercel.app/api/test',
+      //    //    title: 'Title',
+      //    //    chartType: 'bar',
+      //    //    width: '100%',
+      //    //    height: '600px',
+      //    //  },
+      //    //},
+      //  },
+    ],
+    root: { props: { title: 'Test' } },
+    zones: {},
+  },
+  '/pricing': {
+    content: [],
+    root: { props: { title: 'Pricing' } },
+  },
+  '/about': {
+    content: [],
+    root: { props: { title: 'About' } },
+  },
 };
 
 export default conf;

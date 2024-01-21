@@ -1,7 +1,6 @@
-import { RouteHandlerAPIService } from "./route-handler.service";
+import { RouteHandlerAPIService } from './route-handler.service';
 
 export class AuthService extends RouteHandlerAPIService {
-
   constructor() {
     super();
   }
@@ -11,6 +10,7 @@ export class AuthService extends RouteHandlerAPIService {
       await this.postServerSide('/api/auth/sign-out');
       return true;
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }

@@ -75,7 +75,7 @@ export abstract class APIService {
 
   protected createURL(base: string, rest: string): string {
     const url = base + rest;
-    return url.replace('/\/+/g', '/');
+    return url.replace(`//+/g`, '/');
   }
 }
 

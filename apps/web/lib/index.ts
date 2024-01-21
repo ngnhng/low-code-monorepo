@@ -1,0 +1,1 @@
+export { default as getClassNameFactory } from "./classname-factory/get-classname-factory"

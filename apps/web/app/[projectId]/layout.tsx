@@ -4,7 +4,7 @@ import './style.css';
 
 import React, { useMemo } from 'react';
 import Sidebar from 'components/menus/sidebar/sidebar';
-import Header from './components/Header';
+import Header from '../../components/header/header';
 import { NavigationMenuProps as NavigationMenuProperties } from '../../types/navigation';
 import { UserAuthWrapper } from '../../lib/wrappers/user-auth-wrapper';
 

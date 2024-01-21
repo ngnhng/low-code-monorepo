@@ -12,10 +12,7 @@ import Icon from 'components/icons/icon';
 
 const isBrowser = typeof window !== 'undefined';
 
-// TODO: resolve this Puck error
-// Defining props on `root` is deprecated. Please use `root.props`. This will be a breaking change in a future release.
-
-export default function Page({ params }: { params: { 'project-id': string } }) {
+export default function Page({ params }: { params: { projectId: string } }) {
   const path = '/';
   const componentKey = Buffer.from(
     Object.keys(config.components).join('-'),
@@ -64,16 +61,17 @@ export default function Page({ params }: { params: { 'project-id': string } }) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gridGap: 16,
+                gridTemplateColumns: '5cm 1fr 5cm',
+                gridGap: '1rem',
               }}
             >
               <div>
-                {/* Render the drag-and-drop preview */}
+                <Puck.Fields />
+              </div>
+              <div>
                 <Puck.Preview />
               </div>
               <div>
-                {/* Render the component list */}
                 <Puck.Components />
               </div>
             </div>
@@ -84,7 +82,7 @@ export default function Page({ params }: { params: { 'project-id': string } }) {
             data={
               data ?? {
                 content: [],
-                root: { title: '' },
+                root: { props: { title: 'Test' } },
                 zones: {},
               }
             }
@@ -123,7 +121,7 @@ function Toolbar({ items }: ToolbarProps) {
   );
 }
 
-function Switch({ isOn, handleToggle }) {
+function Switch({ isOn, handleToggle }: { isOn: boolean; handleToggle: any }) {
   return (
     <>
       <input

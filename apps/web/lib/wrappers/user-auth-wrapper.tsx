@@ -15,8 +15,7 @@ export const UserAuthWrapper: FC<IUserAuthWrapper> = observer((properties) => {
 
   //store
   const {
-    user: { currentUser, fetchCurrentUser },
-    appConfig: { envConfig },
+    user: { fetchCurrentUser },
   } = useMobxStore();
 
   const {

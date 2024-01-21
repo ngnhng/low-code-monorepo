@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Section } from "../Section";
+import { Section } from "../../../components/gui-editor/components/Section";
 
 const FooterLink = ({ children, href }: { children: string; href: string }) => {
   return (
