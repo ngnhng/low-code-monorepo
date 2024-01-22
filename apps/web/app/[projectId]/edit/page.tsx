@@ -2,12 +2,12 @@
 
 import './style.css';
 
-import type { Config, Data } from '@measured/puck';
+import type { Data } from '@measured/puck';
 import { Render, Puck } from '@measured/puck';
 import '@measured/puck/puck.css';
 
 import { useState } from 'react';
-import config, { initialData } from '../../../config';
+import config, { initialData } from './_config';
 import Icon from 'components/icons/icon';
 
 const isBrowser = typeof window !== 'undefined';
@@ -78,7 +78,7 @@ export default function Page({ params }: { params: { projectId: string } }) {
           </Puck>
         ) : (
           <Render
-            config={config as Config}
+            config={config}
             data={
               data ?? {
                 content: [],

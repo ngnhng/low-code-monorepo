@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 // import { QueryBuilder } from 'react-querybuilder';
 // import 'react-querybuilder/dist/query-builder.css';
-import Modeler from "bpmn-js/lib/Modeler";
+import Modeler from 'bpmn-js/lib/Modeler';
 import axios from 'axios';
-import "bpmn-js/dist/assets/diagram-js.css";
-import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
+import 'bpmn-js/dist/assets/diagram-js.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 
 const Page = () => {
-  const [diagram, diagramSet] = useState("");
-  const container = document.getElementById("bpmn-container");
+  const [diagram, diagramSet] = useState('');
+  const container = document.getElementById('bpmn-container');
 
   useEffect(() => {
     if (diagram.length === 0) {
       axios
         .get(
-          "https://cdn.statically.io/gh/camunda/camunda-modeler/v3.5.0/resources/diagram/simple.bpmn"
+          'https://cdn.statically.io/gh/camunda/camunda-modeler/v3.5.0/resources/diagram/simple.bpmn',
         )
         .then((r) => {
           diagramSet(r.data);
@@ -31,32 +31,29 @@ const Page = () => {
     const modeler = new Modeler({
       container,
       keyboard: {
-        bindTo: document
-      }
+        bindTo: document,
+      },
     });
 
     modeler.createDiagram();
   }
-
 
   return (
     <div>
       <div
         id="bpmn-container"
         style={{
-         //  border: "1px solid #000000",
-          height: "90vh",
-          width: "90vw",
-          margin: "auto"
+          //  border: "1px solid #000000",
+          height: '90vh',
+          width: '90vw',
+          margin: 'auto',
         }}
       ></div>
     </div>
-  )
-}
+  );
+};
 
 export default Page;
-
-
 
 // import { ReactFlowProvider } from "reactflow";
 // import Sidebar from "./components/Sidebar/Sidebar";

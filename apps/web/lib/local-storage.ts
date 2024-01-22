@@ -1,10 +1,10 @@
 export const getLocalStorage = (key: string) => {
-  if (!window || typeof window === "undefined") return ;
+  if (!window || typeof window === 'undefined') return;
   try {
     return window.localStorage.getItem(key);
   } catch {
     window.localStorage.removeItem(key);
-    return ;
+    return;
   }
 };
 

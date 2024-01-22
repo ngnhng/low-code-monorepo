@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { ComponentConfig } from '@measured/puck';
-import { Section } from '../../components/Section';
+import { Section } from '../../Section';
 
 export type TextProps = {
   align: 'left' | 'center' | 'right';

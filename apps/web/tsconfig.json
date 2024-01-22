@@ -3,6 +3,7 @@
 	"compilerOptions": {
 		"noImplicitAny": false,
 		"useDefineForClassFields": true,
+		"exactOptionalPropertyTypes": false,
 		"plugins": [
 			{
 				"name": "next"

@@ -3,7 +3,7 @@ import { ComponentConfig } from '@measured/puck';
 import styles from './styles.module.css';
 import { getClassNameFactory } from 'lib';
 import { DropZone } from '@measured/puck';
-import { Section } from '../../components/Section';
+import { Section } from '../../Section';
 
 const getClassName = getClassNameFactory('Flex', styles);
 
