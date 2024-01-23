@@ -2,7 +2,7 @@
   "name": "my-turborepo",
   "private": true,
   "scripts": {
-    "build": "turbo build",
+    "build": "turbo build --filter=web...",
     "dev": "turbo dev --filter=web",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
@@ -10,6 +10,7 @@
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
+	"@repo/tailwind-config": "*",
     "prettier": "^3.1.0",
     "turbo": "latest"
   },

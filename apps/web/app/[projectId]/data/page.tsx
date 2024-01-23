@@ -1,89 +1,93 @@
 'use client';
 
-import { FC, useEffect, useRef, useState } from 'react';
 import {
-  DataSheetGrid,
-  DataSheetGridRef,
-  checkboxColumn,
-  textColumn,
-  keyColumn,
-  createAddRowsComponent,
-} from 'react-datasheet-grid';
-
-// Import the style only once in your app!
-import 'react-datasheet-grid/dist/style.css';
-import {
-  AddRowsComponentProps,
-  Operation,
-} from 'react-datasheet-grid/dist/types';
-
-type DataType = {
-  active: boolean;
-  firstName: string;
-  lastName: string;
-};
-
-const AddRows = createAddRowsComponent({
-  button: 'Ajouter', // Add
-  unit: 'lignes', // rows
-});
-
-const AnotherAddRows = () => {
-  return <div>Another add rows: </div>;
-};
-
-const Example = () => {
-  const [data, setData] = useState<DataType[]>([
-    { active: true, firstName: 'Elon', lastName: 'Musk' },
-    { active: false, firstName: 'Jeff', lastName: 'Bezos' },
-  ]);
-
-  const ref = useRef<DataSheetGridRef>(null);
-
-  const handleOnChange = (
-    value: Record<string, any>[],
-    operations: Operation[],
-  ) => {
-    const newData = value.map((item: Record<string, any>) => ({
-      active: item.active as boolean,
-      firstName: item.firstName as string,
-      lastName: item.lastName as string,
-    }));
-    setData(newData);
-  };
-
-  const columns = [
-    { ...keyColumn('active', checkboxColumn), title: <div>Active</div> },
-    { ...keyColumn('firstName', textColumn), title: 'First name' },
-    { ...keyColumn('lastName', textColumn), title: 'Last name' },
-  ];
-
-  useEffect(() => {
-    ref.current?.setSelection({
-      min: { col: 'firstName', row: 0 },
-      max: { col: 2, row: 3 },
-    });
-  }, []);
-
-  return (
-    <>
-      <DataSheetGrid
-        ref={ref}
-        value={data}
-        onChange={handleOnChange}
-        columns={columns}
-        addRowsComponent={AnotherAddRows}
-      />
-
-      <button onClick={() => ref.current?.setActiveCell({ col: 1, row: 0 })} />
-    </>
-  );
-};
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Input,
+  Button,
+  Label
+} from '@repo/ui';
 
 export default function Page() {
   return (
     <>
-      <Example />
+      {/*<Tabs defaultValue="account" className="w-[400px]">
+        <TabsList>
+          <TabsTrigger value="account">Account</TabsTrigger>
+          <TabsTrigger value="password">Password</TabsTrigger>
+        </TabsList>
+        <TabsContent value="account">
+          Make changes to your account here.
+        </TabsContent>
+        <TabsContent value="password">Change your password here.</TabsContent>
+      </Tabs>*/}
+
+	  <TabsDemo />
     </>
+  );
+}
+
+export function TabsDemo() {
+  return (
+    <Tabs defaultValue="account" className="w-[400px]">
+      <TabsList className="grid w-full grid-cols-2">
+        <TabsTrigger value="account">Account</TabsTrigger>
+        <TabsTrigger value="password">Password</TabsTrigger>
+      </TabsList>
+      <TabsContent value="account">
+        <Card>
+          <CardHeader>
+            <CardTitle>Account</CardTitle>
+            <CardDescription>
+              Make changes to your account here. Click save when you're done.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="space-y-1">
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" defaultValue="Pedro Duarte" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="username">Username</Label>
+              <Input id="username" defaultValue="@peduarte" />
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button>Save changes</Button>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+      <TabsContent value="password">
+        <Card>
+          <CardHeader>
+            <CardTitle>Password</CardTitle>
+            <CardDescription>
+              Change your password here. After saving, you'll be logged out.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="space-y-1">
+              <Label htmlFor="current">Current password</Label>
+              <Input id="current" type="password" />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="new">New password</Label>
+              <Input id="new" type="password" />
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button>Save password</Button>
+          </CardFooter>
+        </Card>
+      </TabsContent>
+    </Tabs>
   );
 }
