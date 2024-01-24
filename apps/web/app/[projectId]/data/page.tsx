@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Tabs,
@@ -18,20 +18,20 @@ import {
   DialogHeader,
   DialogTitle,
   CardButtonWithIcon,
-} from '@repo/ui';
+} from "@repo/ui";
 
-import useSWR from 'swr';
+import useSWR from "swr";
 
-import { Database, Download, Table, User } from 'react-feather';
-import { DataTable, columns } from './_components/table-list/table-list';
+import { Database, Download, Table, User } from "react-feather";
+import { DataTable, columns } from "./_components/table-list/table-list";
 
-import DBList from './_components/db-list/db-list';
-import React from 'react';
+import DBList from "./_components/db-list/db-list";
+import React from "react";
 
-import { TextWithIcon } from 'components/text/text-with-icon';
-import { OptionDialog } from './_components/table-list/options-cards';
-import { useMobxStore } from '../../../lib/mobx/store-provider';
-import CreateTableForm from './_components/create-form/create-table-form';
+import { TextWithIcon } from "components/text/text-with-icon";
+import { OptionDialog } from "./_components/table-list/options-cards";
+import { useMobxStore } from "../../../lib/mobx/store-provider";
+import CreateTableForm from "./_components/create-form/create-table-form";
 
 export default function Page() {
   const {
@@ -40,7 +40,7 @@ export default function Page() {
   } = useMobxStore();
 
   const { data, isLoading } = useSWR(`TABLE_DATA-${currentProjectId}-all`, () =>
-    fetchTables(),
+    fetchTables()
   );
 
   if (!data || isLoading) {
@@ -91,7 +91,7 @@ export function DatabaseTabs({ data, columns, projectId }) {
             <CardButtonWithIcon
               className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
               icon={<Download size={40} />}
-              onClick={() => console.log('Card')}
+              onClick={() => console.log("Card")}
             >
               <span className="text-xl font-light">Import</span>
             </CardButtonWithIcon>
@@ -100,7 +100,7 @@ export function DatabaseTabs({ data, columns, projectId }) {
                 <CardButtonWithIcon
                   className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
                   icon={<Database size={40} />}
-                  onClick={() => console.log('Card')}
+                  onClick={() => console.log("Card")}
                 >
                   <span className="text-xl font-light">Add Data Source</span>
                 </CardButtonWithIcon>

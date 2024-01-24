@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ColumnDef,
@@ -6,7 +6,7 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   useReactTable,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 import {
   Badge,
   Button,
@@ -18,12 +18,12 @@ import {
   TableHeader,
   TableRow,
   TableRowButton,
-} from '@repo/ui';
-import { TableTextWithIcon } from '../../../../../components/text/text-with-icon';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+} from "@repo/ui";
+import { TableTextWithIcon } from "../../../../../components/text/text-with-icon";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-import { TableItem } from 'types/table-data';
+import { TableItem } from "types/table-data";
 
 interface DataTableProps<TableItem, TValue> {
   columns: ColumnDef<TableItem, TValue>[];
@@ -43,29 +43,29 @@ interface DataTableProps<TableItem, TValue> {
 
 export const columns: ColumnDef<TableItem>[] = [
   {
-    accessorKey: 'name',
-    header: 'Name',
+    accessorKey: "name",
+    header: "Name",
     cell: ({ row }) => {
-      return <TableTextWithIcon>{row.getValue('name')}</TableTextWithIcon>;
+      return <TableTextWithIcon>{row.getValue("name")}</TableTextWithIcon>;
     },
   },
   {
-    accessorKey: 'source',
-    header: 'Source',
+    accessorKey: "source",
+    header: "Source",
   },
   {
-    accessorKey: 'created',
-    header: 'Created',
+    accessorKey: "created",
+    header: "Created",
   },
   {
-    accessorKey: 'updated',
-    header: 'Updated',
+    accessorKey: "updated",
+    header: "Updated",
   },
   {
-    accessorKey: 'status',
-    header: 'Status',
+    accessorKey: "status",
+    header: "Status",
     cell: ({ row }) => {
-      return <Badge variant="active">{row.getValue('status')}</Badge>;
+      return <Badge variant="active">{row.getValue("status")}</Badge>;
     },
   },
 ];
@@ -97,7 +97,7 @@ export function DataTable<TableItem, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -110,14 +110,14 @@ export function DataTable<TableItem, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRowButton
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
+                  data-state={row.getIsSelected() && "selected"}
                   onClick={() => {
-                    console.log('Check Row:', row.original);
+                    console.log("Check Row:", row.original);
 
                     router.push(
                       window.location.pathname +
-                        '/' +
-                        (row.original as { id: string }).id,
+                        "/" +
+                        (row.original as { id: string }).id
                     );
                   }}
                 >
@@ -125,7 +125,7 @@ export function DataTable<TableItem, TValue>({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext(),
+                        cell.getContext()
                       )}
                     </TableCell>
                   ))}
