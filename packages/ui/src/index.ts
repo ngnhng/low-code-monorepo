@@ -3,3 +3,7 @@ export * from './cards';
 export * from './input';
 export * from './label';
 export * from './tabs';
+export * from './separator';
+export * from './table';
+export * from './badge';
+export * from './select';

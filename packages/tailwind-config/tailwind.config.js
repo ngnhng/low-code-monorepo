@@ -10,10 +10,11 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                muted: "rgb(117,82,111)",
+                muted: "rgb(245, 235, 243)",
                 primary: "rgb(117,82,111)",
                 background: "rgb(117,82,111)",
                 card: "rgb(141,98,111)",
+				popover: "rgb(141,98,111)",
             },
             borderRadius: {
                 custom: "20px",
