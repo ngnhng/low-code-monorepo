@@ -48,3 +48,6 @@ config_prod.json
 # ec2 compose
 *prod.yaml
 deployment/ec2/certificates/acme.json
+
+.vscode
+.vscode/*

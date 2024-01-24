@@ -13,81 +13,125 @@ import {
   CardContent,
   Input,
   Button,
-  Label
+  Label,
+  Separator,
 } from '@repo/ui';
+
+import { Database, Download, PlusSquare, Table, User } from 'react-feather';
+import {
+  DataTable,
+  columns,
+  mockTableData,
+} from './_components/table-list/table-list';
+import { TextWithIcon } from 'components/text/text-with-icon';
 
 export default function Page() {
   return (
     <>
-      {/*<Tabs defaultValue="account" className="w-[400px]">
-        <TabsList>
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="password">Password</TabsTrigger>
-        </TabsList>
-        <TabsContent value="account">
-          Make changes to your account here.
-        </TabsContent>
-        <TabsContent value="password">Change your password here.</TabsContent>
-      </Tabs>*/}
-
-	  <TabsDemo />
+      <DatabaseTabs />
     </>
   );
 }
 
-function TabsDemo() {
+const ButtonWithIcon = ({ children, icon, ...props }) => (
+  <Button className="flex items-center space-x-2" {...props}>
+    {icon}
+    {children}
+  </Button>
+);
+
+const CardButtonWithIcon = ({ children, icon, onClick, ...props }) => (
+  <button
+    onClick={onClick}
+    className="rounded-custom transition-colors duration-200"
+  >
+    <Card
+      className="flex items-start space-x-2 w-64 h-32 hover:bg-gray-200"
+      {...props}
+    >
+      <CardHeader className="flex flex-col space-y-4">
+        <>{icon}</>
+        <CardDescription>{children}</CardDescription>
+      </CardHeader>
+    </Card>
+  </button>
+);
+
+const HorizontalList = ({ children, ...props }) => (
+  <ul className="flex space-x-4" {...props}>
+    {children}
+  </ul>
+);
+
+export function DatabaseTabs() {
   return (
-    <Tabs defaultValue="account" className="w-[400px]">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="account">Account</TabsTrigger>
-        <TabsTrigger value="password">Password</TabsTrigger>
+    <Tabs defaultValue="tables" className="w-11/12 m-4">
+      <TabsList className="flex justify-start space-x-28">
+        <TabsTrigger value="tables">
+          <TextWithIcon icon={<Table />}>Tables</TextWithIcon>
+        </TabsTrigger>
+        <TabsTrigger value="members">
+          <TextWithIcon icon={<User />}>Members</TextWithIcon>
+        </TabsTrigger>
+        <TabsTrigger value="sources">
+          <TextWithIcon icon={<Download />}>Data Sources</TextWithIcon>
+        </TabsTrigger>
       </TabsList>
-      <TabsContent value="account">
+
+      <Separator className="my-4" />
+
+      <TabsContent value="tables">
+        <div className="container mx-auto">
+          <HorizontalList>
+            <CardButtonWithIcon
+              icon={<PlusSquare size={40} />}
+              onClick={() => console.log('Card')}
+            >
+              <span className="text-xl font-light">Add Table</span>
+            </CardButtonWithIcon>
+            <CardButtonWithIcon
+              icon={<Download size={40} />}
+              onClick={() => console.log('Card')}
+            >
+              <span className="text-xl font-light">Import</span>
+            </CardButtonWithIcon>
+            <CardButtonWithIcon
+              icon={<Database size={40} />}
+              onClick={() => console.log('Card')}
+            >
+              <span className="text-xl font-light">Add Data Source</span>
+            </CardButtonWithIcon>
+          </HorizontalList>
+
+          <Separator className="my-4" />
+
+          <DataTable columns={columns} data={mockTableData} />
+        </div>
+      </TabsContent>
+      <TabsContent value="members">
         <Card>
           <CardHeader>
-            <CardTitle>Account</CardTitle>
+            <CardTitle>Members</CardTitle>
             <CardDescription>
-              Make changes to your account here. Click save when you're done.
+              Change your members here. After saving, you'll be logged out.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="space-y-1">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" defaultValue="Pedro Duarte" />
+              <Label htmlFor="current">Current members</Label>
+              <Input id="current" type="members" />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="username">Username</Label>
-              <Input id="username" defaultValue="@peduarte" />
+              <Label htmlFor="new">New members</Label>
+              <Input id="new" type="members" />
             </div>
           </CardContent>
           <CardFooter>
-            <Button>Save changes</Button>
+            <Button>Save members</Button>
           </CardFooter>
         </Card>
       </TabsContent>
-      <TabsContent value="password">
-        <Card>
-          <CardHeader>
-            <CardTitle>Password</CardTitle>
-            <CardDescription>
-              Change your password here. After saving, you'll be logged out.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-1">
-              <Label htmlFor="current">Current password</Label>
-              <Input id="current" type="password" />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="new">New password</Label>
-              <Input id="new" type="password" />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button>Save password</Button>
-          </CardFooter>
-        </Card>
-      </TabsContent>
+      <TabsContent value="sources">d</TabsContent>
     </Tabs>
   );
 }
