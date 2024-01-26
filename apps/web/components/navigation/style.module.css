@@ -57,13 +57,11 @@
 
   user-select: none;
   cursor: pointer;
-
-  .userInfo {
-    display: flex;
-    flex-direction: column;
-  }
 }
-
+.user .userInfo {
+  display: flex;
+  flex-direction: column;
+}
 .user:hover {
   background-color: rgb(var(--secondary-2));
 }
