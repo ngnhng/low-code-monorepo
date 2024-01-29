@@ -3,9 +3,9 @@ import {
   DataTable,
   GetTablesResponse,
   RowDef,
-} from 'types/table-data';
-import { RouteHandlerAPIService } from './route-handler.service';
-import { TableItem } from 'types/table-data';
+} from "types/table-data";
+import { RouteHandlerAPIService } from "./route-handler.service";
+import { TableItem } from "types/table-data";
 export class TableDataService extends RouteHandlerAPIService {
   constructor() {
     super();
@@ -26,7 +26,7 @@ export class TableDataService extends RouteHandlerAPIService {
           limit,
           query,
         },
-      },
+      }
     );
 
     const result: GetTableDataResponse = {
@@ -60,7 +60,7 @@ export class TableDataService extends RouteHandlerAPIService {
 
   async getTables({ projectId }): Promise<GetTablesResponse[]> {
     const response = await this.getServerSide(
-      `/api/mock/${projectId}/data/all`,
+      `/api/mock/${projectId}/data/all`
     );
 
     const result: TableItem[] = response.data;
@@ -70,7 +70,7 @@ export class TableDataService extends RouteHandlerAPIService {
 
   async getTableRelations({ projectId, tableId }) {
     const response = await this.getServerSide(
-      `/api/mock/${projectId}/data/${tableId}/relations`,
+      `/api/mock/${projectId}/data/${tableId}/relations`
     );
 
     const result: TableItem[] = response.data;
@@ -80,7 +80,7 @@ export class TableDataService extends RouteHandlerAPIService {
 
   async getTableRecords(projectId: string, tableId: string) {
     const response = await this.getServerSide(
-      `/api/mock/${projectId}/data/${tableId}/rows`,
+      `/api/mock/${projectId}/data/${tableId}/rows`
     );
 
     const result: RowDef[] = response.data;

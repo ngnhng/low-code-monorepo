@@ -1,5 +1,4 @@
 "use client";
-"use client";
 
 import { useRouter } from "next/navigation";
 import { useMobxStore } from "lib/mobx/store-provider";

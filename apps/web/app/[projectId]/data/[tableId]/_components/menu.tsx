@@ -12,13 +12,13 @@ import {
   MenubarSubContent,
   MenubarSubTrigger,
   MenubarTrigger,
-} from '@repo/ui';
-import { TextWithIcon } from '../../../../../components/text/text-with-icon';
-import { Filter, List } from 'react-feather';
+} from "@repo/ui";
+import { TextWithIcon } from "../../../../../components/text/text-with-icon";
+import { Filter, List } from "react-feather";
 
 export function Menu() {
   return (
-    <Menubar className="space-x-10 mx-2 rounded-md">
+    <Menubar className="space-x-10 mx-2 rounded-custom">
       <MenubarMenu>
         <MenubarTrigger>
           <TextWithIcon icon={<List />}>Fields</TextWithIcon>

@@ -2,14 +2,11 @@
 
 import "./style.css";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import Sidebar from "components/menus/sidebar/sidebar";
 import Header from "components/header/header";
 import { NavigationMenuProps as NavigationMenuProperties } from "../../types/navigation";
-// eslint-disable-next-line no-unused-vars
-import { UserAuthWrapper } from "../../lib/wrappers/user-auth-wrapper";
-import { usePathname } from "next/navigation";
-import { Brush, Database, Workflow, Settings2 } from "lucide-react";
+import { UserAuthWrapper } from "lib/wrappers/user-auth-wrapper";
 import { useMobxStore } from "lib/mobx/store-provider";
 
 function useNavigation(params: { projectId: string }) {
@@ -57,7 +54,11 @@ export default function Layout({
   if (projectId) {
     setCurrentProjectId(projectId);
   }
-  return <>{renderContent(useNavigation(params), children)}</>;
+  return (
+    <UserAuthWrapper>
+      {renderContent(useNavigation(params), projectId, children)}
+    </UserAuthWrapper>
+  );
 }
 
 function renderContent(

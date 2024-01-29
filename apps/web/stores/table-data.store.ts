@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { action, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from "mobx";
 
-import { RootStore } from './root';
+import { RootStore } from "./root";
 import {
   GetTableDataParams,
   GetTableDataResponse,
   TableQueries,
-} from 'types/table-data';
-import { TableDataService } from 'services/table-data.service';
+} from "types/table-data";
+import { TableDataService } from "services/table-data.service";
 
 export interface ITableDataStore {
   tableIds: string[];
@@ -64,7 +64,7 @@ export class TableDataStore implements ITableDataStore {
         // validate
         return response;
       } else {
-        throw new Error('Table data not found');
+        throw new Error("Table data not found");
       }
     } catch (error) {
       console.log(error);
@@ -104,7 +104,7 @@ export class TableDataStore implements ITableDataStore {
         // validate
         return response;
       } else {
-        throw new Error('Table data not found');
+        throw new Error("Table data not found");
       }
     } catch (error) {
       console.log(error);
@@ -121,7 +121,7 @@ export class TableDataStore implements ITableDataStore {
       if (response) {
         return response;
       } else {
-        throw new Error('Table data not found');
+        throw new Error("Table data not found");
       }
     } catch (error) {
       console.log(error);
@@ -133,12 +133,12 @@ export class TableDataStore implements ITableDataStore {
     try {
       const response = await this.tableDataService.getTableRecords(
         this.rootStore.projectData.currentProjectId,
-        tableId,
+        tableId
       );
 
       return response;
     } catch {
-      console.log('error fetching table records');
+      console.log("error fetching table records");
     }
   };
 }
