@@ -75,6 +75,25 @@ const CardFooter = React.forwardRef<
 ));
 CardFooter.displayName = "CardFooter";
 
+const CardButtonWithIcon = React.forwardRef<
+    HTMLDivElement,
+    React.HTMLAttributes<HTMLDivElement> & { icon: React.ReactNode }
+>(({ children, className, onClick, icon, ...props }, ref) => (
+    <div
+        ref={ref}
+        className={cn(
+            "rounded-custom border bg-card text-card-foreground shadow-sm",
+            className
+        )}
+        onClick={onClick}
+        {...props}
+    >
+        <div>{icon}</div>
+		<div>{children}</div>
+    </div>
+));
+CardButtonWithIcon.displayName = "CardButtonWithIcon";
+
 export {
     Card,
     CardHeader,
@@ -82,4 +101,5 @@ export {
     CardTitle,
     CardDescription,
     CardContent,
+    CardButtonWithIcon,
 };

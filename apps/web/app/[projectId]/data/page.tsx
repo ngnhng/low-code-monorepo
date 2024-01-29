@@ -15,6 +15,10 @@ import {
   Button,
   Label,
   Separator,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  CardButtonWithIcon,
 } from '@repo/ui';
 
 import { Database, Download, PlusSquare, Table, User } from 'react-feather';
@@ -24,8 +28,16 @@ import {
   mockTableData,
 } from './_components/table-list/table-list';
 import { TextWithIcon } from 'components/text/text-with-icon';
+import { OptionDialog } from './_components/table-list/options-cards';
+import { useMobxStore } from '../../../lib/mobx/store-provider';
+import React from 'react';
 
 export default function Page() {
+  const {
+    projectData: { currentProjectId },
+  } = useMobxStore();
+
+  console.log('currentProjectId', currentProjectId);
   return (
     <>
       <DatabaseTabs />
@@ -40,22 +52,24 @@ const ButtonWithIcon = ({ children, icon, ...props }) => (
   </Button>
 );
 
-const CardButtonWithIcon = ({ children, icon, onClick, ...props }) => (
-  <button
-    onClick={onClick}
-    className="rounded-custom transition-colors duration-200"
-  >
-    <Card
-      className="flex items-start space-x-2 w-64 h-32 hover:bg-gray-200"
-      {...props}
-    >
-      <CardHeader className="flex flex-col space-y-4">
-        <>{icon}</>
-        <CardDescription>{children}</CardDescription>
-      </CardHeader>
-    </Card>
-  </button>
-);
+//const CardButtonWithIcon = React.forwardRef<
+//HTMLDivElement,
+//React.HTMLAttributes<HTMLDivElement>>({ children, icon, onClick, ...props }, ref) => (
+//  <button
+//    onClick={onClick}
+//    className="rounded-custom transition-colors duration-200"
+//  >
+//    <Card
+//      className="flex items-start space-x-2 w-64 h-32 hover:bg-gray-200"
+//      {...props}
+//    >
+//      <CardHeader className="flex flex-col space-y-4">
+//        <>{icon}</>
+//        <CardDescription>{children}</CardDescription>
+//      </CardHeader>
+//    </Card>
+//  </button>
+//);
 
 const HorizontalList = ({ children, ...props }) => (
   <ul className="flex space-x-4" {...props}>
@@ -83,19 +97,34 @@ export function DatabaseTabs() {
       <TabsContent value="tables">
         <div className="container mx-auto">
           <HorizontalList>
-            <CardButtonWithIcon
-              icon={<PlusSquare size={40} />}
-              onClick={() => console.log('Card')}
+            <OptionDialog
+              trigger={
+                <CardButtonWithIcon
+                  className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
+                  icon={<PlusSquare size={40} />}
+                  onClick={() => console.log('Card')}
+                >
+                  <span className="text-xl font-light">Add Table</span>
+                </CardButtonWithIcon>
+              }
             >
-              <span className="text-xl font-light">Add Table</span>
-            </CardButtonWithIcon>
+              <DialogHeader>
+                <DialogTitle>Create Table</DialogTitle>
+              </DialogHeader>
+              <DialogFooter>
+                <Button>Save</Button>
+              </DialogFooter>
+            </OptionDialog>
+
             <CardButtonWithIcon
+              className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
               icon={<Download size={40} />}
               onClick={() => console.log('Card')}
             >
               <span className="text-xl font-light">Import</span>
             </CardButtonWithIcon>
             <CardButtonWithIcon
+              className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
               icon={<Database size={40} />}
               onClick={() => console.log('Card')}
             >

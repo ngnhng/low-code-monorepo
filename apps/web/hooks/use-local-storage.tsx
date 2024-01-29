@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { getLocalStorage, setLocalStorage } from 'lib/local-storage';
 
-export const useLocalStorage = (key: string, initialValue: any) => {
-  const [storedValue, setStoredValue] = useState(() => {
+export const useLocalStorage = <T,>(key: string, initialValue: T) => {
+  const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const item = getLocalStorage(key);
-	  if (!item) {
-		return initialValue;
-	  }
+      if (!item) {
+        return initialValue;
+      }
       return isJsonString(item) ? JSON.parse(item) : item;
     } catch (error) {
       console.log(error);
@@ -17,14 +17,14 @@ export const useLocalStorage = (key: string, initialValue: any) => {
     }
   });
 
-  const setValue = (value: any) => {
+  const setValue = (value: T | ((val: T) => T)) => {
     try {
       const valueToStore =
-        typeof value === 'function' ? value(storedValue) : value;
+        typeof value === 'function' ? (value as Function)(storedValue) : value;
 
       setStoredValue(valueToStore);
 
-      setLocalStorage(key, valueToStore);
+      setLocalStorage(key, JSON.stringify(valueToStore));
     } catch (error) {
       console.log(error);
     }

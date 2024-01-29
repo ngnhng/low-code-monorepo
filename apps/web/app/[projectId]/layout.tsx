@@ -12,69 +12,66 @@ import { Brush, Database, Workflow, Settings2 } from "lucide-react";
 import { Toaster } from "@repo/ui";
 
 function useNavigation(params: { projectId: string }) {
-    return useMemo(
-        () => ({
-            items: [
-                {
-                    href: `/${params["projectId"]}/edit`,
-                    label: "UI Editor",
-                    image: <Brush size={16} />,
-                },
-                {
-                    href: `/${params["projectId"]}/data`,
-                    label: "Database",
-                    image: <Database size={16} />,
-                },
-                {
-                    href: `/${params["projectId"]}/workflow`,
-                    label: "Workflow",
-                    image: <Workflow size={16} />,
-                },
-                {
-                    href: `/${params["projectId"]}/settings`,
-                    label: "Project Settings",
-                    image: <Settings2 size={16} />,
-                },
-            ],
-        }),
-        [params]
-    );
+  return useMemo(
+    () => ({
+      items: [
+        {
+          href: `/${params["projectId"]}/edit`,
+          label: "UI Editor",
+          image: <Brush size={16} />,
+        },
+        {
+          href: `/${params["projectId"]}/data`,
+          label: "Database",
+          image: <Database size={16} />,
+        },
+        {
+          href: `/${params["projectId"]}/workflow`,
+          label: "Workflow",
+          image: <Workflow size={16} />,
+        },
+        {
+          href: `/${params["projectId"]}/settings`,
+          label: "Project Settings",
+          image: <Settings2 size={16} />,
+        },
+      ],
+    }),
+    [params]
+  );
 }
 
 export default function Layout({
-    children,
-    params,
+  children,
+  params,
 }: Readonly<{
-    children: React.ReactNode;
-    params: { projectId: string };
+  children: React.ReactNode;
+  params: { projectId: string };
 }>): JSX.Element {
-    return (
-        <>
-            <UserAuthWrapper>
-                {renderContent(useNavigation(params), children)}
-            </UserAuthWrapper>
-            <Toaster />
-        </>
-    );
+  return (
+    <>
+      <UserAuthWrapper>
+        {renderContent(useNavigation(params), children)}
+      </UserAuthWrapper>
+      <Toaster />
+    </>
+  );
 }
 
 function renderContent(
-    navigations: NavigationMenuProperties,
-    children: React.ReactNode
+  navigations: NavigationMenuProperties,
+  children: React.ReactNode
 ) {
-    const pathName = usePathname();
-    return (
-        <div className="w-full h-full flex flex-col overflow-hidden">
-            <Header headerTitle="Project Name" />
-            <div className="flex-1 overflow-hidden">
-                <div className="w-full h-full flex px-[50px] py-[20px] gap-2.5">
-                    <Sidebar
-                        navigation={navigations}
-                        selectedPage={pathName ?? ""}
-                    />
-                    <div className="flex-1 flex">{children}</div>
-                </div>
-            </div>
+  const pathName = usePathname();
+  return (
+    <div className="w-full h-full flex flex-col overflow-hidden">
+      <Header headerTitle="Project Name" />
+      <div className="flex-1 overflow-hidden">
+        <div className="w-full h-full flex px-[50px] py-[20px] gap-2.5">
+          <Sidebar navigation={navigations} selectedPage={pathName ?? ""} />
+          <div className="flex-1 flex">{children}</div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

@@ -1,0 +1,15 @@
+.row-deleted .dsg-cell {
+  background: #fff1f0;
+}
+
+.row-created .dsg-cell {
+  background: #f6ffed;
+}
+
+.row-updated .dsg-cell {
+  background: #fff7e6;
+}
+
+/*div.dsg-cell-gutter:not(.dsg-cell-header) {
+  display: none;
+}*/
