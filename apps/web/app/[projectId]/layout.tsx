@@ -2,11 +2,12 @@
 
 import './style.css';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import Sidebar from 'components/menus/sidebar/sidebar';
-import Header from '../../components/header/header';
+import Header from 'components/header/header';
 import { NavigationMenuProps as NavigationMenuProperties } from '../../types/navigation';
-import { UserAuthWrapper } from '../../lib/wrappers/user-auth-wrapper';
+import { UserAuthWrapper } from 'lib/wrappers/user-auth-wrapper';
+import { useMobxStore } from 'lib/mobx/store-provider';
 
 function useNavigation(params: { projectId: string }) {
   return useMemo(
@@ -45,9 +46,17 @@ export default function Layout({
   children: React.ReactNode;
   params: { projectId: string };
 }>): JSX.Element {
+  const { projectId } = params;
+  const {
+    projectData: { setCurrentProjectId },
+  } = useMobxStore();
+
+  if (projectId) {
+    setCurrentProjectId(projectId);
+  }
   return (
     <UserAuthWrapper>
-      {renderContent(useNavigation(params), params.projectId, children)}
+      {renderContent(useNavigation(params), projectId, children)}
     </UserAuthWrapper>
   );
 }

@@ -1,4 +1,5 @@
 import './globals.css';
+import '../styles/dsg.css'
 
 import type { Metadata } from 'next';
 import { Gabarito } from 'next/font/google';
