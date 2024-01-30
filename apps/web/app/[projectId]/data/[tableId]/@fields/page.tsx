@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import useSWR from 'swr';
-import { useMobxStore } from 'lib/mobx/store-provider';
-import { useEffect } from 'react';
+import useSWR from "swr";
+import { useMobxStore } from "lib/mobx/store-provider";
+import { useEffect } from "react";
 
 import ReactFlow, {
   addEdge,
@@ -12,9 +12,9 @@ import ReactFlow, {
   Controls,
   Handle,
   Position,
-} from 'reactflow';
+} from "reactflow";
 
-import 'reactflow/dist/style.css';
+import "reactflow/dist/style.css";
 
 const nodeTypes = {
   entity: EntityNode,
@@ -28,7 +28,7 @@ export default function Page({ params: { tableId } }) {
 
   const { data, isLoading } = useSWR(
     `TABLE_DATA-${currentProjectId}-${tableId}-relations`,
-    () => fetchTableRelations(tableId),
+    () => fetchTableRelations(tableId)
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -42,7 +42,7 @@ export default function Page({ params: { tableId } }) {
       const newNodes = [
         {
           id: data[d].id,
-          type: 'entity',
+          type: "entity",
           data: { fields: data[d], isSource: data[d].id === tableId },
           position: { x: 100, y: 100 },
         },
@@ -97,7 +97,7 @@ function EntityNode({ data }: { data }) {
         type="source"
         position={Position.Right}
         className="!bg-teal-500"
-      />{' '}
+      />{" "}
       :
       <Handle type="target" position={Position.Left} className="!bg-teal-500" />
       <table className="bg-accent rounded-md">

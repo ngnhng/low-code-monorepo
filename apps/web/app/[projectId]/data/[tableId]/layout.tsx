@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui';
-import React from 'react';
-import { TextWithIcon } from '../../../../components/text/text-with-icon';
-import { Table } from 'react-feather';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui";
+import React from "react";
+import { TextWithIcon } from "../../../../components/text/text-with-icon";
+import { Table } from "react-feather";
 
 export default function Layout({
   fields,
