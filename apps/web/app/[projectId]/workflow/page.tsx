@@ -7,10 +7,14 @@ import Modeler from 'bpmn-js/lib/Modeler';
 import axios from 'axios';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
+import { 
+   BpmnPropertiesPanelModule, 
+   BpmnPropertiesProviderModule
+ } from 'bpmn-js-properties-panel';
 
 const Page = () => {
   const [diagram, diagramSet] = useState('');
-  const container = document.getElementById('bpmn-container');
+  const container: HTMLElement = document.getElementById('bpmn-container')!;
 
   useEffect(() => {
     if (diagram.length === 0) {
@@ -33,6 +37,13 @@ const Page = () => {
       keyboard: {
         bindTo: document,
       },
+      // propertiesPanel: {
+      //    parent: '#properties-panel'
+      //  },
+      //  additionalModules: [
+      //    BpmnPropertiesPanelModule,
+      //    BpmnPropertiesProviderModule
+      //  ],
     });
 
     modeler.createDiagram();

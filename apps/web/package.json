@@ -11,6 +11,7 @@
   },
   "prettier": "@vercel/style-guide/prettier",
   "dependencies": {
+    "@bpmn-io/properties-panel": "^3.17.0",
     "@measured/puck": "^0.13.1",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
@@ -20,6 +21,7 @@
     "@tanstack/react-table": "^8.10.6",
     "axios": "^1.5.1",
     "bpmn-js": "^15.1.2",
+    "bpmn-js-properties-panel": "^5.9.0",
     "chart.js": "^4.4.0",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
