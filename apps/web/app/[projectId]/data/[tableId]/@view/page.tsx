@@ -18,6 +18,7 @@ import useSWR from 'swr';
 import { useMobxStore } from 'lib/mobx/store-provider';
 import { ColumnType, DataTable, RowDef } from 'types/table-data';
 import { useEffect, useMemo, useState } from 'react';
+import { Button } from '@repo/ui';
 
 export default function Page({ params: { tableId } }) {
   const {
@@ -38,21 +39,36 @@ export default function Page({ params: { tableId } }) {
     console.log('committing data', data);
   };
 
+  const handleQuery = (query: any) => {
+    console.log('query', query);
+  };
+
   if (!data || isLoading) {
     return <div>Loading...</div>;
   }
 
-  return <TableEditor tableId={tableId} data={data} onCommit={handleCommit} />;
+  return (
+    <>
+      <TableEditor
+        tableId={tableId}
+        data={data}
+        onCommit={handleCommit}
+        onQuery={handleQuery}
+      />
+    </>
+  );
 }
 
 const TableEditor = ({
   tableId,
   data,
   onCommit,
+  onQuery,
 }: {
   tableId: string;
   data: DataTable;
   onCommit: any;
+  onQuery: any;
 }) => {
   const [localData, setLocalData] = useState<RowDef[]>(data.rows);
   const [localColumns, setLocalColumns] = useState(data.columns);
@@ -164,9 +180,12 @@ const TableEditor = ({
 
   return (
     <>
-      {/*<button onClick={addNewColumn}>Add new Column</button>*/}
-      <button onClick={onCommit}>Commit</button>
-      <button onClick={discardData}>Discard</button>
+      <ViewMenubar
+        onCommit={onCommit}
+        discardData={discardData}
+        onAddNewColumn={() => {}}
+        onQuery={onQuery}
+      />
 
       <DynamicDataSheetGrid
         value={localData}
@@ -239,3 +258,30 @@ const colTypeMapper = (type: ColumnType) => {
     }
   }
 };
+
+const ViewMenubar = ({
+  onCommit,
+  discardData,
+  onAddNewColumn,
+  onQuery,
+}: {
+  onCommit: any;
+  discardData: any;
+  onAddNewColumn: any;
+  onQuery: any;
+}) => (
+  <div className="flex justify-between w-full px-4">
+    <div className="flex flex-start space-x-4">
+      <Button onClick={onCommit}>Commit</Button>
+      <Button onClick={discardData}>Discard</Button>
+    </div>
+    <div className="flex flex-start">
+      <Button onClick={onAddNewColumn}>Add New Column</Button>
+    </div>
+    <div className="flex flex-end space-x-4">
+      <Button onClick={onQuery}>Group By</Button>
+      <Button onClick={onQuery}>Filter</Button>
+      <Button onClick={onQuery}>Sort</Button>
+    </div>
+  </div>
+);
