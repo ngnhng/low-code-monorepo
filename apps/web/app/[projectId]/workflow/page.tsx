@@ -31,19 +31,21 @@ const Page = () => {
     }
   }, [diagram]);
 
+  console.log(diagram)
+
   if (diagram.length > 0) {
     const modeler = new Modeler({
       container,
       keyboard: {
         bindTo: document,
       },
-      // propertiesPanel: {
-      //    parent: '#properties-panel'
-      //  },
-      //  additionalModules: [
-      //    BpmnPropertiesPanelModule,
-      //    BpmnPropertiesProviderModule
-      //  ],
+      propertiesPanel: {
+         parent: '#properties-panel'
+       },
+       additionalModules: [
+         BpmnPropertiesPanelModule,
+         BpmnPropertiesProviderModule
+       ],
     });
 
     modeler.createDiagram();
@@ -60,6 +62,7 @@ const Page = () => {
           margin: 'auto',
         }}
       ></div>
+      <div id="properties-panel" style={{ marginTop: '-400px' }}></div>
     </div>
   );
 };
