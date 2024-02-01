@@ -4,7 +4,7 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
  
-import { Button } from "@repo/ui"
+import { Button, Textarea, Input, Switch, Label } from "@repo/ui"
 import {
   Form,
   FormControl,
@@ -14,11 +14,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@repo/ui"
-import { Input } from "@repo/ui"
 
 interface DbConnectionFormProps {
   requiredFields: string[];
 }
+
+// TODO: Toast messages
+// TODO: Maybe need to update Regex
 
 const formSchema = z.object({
   // privateKey: z.string().min(1).optional().or(z.literal(''))
@@ -29,15 +31,15 @@ const formSchema = z.object({
   username: z.string().min(1).optional(),
   password: z.string().min(1).optional(),
   ssl: z.boolean().optional(),
-  //  TODO: url - header - type - etc...
-  // url: z.string().optional(),
+  // TODO: url - header - type - etc...
+  // TODO: query builder
+  url: z.string().min(1).url(),
 })
 export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      privateKey: "",
-      host: "",
+      
     },
   })
  
@@ -57,40 +59,42 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
             <FormItem>
               <FormLabel>Private Key</FormLabel>
               <FormControl>
-                <Input placeholder="Enter private key" {...field} />
+                <Textarea placeholder="Enter private key" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name='host'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Host</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter host" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name='port'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Port</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter port" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="flex justify-between items-center">
+          <FormField
+            control={form.control}
+            name='host'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Host</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter host" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+  
+          <FormField
+            control={form.control}
+            name='port'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Port</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter port" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}
@@ -101,15 +105,56 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
               <FormControl>
                 <Input placeholder="Enter username" {...field} />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div>
+        <FormField
+          control={form.control}
+          name='password'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name='url'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Url</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter url" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name='ssl'
+          render={({ field }) => (
+            <FormItem>
+              <div className="flex items-center space-x-2">
+                <FormLabel htmlFor="ssl-mode" >Ssl</FormLabel>
+                <FormControl>
+                    <Switch id="ssl-mode" />
+                </FormControl>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex items-center">
           <Button 
             type="submit" 
             disabled={isSubmitting || !isValid}
