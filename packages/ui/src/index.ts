@@ -11,3 +11,5 @@ export * from "./dialog";
 export * from "./menubar";
 export * from "./icon-badge";
 export * from "./form";
+export * from "./textarea";
+export * from "./switch";
