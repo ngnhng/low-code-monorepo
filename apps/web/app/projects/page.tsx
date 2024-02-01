@@ -2,34 +2,28 @@
 
 import './styles.css';
 
-import Link from 'next/link';
-
 import Title from 'components/title/title';
 import { Input, Button } from '@repo/ui';
-import { Filter, PlusCircle, MoreVertical } from 'lucide-react';
+import { Filter, PlusCircle } from 'lucide-react';
 
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@repo/ui';
 
-import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui';
-
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from '@repo/ui';
+import { useRouter } from 'next/navigation';
 
 const pseudoProjects = [
   {
@@ -92,6 +86,7 @@ const TopSection = (): JSX.Element => {
 };
 
 const ProjectLists = (): JSX.Element => {
+  const router = useRouter();
   return (
     <div className="bg-white rounded-md p-[20px] border-2 border-slate-200">
       <Table>
@@ -108,10 +103,10 @@ const ProjectLists = (): JSX.Element => {
               key={`${project.id}${idx}`}
               className="border-0"
               onClick={(e) => {
-                open(`/${project.id}/edit`);
+                router.push(`/${project.id}/edit`);
               }}
             >
-              <TableCell className='py-5'>{project.name}</TableCell>
+              <TableCell className="py-5">{project.name}</TableCell>
               <TableCell>{project.owner}</TableCell>
               <TableCell>{project.lastEdited}</TableCell>
             </TableRow>
