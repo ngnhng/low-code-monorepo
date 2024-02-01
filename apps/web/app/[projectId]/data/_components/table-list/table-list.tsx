@@ -21,6 +21,7 @@ import {
 } from '@repo/ui';
 import { TableTextWithIcon } from '../../../../../components/text/text-with-icon';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -144,6 +145,10 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
+
+  useEffect(() => {
+    console.log("Table: ", table.getHeaderGroups())
+  }, [])
 
   return (
     <div>

@@ -27,10 +27,14 @@ import {
   columns,
   mockTableData,
 } from './_components/table-list/table-list';
+
+import DBList from './_components/db-list/db-list';
+
 import { TextWithIcon } from 'components/text/text-with-icon';
 import { OptionDialog } from './_components/table-list/options-cards';
 import { useMobxStore } from '../../../lib/mobx/store-provider';
-import React from 'react';
+import React, { ReactComponentElement, useRef } from 'react';
+import { table } from 'console';
 
 export default function Page() {
   const {
@@ -78,6 +82,9 @@ const HorizontalList = ({ children, ...props }) => (
 );
 
 export function DatabaseTabs() {
+
+  // const tableRef = useRef<ReactComponentElement>(null);
+
   return (
     <Tabs defaultValue="tables" className="w-11/12 m-4">
       <TabsList className="flex justify-start space-x-28">
@@ -123,17 +130,24 @@ export function DatabaseTabs() {
             >
               <span className="text-xl font-light">Import</span>
             </CardButtonWithIcon>
-            <CardButtonWithIcon
-              className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
-              icon={<Database size={40} />}
-              onClick={() => console.log('Card')}
+            <OptionDialog
+              trigger={(<CardButtonWithIcon
+                className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
+                icon={<Database size={40} />}
+                onClick={() => console.log('Card')}
+              >
+                <span className="text-xl font-light">Add Data Source</span>
+              </CardButtonWithIcon>)}
             >
-              <span className="text-xl font-light">Add Data Source</span>
-            </CardButtonWithIcon>
+              <DialogHeader>
+                <DialogTitle>Databases</DialogTitle>
+              </DialogHeader>
+              <DBList></DBList>
+            </OptionDialog>
           </HorizontalList>
 
           <Separator className="my-4" />
-
+          
           <DataTable columns={columns} data={mockTableData} />
         </div>
       </TabsContent>
@@ -160,7 +174,7 @@ export function DatabaseTabs() {
           </CardFooter>
         </Card>
       </TabsContent>
-      <TabsContent value="sources">d</TabsContent>
+      <TabsContent value="sources">Comming Soon</TabsContent>
     </Tabs>
   );
 }

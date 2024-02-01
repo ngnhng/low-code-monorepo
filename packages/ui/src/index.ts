@@ -15,3 +15,6 @@ export * from "./dialog";
 export * from "./command";
 export * from "./sonner";
 export * from "./separator";
+export * from "./menubar";
+export * from "./icon-badge";
+export * from "./form";

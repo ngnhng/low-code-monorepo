@@ -49,5 +49,6 @@ config_prod.json
 *prod.yaml
 deployment/ec2/certificates/acme.json
 
+#vs-code
 .vscode
 .vscode/*
