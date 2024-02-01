@@ -5,11 +5,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { Button, Textarea, Input, Switch, Label } from "@repo/ui";
+import { Button, Textarea, Input, Switch } from "@repo/ui";
 import {
   Form,
   FormControl,
-  FormDescription,
+  // FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,7 +38,7 @@ const formSchema = z.object({
     message: "Input must be an url `www.example.com`",
   }),
 });
-export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
+export function DBAddForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {},
@@ -49,8 +49,9 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
   function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       // TODO: axios data
+      console.log(values);
       toast.success("Event has been created.");
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong");
     }
   }
@@ -147,7 +148,7 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
         <FormField
           control={form.control}
           name="ssl"
-          render={({ field }) => (
+          render={() => (
             <FormItem>
               <div className="flex items-center space-x-2">
                 <FormLabel htmlFor="ssl-mode">Ssl</FormLabel>

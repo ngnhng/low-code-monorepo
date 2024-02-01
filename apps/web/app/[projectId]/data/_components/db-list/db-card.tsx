@@ -1,21 +1,21 @@
 import React from "react";
 import Image from "next/image";
 
-import { Database } from "lucide-react";
+// import { Database } from "lucide-react";
 import { Button } from "@repo/ui";
 
 import { OptionDialog } from "../table-list/options-cards";
 import { DBAddForm } from "./db-add-form";
 
-import Icon from "./db-icon/mongodb.svg";
+// import Icon from "./db-icon/mongodb.svg";
 
 interface DBCardProps {
   name: string;
   img: string;
-  requiredFields: string[];
+  // requiredFields: string[];
 }
 
-const DBCard = ({ name, img, requiredFields }: DBCardProps) => {
+const DBCard = ({ name, img }: DBCardProps) => {
   return (
     <div className="group hover:shadow-sm transition overflow-hidden border rounded-lg p-2 h-full">
       <div className="relative w-full aspect-video rounded-md overflow-hidden ">
@@ -38,7 +38,7 @@ const DBCard = ({ name, img, requiredFields }: DBCardProps) => {
             </Button>
           }
         >
-          <DBAddForm requiredFields={requiredFields} />
+          <DBAddForm />
         </OptionDialog>
         {/* <Button size={"sm"} variant={"outline"} onClick={() => console.log("Button Trigger")}>Add</Button> */}
       </div>
