@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 import Title from 'components/title/title';
 import { Input, Button } from '@repo/ui';
-import { Filter, PlusCircle } from 'lucide-react';
+import { Filter, PlusCircle, MoreVertical } from 'lucide-react';
 
 import {
   Select,
@@ -17,6 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/ui';
+
+import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui';
 
 import {
   Table,
@@ -30,37 +32,37 @@ import {
 } from '@repo/ui';
 
 const pseudoProjects = [
-	{
-		id: "trollface",
-		name: "This is a project name",
-		owner: "Try guessing my name",
-		lastEdited: Date.now()
-	},
-	{
-		id: "trollface",
-		name: "This is a project name",
-		owner: "Try guessing my name",
-		lastEdited: Date.now()
-	},
-	{
-		id: "trollface",
-		name: "This is a project name",
-		owner: "Try guessing my name",
-		lastEdited: Date.now()
-	},
-	{
-		id: "trollface",
-		name: "This is a project name",
-		owner: "Try guessing my name",
-		lastEdited: Date.now()
-	},
-	{
-		id: "trollface",
-		name: "This is a project name",
-		owner: "Try guessing my name",
-		lastEdited: Date.now()
-	},
-]
+  {
+    id: 'trollface',
+    name: 'This is a project name',
+    owner: 'Try guessing my name',
+    lastEdited: Date.now(),
+  },
+  {
+    id: 'trollface',
+    name: 'This is a project name',
+    owner: 'Try guessing my name',
+    lastEdited: Date.now(),
+  },
+  {
+    id: 'trollface',
+    name: 'This is a project name',
+    owner: 'Try guessing my name',
+    lastEdited: Date.now(),
+  },
+  {
+    id: 'trollface',
+    name: 'This is a project name',
+    owner: 'Try guessing my name',
+    lastEdited: Date.now(),
+  },
+  {
+    id: 'trollface',
+    name: 'This is a project name',
+    owner: 'Try guessing my name',
+    lastEdited: Date.now(),
+  },
+];
 
 const TopSection = (): JSX.Element => {
   return (
@@ -91,31 +93,32 @@ const TopSection = (): JSX.Element => {
 
 const ProjectLists = (): JSX.Element => {
   return (
-	<div className='bg-white rounded-md p-[20px] border-2 border-slate-200'>
-    <Table>
-      <TableHeader>
-        <TableRow className='hover:bg-transparent'>
-          <TableHead className="w-[900px]">Name</TableHead>
-          <TableHead className="w-[300px]">Owner</TableHead>
-          <TableHead>Last edited</TableHead>
-          <TableHead></TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {pseudoProjects.map((project) => (
-          <TableRow key={project.id} className="cursor-pointer border-0" onClick={() => {
-			open(`/${project.id}/edit`)
-		  }}>
-            <TableCell className="font-medium p-[10px]">{project.name}</TableCell>
-            <TableCell>{project.owner}</TableCell>
-            <TableCell>{project.lastEdited}</TableCell>
-            <TableCell className="text-right"></TableCell>
+    <div className="bg-white rounded-md p-[20px] border-2 border-slate-200">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="w-[900px]">Name</TableHead>
+            <TableHead className="w-[300px]">Owner</TableHead>
+            <TableHead>Last edited</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-	</div>
-
+        </TableHeader>
+        <TableBody>
+          {pseudoProjects.map((project, idx) => (
+            <TableRow
+              key={`${project.id}${idx}`}
+              className="border-0"
+              onClick={(e) => {
+                open(`/${project.id}/edit`);
+              }}
+            >
+              <TableCell className='py-5'>{project.name}</TableCell>
+              <TableCell>{project.owner}</TableCell>
+              <TableCell>{project.lastEdited}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

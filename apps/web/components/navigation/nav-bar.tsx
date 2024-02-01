@@ -32,7 +32,7 @@ export default function NavBar() {
 
   const renderUserSection = () => {
     return (
-      <div className="flex px-4 py-2.5 items-center gap-2.5 text-sm font-semibold rounded-md hover:bg-slate-100">
+      <div className="flex px-4 py-2.5 items-center gap-2.5 text-sm font-semibold rounded-md hover:bg-slate-100 select-none">
         <Image
           src="/g-logo.png"
           width={30}
@@ -49,7 +49,7 @@ export default function NavBar() {
     <nav className="w-full h-16 px-52 flex items-center justify-between border-2 border-b-gray-100">
       <div className="flex gap-2.5 items-center">
         <NavLink href="./">
-          <div className="bg-gray-900 px-4 py-2.5 text-white font-semibold rounded-md text-sm">
+          <div className="bg-gray-900 px-4 py-2.5 text-white font-semibold rounded-md text-sm select-none">
             YALC
           </div>
         </NavLink>
