@@ -9,3 +9,5 @@ export * from "./badge";
 export * from "./select";
 export * from "./dialog";
 export * from "./menubar";
+export * from "./icon-badge";
+export * from "./form";
