@@ -6,3 +6,4 @@ export * from './tabs';
 export * from './select';
 export * from './table';
 export * from './popover';
+export * from './switch';

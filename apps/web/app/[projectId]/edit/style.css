@@ -23,10 +23,8 @@
     gap: 20px;
 }
 
-.puckContainer {
-    position: relative;
-    width: 100%;
-    flex: 1;
+.puckContainer > div {
+    height: 100%;
 }
 
 #switch {

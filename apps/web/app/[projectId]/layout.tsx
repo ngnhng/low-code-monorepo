@@ -64,7 +64,7 @@ function renderContent(
       <Header headerTitle="Project Name" />
       <div className="w-full flex px-[50px] py-[20px] gap-2.5 flex-1">
         <Sidebar navigation={navigations} selectedPage={pathName ?? ''} />
-        <div className="flex-1 rounded-md border-2 border-slate-300">{children}</div>
+        <div className="flex-1">{children}</div>
       </div>
     </div>
   );
