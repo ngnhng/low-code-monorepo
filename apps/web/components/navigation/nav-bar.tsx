@@ -23,9 +23,6 @@ export default function NavBar() {
     return (
       <>
         <NavLink href="./projects">Projects</NavLink>
-        <NavLink href="./">Placeholder #1</NavLink>
-        <NavLink href="./">Placeholder #2</NavLink>
-        <NavLink href="./">Placeholder #3</NavLink>
       </>
     );
   };

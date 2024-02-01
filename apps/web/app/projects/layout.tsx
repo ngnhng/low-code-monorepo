@@ -1,14 +1,14 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Gabarito } from 'next/font/google';
+import { Inter } from 'next/font/google';
 
 import NavBar from 'components/navigation/nav-bar';
 import { UserAuthWrapper } from 'lib/wrappers/user-auth-wrapper';
 import Icon from 'components/icons/icon';
 import Sidebar from 'components/menus/sidebar/sidebar';
 
-const font = Gabarito({ subsets: ['latin'] });
+const font = Inter({ subsets: ['latin'] });
 
 export default function RootLayout({
   children,
