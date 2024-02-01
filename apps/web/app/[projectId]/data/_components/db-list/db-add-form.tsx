@@ -16,9 +16,9 @@ import {
   FormMessage,
 } from "@repo/ui";
 
-interface DbConnectionFormProps {
-  requiredFields: string[];
-}
+// interface DbConnectionFormProps {
+//   requiredFields: string[];
+// }
 
 // TODO: Toast messages
 // TODO: Maybe need to update Regex
