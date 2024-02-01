@@ -13,9 +13,10 @@ import Icon from "./db-icon/mongodb.svg"
 interface DBCardProps {
   name: string;
   img: string;
+  requiredFields: string[];
 }
 
-const DBCard = ({ name, img }: DBCardProps) => {
+const DBCard = ({ name, img, requiredFields }: DBCardProps) => {
   return (
     <div className='group hover:shadow-sm transition overflow-hidden border rounded-lg p-2 h-full'>
       <div className='relative w-full aspect-video rounded-md overflow-hidden '>
@@ -32,7 +33,7 @@ const DBCard = ({ name, img }: DBCardProps) => {
           <OptionDialog
             trigger={<Button size={"sm"} variant={"outline"} onClick={() => console.log("Button Trigger")}>Add</Button>}
           >
-            <DBAddForm />
+            <DBAddForm requiredFields={requiredFields} />
           </OptionDialog>
           {/* <Button size={"sm"} variant={"outline"} onClick={() => console.log("Button Trigger")}>Add</Button> */}
       </div>
