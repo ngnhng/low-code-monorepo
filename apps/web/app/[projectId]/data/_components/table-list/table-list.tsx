@@ -83,6 +83,10 @@ export function DataTable<TableItem, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  useEffect(() => {
+    console.log("Table: ", table.getHeaderGroups());
+  }, []);
+
   return (
     <div>
       <div className="rounded-md border">

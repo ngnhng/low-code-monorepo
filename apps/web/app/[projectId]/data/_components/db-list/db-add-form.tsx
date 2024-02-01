@@ -1,11 +1,11 @@
-"use client"
- 
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { toast } from 'sonner'
- 
-import { Button, Textarea, Input, Switch, Label } from "@repo/ui"
+"use client";
+
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+
+import { Button, Textarea, Input, Switch, Label } from "@repo/ui";
 import {
   Form,
   FormControl,
@@ -14,7 +14,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@repo/ui"
+} from "@repo/ui";
 
 interface DbConnectionFormProps {
   requiredFields: string[];
@@ -37,23 +37,21 @@ const formSchema = z.object({
   url: z.string().min(1).url({
     message: "Input must be an url `www.example.com`",
   }),
-})
+});
 export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      
-    },
-  })
- 
+    defaultValues: {},
+  });
+
   const { isSubmitting, isValid } = form.formState;
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       // TODO: axios data
-      toast.success("Event has been created.")
+      toast.success("Event has been created.");
     } catch (error) {
-      toast.error('Something went wrong')
+      toast.error("Something went wrong");
     }
   }
 
@@ -62,7 +60,7 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name='privateKey'
+          name="privateKey"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Private Key</FormLabel>
@@ -77,7 +75,7 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
         <div className="flex justify-between items-center">
           <FormField
             control={form.control}
-            name='host'
+            name="host"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Host</FormLabel>
@@ -88,10 +86,10 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
               </FormItem>
             )}
           />
-  
+
           <FormField
             control={form.control}
-            name='port'
+            name="port"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Port</FormLabel>
@@ -106,7 +104,7 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
 
         <FormField
           control={form.control}
-          name='username'
+          name="username"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Username</FormLabel>
@@ -120,7 +118,7 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
 
         <FormField
           control={form.control}
-          name='password'
+          name="password"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Password</FormLabel>
@@ -134,7 +132,7 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
 
         <FormField
           control={form.control}
-          name='url'
+          name="url"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Url</FormLabel>
@@ -148,13 +146,13 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
 
         <FormField
           control={form.control}
-          name='ssl'
+          name="ssl"
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center space-x-2">
-                <FormLabel htmlFor="ssl-mode" >Ssl</FormLabel>
+                <FormLabel htmlFor="ssl-mode">Ssl</FormLabel>
                 <FormControl>
-                    <Switch id="ssl-mode" />
+                  <Switch id="ssl-mode" />
                 </FormControl>
               </div>
               <FormMessage />
@@ -163,16 +161,13 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
         />
 
         <div className="flex items-center">
-          <Button 
-            type="submit" 
-            disabled={isSubmitting || !isValid}
-          >
+          <Button type="submit" disabled={isSubmitting || !isValid}>
             Submit
           </Button>
-          <Button 
-            variant={"ghost"} 
-            className="ml-4 border" 
-            type="submit" 
+          <Button
+            variant={"ghost"}
+            className="ml-4 border"
+            type="submit"
             disabled={isSubmitting || !isValid}
           >
             Test Connection
@@ -180,6 +175,5 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
         </div>
       </form>
     </Form>
-  )
+  );
 }
-

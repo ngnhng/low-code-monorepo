@@ -1,9 +1,5 @@
 "use client";
-"use client";
 
-import * as React from "react";
-import * as LabelPrimitive from "@radix-ui/react-label";
-import { Slot } from "@radix-ui/react-slot";
 import * as React from "react";
 import * as LabelPrimitive from "@radix-ui/react-label";
 import { Slot } from "@radix-ui/react-slot";
@@ -19,7 +15,6 @@ import {
 import { cn } from "../lib/utils";
 import { Label } from "../label";
 
-const Form = FormProvider;
 const Form = FormProvider;
 
 type FormFieldContextValue<
