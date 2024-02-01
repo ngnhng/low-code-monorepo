@@ -7,6 +7,8 @@ import Sidebar from 'components/menus/sidebar/sidebar';
 import Header from '../../components/header/header';
 import { NavigationMenuProps as NavigationMenuProperties } from '../../types/navigation';
 import { UserAuthWrapper } from '../../lib/wrappers/user-auth-wrapper';
+import { usePathname } from 'next/navigation';
+import { Brush, Database, Workflow, Settings2 } from 'lucide-react';
 
 function useNavigation(params: { projectId: string }) {
   return useMemo(
@@ -15,22 +17,22 @@ function useNavigation(params: { projectId: string }) {
         {
           href: `/${params['projectId']}/edit`,
           label: 'UI Editor',
-          image: 'edit.png',
+          image: <Brush size={16} />,
         },
         {
           href: `/${params['projectId']}/data`,
           label: 'Database',
-          image: 'db.png',
+          image: <Database size={16} />,
         },
         {
           href: `/${params['projectId']}/workflow`,
           label: 'Workflow',
-          image: 'workflow.png',
+          image: <Workflow size={16} />,
         },
         {
           href: `/${params['projectId']}/settings`,
           label: 'Project Settings',
-          image: 'settings.png',
+          image: <Settings2 size={16} />,
         },
       ],
     }),
@@ -47,22 +49,22 @@ export default function Layout({
 }>): JSX.Element {
   return (
     <UserAuthWrapper>
-      {renderContent(useNavigation(params), params.projectId, children)}
+      {renderContent(useNavigation(params), children)}
     </UserAuthWrapper>
   );
 }
 
 function renderContent(
   navigations: NavigationMenuProperties,
-  path: string,
   children: React.ReactNode,
 ) {
+  const pathName = usePathname();
   return (
-    <div className="main">
+    <div className="w-full h-full flex flex-col">
       <Header headerTitle="Project Name" />
-      <div className="content">
-        <Sidebar navigation={navigations} selectedPage={path ?? ''} />
-        <div className="childContainer">{children}</div>
+      <div className="w-full flex px-[50px] py-[20px] gap-2.5 flex-1">
+        <Sidebar navigation={navigations} selectedPage={pathName ?? ''} />
+        <div className="flex-1 rounded-md border-2 border-slate-300">{children}</div>
       </div>
     </div>
   );
