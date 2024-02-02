@@ -60,11 +60,13 @@ function renderContent(
 ) {
   const pathName = usePathname();
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col overflow-hidden">
       <Header headerTitle="Project Name" />
-      <div className="w-full flex px-[50px] py-[20px] gap-2.5 flex-1">
-        <Sidebar navigation={navigations} selectedPage={pathName ?? ''} />
-        <div className="flex-1">{children}</div>
+      <div className="flex-1 overflow-hidden">
+        <div className="w-full h-full flex px-[50px] py-[20px] gap-2.5">
+          <Sidebar navigation={navigations} selectedPage={pathName ?? ''} />
+          <div className="flex-1 flex">{children}</div>
+        </div>
       </div>
     </div>
   );
