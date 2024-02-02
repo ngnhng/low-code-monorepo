@@ -15,9 +15,9 @@ export default function Sidebar({
       {navigation.items.map((item) => (
         <Link
           href={item.href}
-          className={`w-[200px] py-2.5 px-5 flex gap-2.5 items-center hover:bg-slate-50 rounded-md box-border ${
+          className={`w-[200px] py-2.5 px-5 flex gap-2.5 items-center hover:bg-slate-50 rounded-md box-content ${
             selectedPage === item.href
-              ? 'bg-slate-50 border-2 border-slate-300'
+              ? 'bg-slate-50 ring-2 ring-slate-300'
               : ''
           }`}
           key={item.href}

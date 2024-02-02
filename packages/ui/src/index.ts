@@ -7,3 +7,5 @@ export * from './select';
 export * from './table';
 export * from './popover';
 export * from './switch';
+export * from './dialog';
+export * from './command';
