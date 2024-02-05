@@ -1,13 +1,15 @@
+'use client';
+
 import { makeObservable, observable, action } from 'mobx';
 import { RootStore } from './root';
 import { BpmnWorkflowService } from 'services/bpmn-workflow.service';
 
 export interface IWorkflowStore {
-  renderer: any;
-  setRenderer: (renderer: any) => void;
+  newRenderer: (options?: any) => Promise<any> | any;
+  //  setRenderer: (renderer: any) => void;
 
-  workflow: any;
-  setWorkflow: (workflow: any) => void;
+  currentWorkflow: any;
+  setCurrentWorkflow: (workflow: any) => void;
 
   //  fetchWorkflow: (id: string) => Promise<any>;
 
@@ -16,9 +18,7 @@ export interface IWorkflowStore {
 
 export class WorkflowStore {
   //observables
-  renderer: any;
-
-  workflow: any;
+  currentWorkflow: any; 
 
   // root store
   rootStore: RootStore;
@@ -29,11 +29,10 @@ export class WorkflowStore {
   constructor(_rootStore: RootStore) {
     makeObservable(this, {
       //observable
-      renderer: observable.ref,
-      workflow: observable.ref,
+      currentWorkflow: observable.ref,
       //action
-      setRenderer: action,
-      setWorkflow: action,
+      //  setRenderer: action,
+      setCurrentWorkflow: action,
       //  fetchWorkflow: action,
       //  fetchWorkflowList: action,
       //computed
@@ -41,17 +40,18 @@ export class WorkflowStore {
 
     this.rootStore = _rootStore;
     this.workflowService = new BpmnWorkflowService();
-
-    this.renderer = undefined;
-    this.workflow = undefined;
   }
 
-  setRenderer = async (renderer: any) => {
-    this.renderer = await this.workflowService.renderer();
+  newRenderer = (options?: any) => {
+    return this.workflowService.renderer(options);
   };
 
-  setWorkflow = (workflow: any) => {
-    this.workflow = workflow;
+  //  setRenderer = async (renderer: any) => {
+  //    this.renderer = await this.workflowService.renderer();
+  //  };
+
+  setCurrentWorkflow = (workflow: any) => {
+    this.currentWorkflow = workflow;
   };
 
   //  fetchWorkflow = async (id: string) => {

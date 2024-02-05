@@ -1,24 +1,25 @@
 {
-  "name": "my-turborepo",
-  "private": true,
-  "scripts": {
-    "build": "turbo build --filter=web...",
-    "dev": "turbo dev --filter=web",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
-  },
-  "devDependencies": {
-    "@repo/eslint-config": "*",
-    "@repo/typescript-config": "*",
-	"@repo/tailwind-config": "*",
-    "prettier": "^3.1.0",
-    "turbo": "latest"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+    "name": "my-turborepo",
+    "private": true,
+    "scripts": {
+        "build": "turbo build --filter=web...",
+        "dev": "turbo dev --filter=web...",
+        "lint": "turbo lint",
+        "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    },
+    "devDependencies": {
+        "@repo/eslint-config": "*",
+        "@repo/typescript-config": "*",
+        "@repo/tailwind-config": "*",
+        "bpmn-js-custom": "*",
+        "prettier": "^3.1.0",
+        "turbo": "latest"
+    },
+    "engines": {
+        "node": ">=18"
+    },
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ]
 }
