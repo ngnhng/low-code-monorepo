@@ -15,7 +15,7 @@
     ],
     "scripts": {
         "build": "tsup src/index.ts --format esm,cjs --dts --external react --minify",
-        "dev": "tsup src/index.ts --format esm,cjs --watch --dts --external react",
+        "dev": "tsup src/index.ts --format esm,cjs --watch --external react",
         "lint": "eslint . --max-warnings 0",
         "generate:component": "turbo gen react-component"
     },
@@ -37,7 +37,8 @@
         "@radix-ui/react-tabs": "^1.0.4",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.0",
-        "lucide-react": "^0.314.0",
+        "lucide-react": "^0.322.0",
+        "react-resizable-panels": "^2.0.3",
         "tailwind-merge": "^2.2.1",
         "tailwindcss-animate": "^1.0.7",
         "tsup": "^8.0.1"

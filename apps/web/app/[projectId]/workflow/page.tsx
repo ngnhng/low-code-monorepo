@@ -11,6 +11,7 @@ import { useMobxStore } from 'lib/mobx/store-provider';
 import { observer } from 'mobx-react-lite';
 import useSWR from 'swr';
 import PropertiesPanel from './_components/modeler-panel';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@repo/ui';
 
 export default function Page() {
   const {
@@ -31,7 +32,7 @@ export default function Page() {
     }
   }, [data]);
 
-  if (isLoading) return <div>Loading Modeler...</div>;
+  if (isLoading || error) return <div>Loading...</div>;
 
   return <Modeler />;
 }
@@ -74,8 +75,8 @@ const Modeler = observer(() => {
 
   return (
     <>
-      <div className="flex flex-col h-screen">
-        <div className="flex-grow flex">
+      <div className="h-screen">
+        {/*<div className="flex-grow flex">
           <div ref={containerRef} className="flex-grow"></div>
           <div ref={sidebarRef} className="w-1/4 bg-gray-200"></div>
         </div>
@@ -83,8 +84,60 @@ const Modeler = observer(() => {
           {modeler !== null && (
             <PropertiesPanel modeler={modeler} container={panelRef} />
           )}
-        </div>
+        </div>*/}
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="w-full h-full rounded-lg border"
+        >
+          <ResizablePanel defaultSize={50}>
+            <div className="h-full">
+              <div ref={containerRef} className="bg-gray h-full"></div>
+            </div>
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize={50}>
+            <ResizablePanelGroup direction="vertical">
+              <ResizablePanel defaultSize={25}>
+                <div ref={sidebarRef} className="bg-gray-200 h-full"></div>
+              </ResizablePanel>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize={50}>
+                <div className="bg-gray-200 h-full">
+                  {modeler !== null && (
+                    <PropertiesPanel modeler={modeler} container={panelRef} />
+                  )}
+                </div>
+              </ResizablePanel>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize={25} className="overflow-auto">
+                <div>{modeler !== null && <DebugXML modeler={modeler} />}</div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </>
   );
 });
+
+const DebugXML: FC<{ modeler: any }> = ({ modeler }) => {
+  const [xml, setXml] = useState('');
+  useEffect(() => {
+    const update = () => {
+      modeler.saveXML({ format: true }).then(({ xml }) => {
+        setXml(xml);
+      });
+    };
+    modeler.on('commandStack.changed', update);
+
+    return () => {
+      modeler.off('commandStack.changed', update);
+    };
+  }, [modeler]);
+
+  return (
+    <div className="overflow-auto">
+      <pre>{xml}</pre>
+    </div>
+  );
+};

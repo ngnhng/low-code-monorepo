@@ -29,7 +29,7 @@
     "clsx": "^2.1.0",
     "eslint-config-custom": "*",
     "js-cookie": "^3.0.5",
-    "lucide-react": "^0.312.0",
+    "lucide-react": "^0.322.0",
     "mobx": "^6.12.0",
     "mobx-react-lite": "^4.0.5",
     "next": "^14.0.3",

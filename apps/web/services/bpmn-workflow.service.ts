@@ -7,7 +7,8 @@ import {
   BpmnPropertiesPanelModule,
   BpmnPropertiesProviderModule,
 } from 'bpmn-js-properties-panel';
-import HonkifyModule from 'bpmn-js-custom';
+import CustomModule from 'bpmn-js-custom';
+import { customModdle } from 'bpmn-js-custom';
 
 export class BpmnWorkflowService extends APIService {
   constructor() {
@@ -32,13 +33,19 @@ export class BpmnWorkflowService extends APIService {
     const additionalModules = [
       BpmnPropertiesPanelModule,
       BpmnPropertiesProviderModule,
-      HonkifyModule,
+      CustomModule,
     ];
+
+    const moddleExtensions = {
+      custom: customModdle[1],
+    };
 
     const modeler = new BpmnModeler({
       ...options,
       additionalModules,
+      moddleExtensions,
     });
+
     return modeler;
   }
 }

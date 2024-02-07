@@ -7,8 +7,8 @@
     },
     "license": "MIT",
     "devDependencies": {
-        "eslint": "^6.5.1",
-        "eslint-plugin-bpmn-io": "^0.10.0"
+        "eslint": "^8.22.0",
+        "eslint-plugin-bpmn-io": "^1.0.0"
     },
     "dependencies": {
         "diagram-js": "^5.0.2",
