@@ -12,6 +12,7 @@
   "prettier": "@vercel/style-guide/prettier",
   "dependencies": {
     "@bpmn-io/properties-panel": "^3.17.0",
+    "@hookform/resolvers": "^3.3.4",
     "@measured/puck": "^0.13.1",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
@@ -39,6 +40,7 @@
     "react-datasheet-grid": "^4.11.3",
     "react-dom": "^18.2.0",
     "react-feather": "^2.0.10",
+    "react-hook-form": "^7.50.1",
     "react-querybuilder": "^6.5.4",
     "reactflow": "^11.9.4",
     "server-only": "^0.0.1",

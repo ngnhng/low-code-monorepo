@@ -3,7 +3,7 @@ import PropertiesView from './properties-view';
 
 const PropertiesPanel = ({ modeler, container }) => {
   return (
-    <div ref={container}>
+    <div ref={container} className="h-full">
       <PropertiesView modeler={modeler} />
     </div>
   );

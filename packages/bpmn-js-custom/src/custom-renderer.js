@@ -17,7 +17,8 @@ const HIGH_PRIORITY = 1500,
     TASK_BORDER_RADIUS = 2,
     COLOR_GREEN = "#52B415",
     COLOR_YELLOW = "#ffc800",
-    COLOR_RED = "#cc0000";
+    COLOR_RED = "#cc0000",
+    COLOR_BLACK = "#000";
 
 export default class CustomRenderer extends BaseRenderer {
     constructor(eventBus, bpmnRenderer) {
@@ -37,35 +38,61 @@ export default class CustomRenderer extends BaseRenderer {
         const suitabilityScore = this.getSuitabilityScore(element);
 
         if (!isNil(suitabilityScore)) {
-            const color = this.getColor(suitabilityScore);
+            //const color = this.getColor(suitabilityScore);
 
-            const rect = drawRect(
-                parentNode,
-                50,
-                20,
-                TASK_BORDER_RADIUS,
-                color
-            );
+            //const rect = drawRect(
+            //    parentNode,
+            //    50,
+            //    20,
+            //    TASK_BORDER_RADIUS,
+            //    color
+            //);
 
-            svgAttr(rect, {
-                transform: "translate(-20, -10)",
-            });
+            //svgAttr(rect, {
+            //    transform: "translate(-20, -10)",
+            //});
 
-            var text = svgCreate("text");
+            //var text = svgCreate("text");
 
-            svgAttr(text, {
-                fill: "#fff",
-                transform: "translate(-15, 5)",
-            });
+            //svgAttr(text, {
+            //    fill: "#fff",
+            //    transform: "translate(-15, 5)",
+            //});
 
-            svgClasses(text).add("djs-label");
+            //svgClasses(text).add("djs-label");
 
-            svgAppend(text, document.createTextNode(suitabilityScore));
+            //svgAppend(text, document.createTextNode(suitabilityScore));
 
-            svgAppend(parentNode, text);
+            //svgAppend(parentNode, text);
+
+            this.drawCustomQA(parentNode);
         }
 
         return shape;
+    }
+
+    drawCustomQA(parentNode) {
+        const background = drawRect(
+            parentNode,
+            50,
+            20,
+            TASK_BORDER_RADIUS,
+            COLOR_BLACK
+        );
+        svgAttr(background, {
+            fill: "#000",
+            transform: "translate(8, 52)",
+        });
+
+        const text = svgCreate("text");
+        svgAttr(text, {
+			fill: "#fff",
+			transform: "translate(15, 69)",
+		});
+
+        svgAppend(text, document.createTextNode("QA"));
+
+        svgAppend(parentNode, text);
     }
 
     getShapePath(shape) {

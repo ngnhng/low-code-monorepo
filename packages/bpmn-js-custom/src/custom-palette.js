@@ -1,3 +1,5 @@
+import QAIcon from "./custom-icons";
+
 const SUITABILITY_SCORE_HIGH = 100,
     SUITABILITY_SCORE_AVERGE = 50,
     SUITABILITY_SCORE_LOW = 25;
@@ -15,14 +17,14 @@ export default class CustomPalette {
     getPaletteEntries(element) {
         const { bpmnFactory, create, elementFactory, translate } = this;
 
-        function createTask(suitabilityScore) {
+        function createTask(type) {
             return function (event) {
-                const businessObject = bpmnFactory.create("bpmn:ServiceTask");
+                const businessObject = bpmnFactory.create(type);
 
-                businessObject.suitable = suitabilityScore;
+                businessObject.suitable = 50;
 
                 const shape = elementFactory.createShape({
-                    type: "bpmn:ServiceTask",
+                    type: type,
                     businessObject: businessObject,
                 });
 
@@ -31,33 +33,33 @@ export default class CustomPalette {
         }
 
         return {
-            "create.low-task": {
+            "create.qa-task": {
                 group: "activity",
-                className: "bpmn-icon-task red",
-                title: translate("Create Task with low suitability score"),
+                title: translate("Create QA Task"),
+                imageUrl: QAIcon.dataUrl,
                 action: {
-                    dragstart: createTask(SUITABILITY_SCORE_LOW),
-                    click: createTask(SUITABILITY_SCORE_LOW),
+                    dragstart: createTask("bpmn:ServiceTask"),
+                    click: createTask("bpmn:ServiceTask"),
                 },
             },
-            "create.average-task": {
-                group: "activity",
-                className: "bpmn-icon-task yellow",
-                title: translate("Create Task with average suitability score"),
-                action: {
-                    dragstart: createTask(SUITABILITY_SCORE_AVERGE),
-                    click: createTask(SUITABILITY_SCORE_AVERGE),
-                },
-            },
-            "create.high-task": {
-                group: "activity",
-                className: "bpmn-icon-task green",
-                title: translate("Create Task with high suitability score"),
-                action: {
-                    dragstart: createTask(SUITABILITY_SCORE_HIGH),
-                    click: createTask(SUITABILITY_SCORE_HIGH),
-                },
-            },
+            //"create.average-task": {
+            //    group: "activity",
+            //    className: "bpmn-icon-task yellow",
+            //    title: translate("Create Task with average suitability score"),
+            //    action: {
+            //        dragstart: createTask(SUITABILITY_SCORE_AVERGE),
+            //        click: createTask(SUITABILITY_SCORE_AVERGE),
+            //    },
+            //},
+            //"create.high-task": {
+            //    group: "activity",
+            //    className: "bpmn-icon-task green",
+            //    title: translate("Create Task with high suitability score"),
+            //    action: {
+            //        dragstart: createTask(SUITABILITY_SCORE_HIGH),
+            //        click: createTask(SUITABILITY_SCORE_HIGH),
+            //    },
+            //},
         };
     }
 }
