@@ -7,6 +7,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
+  Button,
 } from '@repo/ui';
 
 const initialState = {
@@ -146,23 +147,17 @@ export function ElementProperties({ element, modeler }) {
         <AccordionItem value="actions">
           <AccordionTrigger>Actions</AccordionTrigger>
           <AccordionContent>
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-1">
               {is(element, 'bpmn:Task') && !is(element, 'bpmn:ServiceTask') && (
-                <button className="ml-2" onClick={makeServiceTask}>
-                  Make Service Task
-                </button>
+                <Button onClick={makeServiceTask}>Make Service Task</Button>
               )}
               {is(element, 'bpmn:Event') &&
                 !hasDefinition(element, 'bpmn:MessageEventDefinition') && (
-                  <button className="ml-2" onClick={makeMessageEvent}>
-                    Make Message Event
-                  </button>
+                  <Button onClick={makeMessageEvent}>Make Message Event</Button>
                 )}
 
               {is(element, 'bpmn:Task') && !isTimeoutConfigured(element) && (
-                <button className="ml-2" onClick={attachTimeout}>
-                  Attach Timeout
-                </button>
+                <Button onClick={attachTimeout}>Attach Timeout</Button>
               )}
             </div>
           </AccordionContent>

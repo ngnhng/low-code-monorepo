@@ -78,47 +78,45 @@ const Modeler = observer(() => {
   }
 
   return (
-    <>
-      <div className="h-screen">
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="w-full h-full rounded-lg border"
-        >
-          <ResizablePanel defaultSize={50}>
-            <div className="h-full">
-              <div ref={containerRef} className="bg-gray h-full"></div>
-            </div>
-          </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={50}>
-            <ResizablePanelGroup direction="vertical">
-              <ResizablePanel defaultSize={35}>
-                <ScrollArea className="h-[calc(100%)]">
-                  {/*<div ref={sidebarRef} className="bg-gray-200 h-full"></div>*/}
-                  <div className="h-full">
-                    {modeler !== null && <DebugXML modeler={modeler} />}
-                  </div>
-                </ScrollArea>
-              </ResizablePanel>
-              <ResizableHandle withHandle />
-              <ResizablePanel defaultSize={65}>
-                <ScrollArea className="h-[calc(100%)]">
-                  <div className="h-full">
-                    {modeler !== null && (
-                      <PropertiesPanel modeler={modeler} container={panelRef} />
-                    )}
-                  </div>
-                </ScrollArea>
-              </ResizablePanel>
-              {/*<ResizableHandle withHandle />
+    <div className="flex-1 flex flex-col gap-2.5">
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="h-full rounded-lg border"
+      >
+        <ResizablePanel defaultSize={50}>
+          <div className="h-full max-w-full">
+            <div ref={containerRef} className="h-full"></div>
+          </div>
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={50}>
+          <ResizablePanelGroup direction="vertical">
+            <ResizablePanel defaultSize={35}>
+              <ScrollArea className="h-[calc(100%)]">
+                {/*<div ref={sidebarRef} className="bg-gray-200 h-full"></div>*/}
+                <div className="h-full">
+                  {modeler !== null && <DebugXML modeler={modeler} />}
+                </div>
+              </ScrollArea>
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={65}>
+              <ScrollArea className="h-[calc(100%)]">
+                <div className="h-full">
+                  {modeler !== null && (
+                    <PropertiesPanel modeler={modeler} container={panelRef} />
+                  )}
+                </div>
+              </ScrollArea>
+            </ResizablePanel>
+            {/*<ResizableHandle withHandle />
               <ResizablePanel defaultSize={25} className="overflow-auto">
                 <div>{modeler !== null && <DebugXML modeler={modeler} />}</div>
               </ResizablePanel>*/}
-            </ResizablePanelGroup>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-    </>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
   );
 });
 

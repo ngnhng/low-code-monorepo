@@ -2,7 +2,7 @@ import styles from './style.module.css';
 
 import React from 'react';
 import { ComponentConfig } from '@measured/puck';
-import { getClassNameFactory } from 'lib';
+import getClassNameFactory from 'lib/classname-factory/get-classname-factory';
 import { Type, ChevronDown } from 'react-feather';
 
 import 'chart.js/auto';

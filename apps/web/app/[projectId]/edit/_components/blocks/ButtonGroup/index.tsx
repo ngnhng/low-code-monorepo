@@ -2,7 +2,7 @@
 import React from "react";
 import { ComponentConfig } from "@measured/puck";
 import styles from "./styles.module.css";
-import { getClassNameFactory } from "lib";
+import getClassNameFactory from "lib/classname-factory/get-classname-factory";
 import { Button } from "@measured/puck";
 import { Section } from "../../Section";
 
