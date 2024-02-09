@@ -1,0 +1,63 @@
+{
+    "app": {
+        "server": {
+            "address": "localhost",
+            "port": 3000,
+            "rate_limit": {
+                "enabled": true,
+                "max": 1000,
+                "duration": "1m"
+            },
+            "context": {
+                "timeout": "1s"
+            }
+        },
+        "login": {
+            "timeout": "5s"
+        },
+        "bypass_db": true,
+		"log_level": "debug",
+		"frontend_url": "http://localhost:3000"
+    },
+	"secret": {
+		"jwt": {
+			"access": {
+				"key": "secret_213455342425",
+				"expiration": "6h"
+			},
+			"refresh": {
+				"key": "secret_345678654332453",
+				"expiration": "12h"
+			}
+		}
+	},
+    "repository": {
+        "user": {
+            "store": "postgres"
+        }
+    },
+    "database": {
+        "postgres": {
+            "host": "postgres",
+            "port": 5432,
+            "user": "postgres",
+            "password": "postgres",
+            "name": "user_api"
+        },
+        "redis": {
+            "host": "localhost",
+            "port": 6379,
+            "password": "redis",
+			"db": 0
+        }
+    },
+	"oauth2": {
+		"provider": {
+			"google": {
+				"client_id": "client_id",
+				"client_secret": "client_secret",
+				"redirect_url": "http://localhost:3000/auth/google/callback"
+			}
+		}
+	}
+}
