@@ -2,7 +2,6 @@ import styles from './styles.module.css';
 
 import Link from 'next/link';
 import { NavigationMenuProps } from 'types/navigation';
-import Icon from 'components/icons/icon';
 
 export default function Sidebar({
   selectedPage,
@@ -12,21 +11,19 @@ export default function Sidebar({
   navigation: NavigationMenuProps;
 }): JSX.Element {
   return (
-    <div className={styles.sideBar}>
+    <div className="flex flex-col gap-2.5">
       {navigation.items.map((item) => (
         <Link
           href={item.href}
-          className={`${styles.navLink} ${
-            selectedPage === item.href ? 'selected' : ''
+          className={`w-[200px] py-2.5 px-5 flex gap-2.5 items-center hover:bg-slate-50 rounded-md box-content ${
+            selectedPage === item.href
+              ? 'bg-slate-50 ring-2 ring-slate-300'
+              : ''
           }`}
           key={item.href}
         >
-          {item.image ? (
-            <Icon src={`/${item.image}`} width={24} height={24} />
-          ) : (
-            ''
-          )}
-          {item.label}
+          {item.image}
+          <div className='font-semibold text-sm'>{item.label}</div>
         </Link>
       ))}
     </div>
