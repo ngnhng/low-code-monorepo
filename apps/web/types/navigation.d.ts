@@ -1,7 +1,7 @@
 export type NavigationMenuItems = {
   label: string;
   href: string;
-  image: string;
+  image: JSX.Element;
   children?: NavigationMenuItems[];
 }[];
 
