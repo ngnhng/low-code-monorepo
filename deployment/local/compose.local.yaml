@@ -1,0 +1,75 @@
+version: "3.8"
+
+networks:
+    dev-network:
+        driver: bridge
+
+volumes:
+    user-data:
+    # table-data:
+
+services:
+    reverse-proxy:
+        # The official v2 Traefik docker image
+        image: traefik:v2.10
+        # Enables the web UI and tells Traefik to listen to docker
+        command: --api.insecure=true --providers.docker --entrypoints.web.address=:80 --accesslog=true
+        ports:
+            # The HTTP port
+            - "80:80"
+            # The Web UI (enabled by --api.insecure=true)
+            - "8080:8080"
+        networks:
+            - dev-network
+        volumes:
+            # So that Traefik can listen to the Docker events
+            - /var/run/docker.sock:/var/run/docker.sock
+
+    user-api:
+        build:
+            context: ../../apiserver/user-api
+            dockerfile: Dockerfile.dev
+        networks:
+            - dev-network
+        volumes:
+          - ../../apiserver/user-api:/app
+          - /app/node_modules # exclude node_modules from the volume
+        depends_on:
+            reverse-proxy:
+                condition: service_started
+            user-db:
+                condition: service_healthy
+        
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.user-api.rule=Host(`localhost`) && PathPrefix(`/user-api`)"
+            - "traefik.http.routers.user-api.entrypoints=web"
+            - "traefik.http.routers.user-api.middlewares=stripprefix"
+            - "traefik.http.middlewares.stripprefix.stripprefix.prefixes=/user-api"
+
+    # table-api:
+    #   build:
+    #     context: .
+    #     dockerfile: ../../apiserver/table-api/Dockerfile.dev
+    #     networks:
+    #         - dev-network
+    #     volumes:
+    #         - table-data
+    #     depends_on:
+    #       - api-gateway
+    #       - table-db
+
+    user-db:
+        build:
+            context: ../../apiserver/user-db
+            dockerfile: Dockerfile.dev
+        healthcheck:
+            test: ["CMD", "pg_isready", "-U", "postgres"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 5s
+        networks:
+            - dev-network
+        volumes:
+            - user-data:/var/lib/postgresql/data
