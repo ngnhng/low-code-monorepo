@@ -1,0 +1,12 @@
+FROM postgres:16-alpine
+
+ENV POSTGRES_USERNAME=low-code
+ENV POSTGRES_PASSWORD=lowcodetableapi
+ENV POSTGRES_DB=table-db
+
+ENV PGSQL_AUTHENTICATOR=authenticator
+ENV PGSQL_AUTHENTICATOR_PASSWORD=chameleonpassword
+
+# Copy the initialization scripts into the Docker image
+COPY ./init.sh /docker-entrypoint-initdb.d/init-table-db.sh
+RUN chmod +x /docker-entrypoint-initdb.d/init-table-db.sh
