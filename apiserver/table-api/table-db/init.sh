@@ -3,7 +3,10 @@ set -e;
 if [ -n "${POSTGRES_USERNAME:-}" ] && [ -n "${POSTGRES_PASSWORD:-}" ]; then
 	# 1. Use the default 'postgres' superuser to create the new role and database
 	# 2. create authenticator and webuser roles
-	# TODO: add policies, currently the webuser do not have token expiration
+	# 3. grant webuser to authenticator
+	# 4. create anon role for anonymous access to swagger api spec
+	# 5. TODO: create policies for webuser
+	#  currently the webuser do not have token expiration
 	psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
 	    CREATE ROLE "${POSTGRES_USERNAME}" WITH LOGIN PASSWORD '${POSTGRES_PASSWORD}';
 		ALTER ROLE "${POSTGRES_USERNAME}" SUPERUSER;
@@ -23,6 +26,9 @@ if [ -n "${POSTGRES_USERNAME:-}" ] && [ -n "${POSTGRES_PASSWORD:-}" ]; then
 		GRANT ALL PRIVILEGES ON DATABASE "${POSTGRES_DB}" TO webuser;
 
 		GRANT webuser TO "${PGSQL_AUTHENTICATOR}";
+
+		CREATE ROLE anon NOLOGIN;
+
 	EOSQL
 else
 	echo "SETUP INFO: No Environment variables given!"
