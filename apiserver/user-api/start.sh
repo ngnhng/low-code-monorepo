@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Run the migrations
-#yarn run db:migrate
+yarn run db:migrate
 
 # Start the application
 yarn run start:dev
