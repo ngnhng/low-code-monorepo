@@ -1,5 +1,6 @@
-import { GetTableDataResponse } from 'types/table-data';
+import { GetTableDataResponse, DataTable } from 'types/table-data';
 import { RouteHandlerAPIService } from './route-handler.service';
+import { TableItem } from 'app/[projectId]/data/_components/table-list/table-list';
 
 export class TableDataService extends RouteHandlerAPIService {
   constructor() {
@@ -34,6 +35,31 @@ export class TableDataService extends RouteHandlerAPIService {
       },
 	  maxIndex: response.data.data.maxIndex,
     };
+
+    return result;
+  }
+
+  async postTableData(): Promise<DataTable> {
+    const result = {
+      columns: [],
+      rows: [],
+      pagination: {
+        page: 0,
+        pageSize: 0,
+        totalPage: 0,
+      },
+      maxIndex: 0,
+    }
+    
+    return result;
+  }
+
+  async getTables({ projectId }): Promise<TableItem[]> {
+    const response = await this.getServerSide(
+      `/api/mock/${projectId}/data/all`,
+    );
+
+    const result: TableItem[] = response.data;
 
     return result;
   }

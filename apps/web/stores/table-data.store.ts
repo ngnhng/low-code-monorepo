@@ -15,6 +15,7 @@ export interface ITableDataStore {
   appliedQueries: TableQueries;
   fetchTableData: (a0: GetTableDataParams) => Promise<GetTableDataResponse>;
   fetchAppliedQueries: (tableId: string) => any;
+  fetchTables: () => any;
 }
 
 export class TableDataStore implements ITableDataStore {
@@ -90,5 +91,24 @@ export class TableDataStore implements ITableDataStore {
           tableId
         ]?.query ?? {},
     };
+  };
+
+  fetchTables = async () => {
+    try {
+      const response = await this.tableDataService.getTables({
+        projectId: this.rootStore.projectData.currentProjectId,
+      })
+
+      if (response) {
+        // validate
+        return response;
+      } else {
+        throw new Error('Table data not found');
+      }
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+
   };
 }

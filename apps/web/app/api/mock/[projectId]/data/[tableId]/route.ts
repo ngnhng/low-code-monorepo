@@ -3,7 +3,8 @@ import path from 'path';
 import { faker } from '@faker-js/faker';
 import { type NextRequest } from 'next/server';
 
-const columns = [
+// * User Column
+export const columns = [
   {
     id: 'id',
     label: 'ID',
@@ -51,7 +52,80 @@ const columns = [
   },
 ];
 
-function createRandomUser() {
+export const addresses = [
+  {
+    id: 'id',
+    label: 'ID',
+    type: 'number',
+    isActive: true,
+    isPrimaryKey: 'true',
+    isForeignKey: 'false',
+    foreignKeyId: '',
+  },
+  {
+    id: 'city',
+    label: 'City',
+    type: 'text',
+    isActive: true,
+    isPrimaryKey: 'false',
+    isForeignKey: 'false',
+    foreignKeyId: '',
+  },
+  {
+    id: 'country',
+    label: 'Country',
+    type: 'text',
+    isActive: true,
+    isPrimaryKey: 'false',
+    isForeignKey: 'false',
+    foreignKeyId: '',
+  },
+  {
+    id: 'userID',
+    label: 'User',
+    type: 'number',
+    isActive: true,
+    isPrimaryKey: 'false',
+    isForeignKey: 'true',
+    foreignKeyId: 'id',
+  },
+]
+
+export const posts = [
+  {
+    id: 'id',
+    label: 'ID',
+    type: 'number',
+    isActive: true,
+    isPrimaryKey: 'true',
+    isForeignKey: 'false',
+    foreignKeyId: '',
+  },
+  {
+    id: 'title',
+    label: 'Title',
+    type: 'text',
+    isActive: true,
+    isPrimaryKey: 'false',
+    isForeignKey: 'false',
+    foreignKeyId: '',
+  },
+]
+
+export function createRandomAddresses() {
+  return {
+    city: faker.location.city(),
+    country: faker.location.country(),
+  }
+}
+
+export function createRandomPosts() {
+  return {
+    title: faker.lorem.sentence(),
+  }
+}
+
+export function createRandomUser() {
   return {
     name: faker.person.fullName(),
     username: faker.person.lastName(),
@@ -60,7 +134,31 @@ function createRandomUser() {
   };
 }
 
-function generateMockData(size: number): any[] {
+export function generateMockAddresses(size: number) {
+  const data: any = [];
+  for (let i = 1; i < size; i++) {
+    data.push({
+      id: i,
+    ...createRandomAddresses(),
+    });
+  }
+
+  return data;
+}
+
+export function generateMockPosts(size: number) {
+  const data: any = [];
+  for (let i = 1; i < size; i++) {
+    data.push({
+      id: i,
+  ...createRandomPosts(),
+    });
+  }
+
+  return data;
+}
+
+export function generateMockData(size: number): any[] {
   const data: any = [];
   for (let i = 1; i < size; i++) {
     data.push({

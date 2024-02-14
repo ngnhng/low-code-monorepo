@@ -80,8 +80,8 @@ export default function Page({ params: { tableId } }) {
 function EntityNode({ data }: { data: { fields: ColumnDef[] | [] } }) {
   return (
     <div className="bg-primary rounded-custom p-4 ">
-      {data.fields.map((field) => (
-        <div>{field.label}</div>
+      {data.fields.map((field, index) => (
+        <div key={index}>{field.label}</div>
       ))}
     </div>
   );

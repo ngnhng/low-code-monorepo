@@ -36,10 +36,12 @@ export default function Page({ params: { tableId } }) {
   );
 
   const handleCommit = () => {
+    // TODO: axios data
     console.log('committing data', data);
   };
 
   const handleQuery = (query: any) => {
+    // TODO: query
     console.log('query', query);
   };
 
