@@ -14,32 +14,31 @@ services:
         image: traefik:v2.10
         # Enables the web UI and tells Traefik to listen to docker
         command:
+            #- "--log.level=DEBUG"
             - "--providers.docker=true"
             - "--providers.docker.exposedbydefault=false"
             - "--entrypoints.web.address=:80"
+            - "--entrypoints.websecure.address=:443"
             - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
             - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-            - "--entrypoints.websecure.address=:443"
             - "--api.dashboard=true"
-            - "--certificatesresolvers.letsencrypt.acme.email=mountngubinh@gmail.com"
-            - "--certificatesresolvers.letsencrypt.acme.storage=/certificates/acme.json"
-            - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-            - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=namedotcom"
+            - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+            #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+            - "--certificatesresolvers.myresolver.acme.email=mountngubinh@gmail.com"
+            - "--certificatesresolvers.myresolver.acme.storage=/certificates/acme.json"
         ports:
-            # The HTTP port
-            - "80:80"
+            - "443:443"
             # The Web UI (enabled by --api.insecure=true)
             - "8080:8080"
         networks:
             - dev-network
         volumes:
+            - ./certificates:/certificates
             # So that Traefik can listen to the Docker events
             - /var/run/docker.sock:/var/run/docker.sock
 
     user-api:
-        build:
-            context: ../../apiserver/user-api
-            dockerfile: Dockerfile.dev
+        image: "ghcr.io/nguyendhst/user-api:latest"
         networks:
             - dev-network
         volumes:
@@ -53,15 +52,12 @@ services:
 
         labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.user-api.rule=Host(`localhost`) && PathPrefix(`/user-api`)"
-            - "traefik.http.routers.user-api.entrypoints=web"
-            - "traefik.http.middlewares.user-api-stripprefix.stripprefix.prefixes=/user-api"
-            - "traefik.http.routers.user-api.middlewares=user-api-stripprefix@docker"
+            - "traefik.http.routers.user-api.rule=Host(`user.yalc.live`)"
+            - "traefik.http.routers.user-api.entrypoints=websecure"
+            - "traefik.http.routers.user-api.tls.certresolver=myresolver"
 
     table-api:
-        build:
-            context: ../../apiserver/table-api
-            dockerfile: Dockerfile.dev
+        image: "ghcr.io/nguyendhst/table-api:latest" 
         networks:
             - dev-network
         depends_on:
@@ -71,29 +67,12 @@ services:
                 condition: service_healthy
         labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.table-api.rule=Host(`localhost`) && PathPrefix(`/table-api`)"
-            - "traefik.http.routers.table-api.entrypoints=web"
-            - "traefik.http.middlewares.table-api-stripprefix.stripprefix.prefixes=/table-api"
-            - "traefik.http.routers.table-api.middlewares=table-api-stripprefix@docker"
-
-    table-api-swagger:
-        image: swaggerapi/swagger-ui
-        networks:
-            - dev-network
-        environment:
-            API_URL: http://table-api:3000/
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.table-api-swagger.rule=Host(`localhost`) && PathPrefix(`/tables/swagger`)"
-            - "traefik.http.routers.table-api-swagger.entrypoints=web"
-        depends_on:
-            table-api:
-                condition: service_started
+            - "traefik.http.routers.table-api.rule=Host(`table.yalc.live`)"
+            - "traefik.http.routers.table-api.entrypoints=websecure"
+            - "traefik.http.routers.table-api.tls.certresolver=myresolver"
 
     user-db:
-        build:
-            context: ../../apiserver/user-api/user-db
-            dockerfile: Dockerfile.dev
+        image: "ghcr.io/nguyendhst/user-db:latest"
         healthcheck:
             test: ["CMD", "pg_isready", "-U", "postgres"]
             interval: 30s
@@ -106,9 +85,7 @@ services:
             - user-data:/var/lib/postgresql/data
 
     table-db:
-        build:
-            context: ../../apiserver/table-api/table-db
-            dockerfile: Dockerfile.dev
+        image: "ghcr.io/nguyendhst/table-db:latest"
         healthcheck:
             test: ["CMD", "pg_isready", "-U", "postgres"]
             interval: 30s
