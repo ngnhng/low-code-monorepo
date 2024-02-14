@@ -3,6 +3,7 @@
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { toast } from 'sonner'
  
 import { Button, Textarea, Input, Switch, Label } from "@repo/ui"
 import {
@@ -32,8 +33,10 @@ const formSchema = z.object({
   password: z.string().min(1).optional(),
   ssl: z.boolean().optional(),
   // TODO: url - header - type - etc...
-  // TODO: query builder
-  url: z.string().min(1).url(),
+  // TODO: query params
+  url: z.string().min(1).url({
+    message: "Input must be an url `www.example.com`",
+  }),
 })
 export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -46,7 +49,12 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
   const { isSubmitting, isValid } = form.formState;
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
+    try {
+      // TODO: axios data
+      toast.success("Event has been created.")
+    } catch (error) {
+      toast.error('Something went wrong')
+    }
   }
 
   return (
