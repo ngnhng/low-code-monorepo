@@ -35,6 +35,7 @@ export interface TableItem {
   created: string;
   updated: string;
   status: string;
+  columns?: any[];
 }
 
 export const mockTableData: TableItem[] = [

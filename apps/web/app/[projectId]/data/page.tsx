@@ -33,18 +33,29 @@ import DBList from './_components/db-list/db-list';
 import { TextWithIcon } from 'components/text/text-with-icon';
 import { OptionDialog } from './_components/table-list/options-cards';
 import { useMobxStore } from '../../../lib/mobx/store-provider';
-import React, { ReactComponentElement, useRef } from 'react';
+import React, { ReactComponentElement, useEffect, useRef } from 'react';
 import { table } from 'console';
+
+import useSWR from 'swr';
 
 export default function Page() {
   const {
     projectData: { currentProjectId },
+    tableData: { fetchTables }
   } = useMobxStore();
 
-  console.log('currentProjectId', currentProjectId);
+  const { data, isLoading, error, mutate } = useSWR(
+    `TABLE_DATA-${currentProjectId}-all`,
+    () => fetchTables(),
+  );
+
+  if (!data || isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
-      <DatabaseTabs />
+      <DatabaseTabs data={data} columns={columns}/>
     </>
   );
 }
@@ -81,7 +92,7 @@ const HorizontalList = ({ children, ...props }) => (
   </ul>
 );
 
-export function DatabaseTabs() {
+export function DatabaseTabs({data, columns}) {
 
   // const tableRef = useRef<ReactComponentElement>(null);
 
@@ -148,7 +159,7 @@ export function DatabaseTabs() {
 
           <Separator className="my-4" />
           
-          <DataTable columns={columns} data={mockTableData} />
+          <DataTable columns={columns} data={data} />
         </div>
       </TabsContent>
       <TabsContent value="members">
