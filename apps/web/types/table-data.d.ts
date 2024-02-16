@@ -17,6 +17,19 @@ export type TableQueries = {
 
 export interface GetTableDataResponse extends DataTable {}
 
+export interface GetTablesResponse extends TableItem {}
+
+interface TableItem {
+  id: string;
+  name: string;
+  source: string;
+  created: string;
+  updated: string;
+  status: string;
+  columns: ColumnDef[];
+  foreignKey?: string;
+}
+
 interface TableOperation {
   type: 'update' | 'insert' | 'delete';
   row: number;
