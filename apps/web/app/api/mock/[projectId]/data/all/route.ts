@@ -8,13 +8,10 @@ import { type NextRequest } from 'next/server';
 import { 
    columns, 
    addresses, 
-   posts, 
-   generateMockAddresses, 
-   generateMockData, 
-   generateMockPosts 
+   posts,
 } from '../[tableId]/route';
 
-import { TableItem } from 'app/[projectId]/data/_components/table-list/table-list';
+import { TableItem } from 'types/table-data';
 
 const TABLES: TableItem[] = [
    {

@@ -2,16 +2,17 @@ import fs from 'fs/promises';
 import path from 'path';
 import { faker } from '@faker-js/faker';
 import { type NextRequest } from 'next/server';
+import { ColumnDef } from 'types/table-data';
 
 // * User Column
-export const columns = [
+export const columns: ColumnDef[] = [
   {
     id: 'id',
     label: 'ID',
     type: 'number',
     isActive: true,
-    isPrimaryKey: 'true',
-    isForeignKey: 'false',
+    isPrimaryKey: true,
+    isForeignKey: false,
     foreignKeyId: '',
   },
   {
@@ -19,8 +20,8 @@ export const columns = [
     label: 'Name',
     type: 'text',
     isActive: true,
-    isPrimaryKey: 'false',
-    isForeignKey: 'false',
+    isPrimaryKey: false,
+    isForeignKey: false,
     foreignKeyId: '',
   },
   {
@@ -28,8 +29,8 @@ export const columns = [
     label: 'Username',
     type: 'text',
     isActive: true,
-    isPrimaryKey: 'false',
-    isForeignKey: 'false',
+    isPrimaryKey: false,
+    isForeignKey: false,
     foreignKeyId: '',
   },
   {
@@ -37,8 +38,8 @@ export const columns = [
     label: 'Phone',
     type: 'text',
     isActive: true,
-    isPrimaryKey: 'false',
-    isForeignKey: 'false',
+    isPrimaryKey: false,
+    isForeignKey: false,
     foreignKeyId: '',
   },
   {
@@ -46,20 +47,20 @@ export const columns = [
     label: 'Website',
     type: 'text',
     isActive: true,
-    isPrimaryKey: 'false',
-    isForeignKey: 'false',
+    isPrimaryKey: false,
+    isForeignKey: false,
     foreignKeyId: '',
   },
 ];
 
-export const addresses = [
+export const addresses: ColumnDef[] = [
   {
     id: 'id',
     label: 'ID',
     type: 'number',
     isActive: true,
-    isPrimaryKey: 'true',
-    isForeignKey: 'false',
+    isPrimaryKey: true,
+    isForeignKey: false,
     foreignKeyId: '',
   },
   {
@@ -67,8 +68,8 @@ export const addresses = [
     label: 'City',
     type: 'text',
     isActive: true,
-    isPrimaryKey: 'false',
-    isForeignKey: 'false',
+    isPrimaryKey: false,
+    isForeignKey: true,
     foreignKeyId: '',
   },
   {
@@ -76,8 +77,8 @@ export const addresses = [
     label: 'Country',
     type: 'text',
     isActive: true,
-    isPrimaryKey: 'false',
-    isForeignKey: 'false',
+    isPrimaryKey: false,
+    isForeignKey: false,
     foreignKeyId: '',
   },
   {
@@ -85,20 +86,20 @@ export const addresses = [
     label: 'User',
     type: 'number',
     isActive: true,
-    isPrimaryKey: 'false',
-    isForeignKey: 'true',
+    isPrimaryKey: false,
+    isForeignKey: true,
     foreignKeyId: 'id',
   },
 ];
 
-export const posts = [
+export const posts: ColumnDef[] = [
   {
     id: 'id',
     label: 'ID',
     type: 'number',
     isActive: true,
-    isPrimaryKey: 'true',
-    isForeignKey: 'false',
+    isPrimaryKey: true,
+    isForeignKey: false,
     foreignKeyId: '',
   },
   {
@@ -106,8 +107,8 @@ export const posts = [
     label: 'Title',
     type: 'text',
     isActive: true,
-    isPrimaryKey: 'false',
-    isForeignKey: 'false',
+    isPrimaryKey: false,
+    isForeignKey: false,
     foreignKeyId: '',
   },
 ];

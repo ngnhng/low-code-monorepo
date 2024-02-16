@@ -14,6 +14,7 @@ import ReactFlow, {
 } from 'reactflow';
 
 import 'reactflow/dist/style.css';
+import { table } from 'console';
 
 const nodeTypes = {
   entity: EntityNode,
@@ -21,33 +22,49 @@ const nodeTypes = {
 
 export default function Page({ params: { tableId } }) {
   const {
-    tableData: { fetchTableData, fetchAppliedQueries },
+    tableData: { fetchTableData, fetchAppliedQueries, fetchTables },
     projectData: { currentProjectId },
   } = useMobxStore();
 
-  const { data, isLoading, error, mutate } = useSWR<DataTable>(
-    `TABLE_DATA-${currentProjectId}-${tableId}`,
-    () =>
-      fetchTableData({
-        tableId,
-        ...fetchAppliedQueries(tableId),
-      }),
+  // const { data, isLoading, error, mutate } = useSWR<DataTable>(
+  //   `TABLE_DATA-${currentProjectId}-${tableId}`,
+  //   () =>
+  //     fetchTableData({
+  //       tableId,
+  //       ...fetchAppliedQueries(tableId),
+  //     }),
+  // );
+
+  const { data, isLoading, error, mutate } = useSWR(
+    `TABLE_DATA-${currentProjectId}-all`,
+    () => fetchTables(),
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   useEffect(() => {
+    console.log(data);
+
     if (data) {
-      const newNodes = [
-        {
-          id: 'initialNode',
-          type: 'entity',
-          data: { fields: data.columns },
-          position: { x: 100, y: 100 },
-        },
-      ];
-      setNodes(newNodes);
+      const tempNodes: any[] = [];
+
+      for (const d in data) {
+        const newNodes = [
+          {
+            id: data[d]?.id,
+            type: 'entity',
+            data: { fields: data[d] },
+            position: { x: 100, y: 100 },
+          },
+        ];
+
+        tempNodes.push(...newNodes);
+      }
+
+      console.log("temp: ", tempNodes);
+
+      setNodes(tempNodes);
     }
   }, [data, isLoading]);
 
@@ -77,12 +94,30 @@ export default function Page({ params: { tableId } }) {
   );
 }
 
-function EntityNode({ data }: { data: { fields: ColumnDef[] | [] } }) {
+function EntityNode({ data }: { data }) {
+
   return (
-    <div className="bg-primary rounded-custom p-4 ">
-      {data.fields.map((field, index) => (
-        <div key={index}>{field.label}</div>
-      ))}
+    <div>
+      <table className='bg-accent rounded-custom'>
+        <thead className='bg-primary text-white border border-solid border-blue-700'>
+          <tr>
+            <th className='p-4'>{data.fields.name}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            data.fields.columns.map((field, index) => (
+              <tr key={index} className='border border-solid border-blue-700'>
+                <td className='p-2'>{field.label}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
     </div>
   );
 }
+
+// ! Notes for the foreign key, primary key:
+
+// * has one more fields called "Foreign key" contains field_id and table_id

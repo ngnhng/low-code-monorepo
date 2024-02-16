@@ -21,11 +21,12 @@ import {
   CardButtonWithIcon,
 } from '@repo/ui';
 
+import useSWR from 'swr';
+
 import { Database, Download, PlusSquare, Table, User } from 'react-feather';
 import {
   DataTable,
   columns,
-  mockTableData,
 } from './_components/table-list/table-list';
 
 import DBList from './_components/db-list/db-list';
@@ -35,8 +36,6 @@ import { OptionDialog } from './_components/table-list/options-cards';
 import { useMobxStore } from '../../../lib/mobx/store-provider';
 import React, { ReactComponentElement, useEffect, useRef } from 'react';
 import { table } from 'console';
-
-import useSWR from 'swr';
 
 export default function Page() {
   const {

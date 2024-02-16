@@ -23,87 +23,23 @@ import { TableTextWithIcon } from '../../../../../components/text/text-with-icon
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { TableItem } from 'types/table-data';
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export interface TableItem {
-  id: string;
-  name: string;
-  source: string;
-  created: string;
-  updated: string;
-  status: string;
-  columns?: any[];
-}
-
-export const mockTableData: TableItem[] = [
-  {
-    id: '1',
-    name: 'Table 1',
-    source: 'Source 1',
-    created: '2021-08-01',
-    updated: '2021-08-01',
-    status: 'Active',
-  },
-  {
-    id: '2',
-    name: 'Table 2',
-    source: 'Source 2',
-    created: '2021-08-01',
-    updated: '2021-08-01',
-    status: 'Active',
-  },
-  {
-    id: '3',
-    name: 'Table 3',
-    source: 'Source 3',
-    created: '2021-08-01',
-    updated: '2021-08-01',
-    status: 'Active',
-  },
-  {
-    id: '4',
-    name: 'Table 4',
-    source: 'Source 4',
-    created: '2021-08-01',
-    updated: '2021-08-01',
-    status: 'Active',
-  },
-  {
-    id: '5',
-    name: 'Table 5',
-    source: 'Source 5',
-    created: '2021-08-01',
-    updated: '2021-08-01',
-    status: 'Active',
-  },
-  {
-    id: '6',
-    name: 'Table 6',
-    source: 'Source 6',
-    created: '2021-08-01',
-    updated: '2021-08-01',
-    status: 'Active',
-  },
-  {
-    id: '7',
-    name: 'Table 7',
-    source: 'Source 7',
-    created: '2021-08-01',
-    updated: '2021-08-01',
-    status: 'Active',
-  },
-  {
-    id: '8',
-    name: 'Table 8',
-    source: 'Source 8',
-    created: '2021-08-01',
-    updated: '2021-08-01',
-    status: 'Active',
-  },
-];
+// ? move to type files
+// export interface TableItem {
+//   id: string;
+//   name: string;
+//   source: string;
+//   created: string;
+//   updated: string;
+//   status: string;
+//   columns: any[];
+// }
 
 export const columns: ColumnDef<TableItem>[] = [
   {
