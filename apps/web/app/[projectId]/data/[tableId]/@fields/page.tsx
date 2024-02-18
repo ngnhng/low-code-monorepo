@@ -11,6 +11,8 @@ import ReactFlow, {
   useNodesState,
   Background,
   Controls,
+  Handle,
+  Position
 } from 'reactflow';
 
 import 'reactflow/dist/style.css';
@@ -68,10 +70,10 @@ export default function Page({ params: { tableId } }) {
     }
   }, [data, isLoading]);
 
-  const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
-  );
+  // const onConnect = useCallback(
+  //   (params) => setEdges((eds) => addEdge(params, eds)),
+  //   [setEdges],
+  // );
 
   if (!data || isLoading) {
     return <div>Loading...</div>;
@@ -84,8 +86,8 @@ export default function Page({ params: { tableId } }) {
         nodeTypes={nodeTypes}
         edges={edges}
         onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        // onEdgesChange={onEdgesChange}
+        // onConnect={onConnect}
       >
         <Background />
         <Controls />
@@ -98,6 +100,7 @@ function EntityNode({ data }: { data }) {
 
   return (
     <div>
+      {/* <Handle type="target" position={Position.Right} className="!w-4 !h-4 !left-[5rem] !bg-teal-500" /> */}
       <table className='bg-accent rounded-custom'>
         <thead className='bg-primary text-white border border-solid border-blue-700'>
           <tr>

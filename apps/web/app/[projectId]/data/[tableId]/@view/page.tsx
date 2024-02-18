@@ -11,6 +11,22 @@ import {
   AddRowsComponentProps,
 } from "react-datasheet-grid";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@repo/ui";
+
 // Import the style only once in your app!
 import "react-datasheet-grid/dist/style.css";
 import { Operation } from "react-datasheet-grid/dist/types";
@@ -18,7 +34,8 @@ import useSWR from "swr";
 import { useMobxStore } from "lib/mobx/store-provider";
 import { ColumnType, DataTable, RowDef } from "types/table-data";
 import { useEffect, useMemo, useState } from "react";
-import { Button } from "@repo/ui";
+import { Button, Input } from "@repo/ui";
+import { FlaskConical } from "lucide-react";
 
 export default function Page({ params: { tableId } }) {
   const {
@@ -89,12 +106,12 @@ const TableEditor = ({
       column.id === "id"
         ? {
             ...keyColumn<RowDef>(column.id, colTypeMapper(column.type)),
-            title: column.label,
+            title: <TitleDataSheet column={column} />,
             disabled: true,
           }
         : {
             ...keyColumn<RowDef>(column.id, colTypeMapper(column.type)),
-            title: column.label,
+            title: <TitleDataSheet column={column} />,
           }
     );
 
@@ -272,18 +289,92 @@ const ViewMenubar = ({
   onAddNewColumn: any;
   onQuery: any;
 }) => (
-  <div className="flex justify-between w-full px-4">
+  <div className="flex items-center justify-between w-full px-4">
     <div className="flex flex-start space-x-4">
       <Button onClick={onCommit}>Commit</Button>
       <Button onClick={discardData}>Discard</Button>
     </div>
-    <div className="flex flex-start">
+    {/* <div className="flex flex-start">
       <Button onClick={onAddNewColumn}>Add New Column</Button>
-    </div>
-    <div className="flex flex-end space-x-4">
-      <Button onClick={onQuery}>Group By</Button>
-      <Button onClick={onQuery}>Filter</Button>
-      <Button onClick={onQuery}>Sort</Button>
+    </div> */}
+    <div className="flex flex-end space-x-4 pb-2">
+      <div className="flex w-full max-w-sm items-center space-x-2">
+        <Input type="email" placeholder="Find ..." />
+        <Button onClick={onQuery} variant={"outline"}>
+          Search
+        </Button>
+        {/* <Button type="submit" variant={"outline"}>
+          <Search />
+        </Button> */}
+      </div>
     </div>
   </div>
 );
+
+// A button "Filter" - can be clicked to filter by each columns
+//
+
+const TitleDataSheet = ({ column }: { column: any }) => {
+  const [position, setPosition] = useState("bottom");
+  const onSelect = (event: Event) => {
+    event.preventDefault();
+  };
+
+  return (
+    <div className="flex items-center justify-between">
+      <div>{column.label}</div>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger>
+          <Button size={"sm"} variant={"ghost"}>
+            <FlaskConical size={24} />
+          </Button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent>
+          <DropdownMenuLabel>Action Filter</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+
+          <DropdownMenuGroup>
+            <DropdownMenuItem>Sort A-Z</DropdownMenuItem>
+            <DropdownMenuItem>Sort Z-A</DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+
+          <DropdownMenuGroup>
+            <DropdownMenuItem>Filter By Conditions</DropdownMenuItem>
+            <DropdownMenuItem className="" onSelect={onSelect}>
+              Filter By Values
+              <Input type="email" placeholder="Find ..." />
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+
+          <DropdownMenuGroup>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>Group By</DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <DropdownMenuRadioGroup
+                    value={position}
+                    onValueChange={setPosition}
+                  >
+                    <DropdownMenuRadioItem value="top">
+                      Top
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="bottom">
+                      Bottom
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="right">
+                      Right
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};

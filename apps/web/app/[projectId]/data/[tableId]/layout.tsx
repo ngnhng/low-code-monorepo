@@ -15,17 +15,17 @@ export default function Layout({
   params: { tableId: string };
 }) {
   return (
-    <Tabs defaultValue="fields">
+    <Tabs defaultValue="view">
       <TabsList className="flex justify-between w-full px-4">
         <TextWithIcon icon={<Table />}>{params.tableId}</TextWithIcon>
 
         <div className="flex justify-center w-full">
-          <TabsTrigger value="fields">Fields</TabsTrigger>
           <TabsTrigger value="view">View</TabsTrigger>
+          <TabsTrigger value="fields">Fields</TabsTrigger>
         </div>
       </TabsList>
-      <TabsContent value="fields">{fields}</TabsContent>
       <TabsContent value="view">{view}</TabsContent>
+      <TabsContent value="fields">{fields}</TabsContent>
     </Tabs>
   );
 }
