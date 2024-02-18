@@ -14,3 +14,4 @@ export * from "./form";
 export * from "./textarea";
 export * from "./switch";
 export * from "./sonner";
+export * from "./dropdown";
