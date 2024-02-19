@@ -1,12 +1,14 @@
 Dockerfile
 .dockerignore
-node_modules
+node_modules/
 npm-debug.log
-dist
+dist/
 **/node_modules/
-**/dist
+**/dist/
 .git
 .coverage
 .coverage.*
 .env
 .aws
+db-data/
+**/db-data/

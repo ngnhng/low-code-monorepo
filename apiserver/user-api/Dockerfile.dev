@@ -1,0 +1,20 @@
+# BUILD FOR LOCAL DEVELOPMENT
+FROM node:18-alpine AS development
+
+WORKDIR /app
+
+COPY yarn.lock package.json ./
+RUN yarn install --frozen-lockfile
+
+COPY . .
+
+RUN yarn prisma generate
+COPY prisma ./prisma/
+
+RUN yarn run build
+
+COPY ./start.sh ./start.sh
+
+EXPOSE 3000
+
+CMD chmod +x ./start.sh && /bin/sh -c ./start.sh
