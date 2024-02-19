@@ -45,7 +45,7 @@
             "name": "user_api"
         },
         "redis": {
-            "host": "localhost",
+            "host": "token-cache",
             "port": 6379,
             "password": "redis",
 			"db": 0
