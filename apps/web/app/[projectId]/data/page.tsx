@@ -36,6 +36,7 @@ import { OptionDialog } from './_components/table-list/options-cards';
 import { useMobxStore } from '../../../lib/mobx/store-provider';
 import React, { ReactComponentElement, useEffect, useRef } from 'react';
 import { table } from 'console';
+import CreateTableForm from './_components/create-table/create-table-form';
 
 export default function Page() {
   const {
@@ -114,24 +115,7 @@ export function DatabaseTabs({data, columns}) {
       <TabsContent value="tables">
         <div className="container mx-auto">
           <HorizontalList>
-            <OptionDialog
-              trigger={
-                <CardButtonWithIcon
-                  className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
-                  icon={<PlusSquare size={40} />}
-                  onClick={() => console.log('Card')}
-                >
-                  <span className="text-xl font-light">Add Table</span>
-                </CardButtonWithIcon>
-              }
-            >
-              <DialogHeader>
-                <DialogTitle>Create Table</DialogTitle>
-              </DialogHeader>
-              <DialogFooter>
-                <Button>Save</Button>
-              </DialogFooter>
-            </OptionDialog>
+            <CreateTableForm />
 
             <CardButtonWithIcon
               className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "

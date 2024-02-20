@@ -1,7 +1,6 @@
-import { GetTableDataResponse, DataTable } from 'types/table-data';
+import { GetTableDataResponse, DataTable, GetTablesResponse } from 'types/table-data';
 import { RouteHandlerAPIService } from './route-handler.service';
-import { TableItem } from 'app/[projectId]/data/_components/table-list/table-list';
-
+import { TableItem } from 'types/table-data';
 export class TableDataService extends RouteHandlerAPIService {
   constructor() {
     super();
@@ -54,7 +53,7 @@ export class TableDataService extends RouteHandlerAPIService {
     return result;
   }
 
-  async getTables({ projectId }): Promise<TableItem[]> {
+  async getTables({ projectId }): Promise<GetTablesResponse[]> {
     const response = await this.getServerSide(
       `/api/mock/${projectId}/data/all`,
     );
