@@ -52,14 +52,15 @@ export default function Page({ params: { tableId } }) {
       })
   );
 
+  console.log("Data loaded:", data);
+
   const handleCommit = () => {
     // TODO: axios data
     console.log("committing data", data);
   };
 
-  const handleQuery = (query: any) => {
+  const handleQuery = (query: any, data: any) => {
     // TODO: query
-    console.log("query", query);
   };
 
   if (!data || isLoading) {
@@ -101,17 +102,88 @@ const TableEditor = ({
   const createdColumn = useMemo(() => new Set<string>(), [tableId]);
   const deletedColumn = useMemo(() => new Set<string>(), [tableId]);
 
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState({
+    keyToSort: "",
+    direction: "",
+  });
+
+  console.log("Data present:", localData);
+
+  const handleSortClickDesc = (header) => {
+    setSort({
+      keyToSort: header.id,
+      direction: "desc",
+    });
+  };
+
+  const handleSortClickAsc = (header) => {
+    setSort({
+      keyToSort: header.id,
+      direction: "asc",
+    });
+  };
+
+  const handleSearch = (data) => {
+    if (search === "") {
+      return data;
+    }
+
+    const keys = localColumns.map((column) => column.id);
+
+    console.log("Keys:", keys);
+    console.log(search);
+
+    const result = data.filter((row) => {
+      return keys.some((key) =>
+        row[key].toString().toLowerCase().includes(search.toLowerCase())
+      );
+    });
+
+    console.log("result", result);
+
+    return result;
+  };
+
+  const getSortedData = (data) => {
+    if (search !== "") {
+      data = handleSearch(data);
+    }
+
+    if (sort.direction === "asc") {
+      return data.sort((a, b) =>
+        a[sort.keyToSort] > b[sort.keyToSort] ? 1 : -1
+      );
+    }
+
+    return data.sort((a, b) =>
+      a[sort.keyToSort] > b[sort.keyToSort] ? -1 : 1
+    );
+  };
+
   useEffect(() => {
     const columns = localColumns.map((column) =>
       column.id === "id"
         ? {
             ...keyColumn<RowDef>(column.id, colTypeMapper(column.type)),
-            title: <TitleDataSheet column={column} />,
+            title: (
+              <TitleDataSheet
+                column={column}
+                handleSortClickAsc={handleSortClickAsc}
+                handleSortClickDesc={handleSortClickDesc}
+              />
+            ),
             disabled: true,
           }
         : {
             ...keyColumn<RowDef>(column.id, colTypeMapper(column.type)),
-            title: <TitleDataSheet column={column} />,
+            title: (
+              <TitleDataSheet
+                column={column}
+                handleSortClickAsc={handleSortClickAsc}
+                handleSortClickDesc={handleSortClickDesc}
+              />
+            ),
           }
     );
 
@@ -204,10 +276,11 @@ const TableEditor = ({
         discardData={discardData}
         onAddNewColumn={() => {}}
         onQuery={onQuery}
+        setSearch={setSearch}
       />
 
       <DynamicDataSheetGrid
-        value={localData}
+        value={getSortedData(localData)}
         onChange={handleChange}
         columns={fields}
         height={700}
@@ -283,38 +356,59 @@ const ViewMenubar = ({
   discardData,
   onAddNewColumn,
   onQuery,
+  setSearch,
 }: {
   onCommit: any;
   discardData: any;
   onAddNewColumn: any;
   onQuery: any;
-}) => (
-  <div className="flex items-center justify-between w-full px-4">
-    <div className="flex flex-start space-x-4">
-      <Button onClick={onCommit}>Commit</Button>
-      <Button onClick={discardData}>Discard</Button>
-    </div>
-    {/* <div className="flex flex-start">
-      <Button onClick={onAddNewColumn}>Add New Column</Button>
-    </div> */}
-    <div className="flex flex-end space-x-4 pb-2">
-      <div className="flex w-full max-w-sm items-center space-x-2">
-        <Input type="email" placeholder="Find ..." />
-        <Button onClick={onQuery} variant={"outline"}>
-          Search
-        </Button>
-        {/* <Button type="submit" variant={"outline"}>
-          <Search />
-        </Button> */}
+  setSearch: any;
+}) => {
+  return (
+    <div className="flex items-center justify-between w-full px-4">
+      <div className="flex flex-start space-x-4">
+        <Button onClick={onCommit}>Commit</Button>
+        <Button onClick={discardData}>Discard</Button>
+      </div>
+      {/* <div className="flex flex-start">
+        <Button onClick={onAddNewColumn}>Add New Column</Button>
+      </div> */}
+      <div className="flex flex-end space-x-4 pb-2">
+        <div className="flex w-full max-w-sm items-center space-x-2">
+          <Input
+            type="email"
+            placeholder="Find Present ..."
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="flex w-full max-w-sm items-center space-x-2">
+          <Input
+            type="email"
+            placeholder="Find DB ..."
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <Button onClick={onQuery} variant={"outline"}>
+            Search
+          </Button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // A button "Filter" - can be clicked to filter by each columns
 //
 
-const TitleDataSheet = ({ column }: { column: any }) => {
+const TitleDataSheet = ({
+  column,
+  handleSortClickAsc,
+  handleSortClickDesc,
+}: {
+  column: any;
+  handleSortClickAsc: any;
+  handleSortClickDesc: any;
+}) => {
   const [position, setPosition] = useState("bottom");
   const onSelect = (event: Event) => {
     event.preventDefault();
@@ -336,8 +430,12 @@ const TitleDataSheet = ({ column }: { column: any }) => {
           <DropdownMenuSeparator />
 
           <DropdownMenuGroup>
-            <DropdownMenuItem>Sort A-Z</DropdownMenuItem>
-            <DropdownMenuItem>Sort Z-A</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleSortClickAsc(column)}>
+              Sort A - Z
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleSortClickDesc(column)}>
+              Sort Z - A
+            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
 
@@ -348,9 +446,9 @@ const TitleDataSheet = ({ column }: { column: any }) => {
               <Input type="email" placeholder="Find ..." />
             </DropdownMenuItem>
           </DropdownMenuGroup>
-          <DropdownMenuSeparator />
+          {/* <DropdownMenuSeparator /> */}
 
-          <DropdownMenuGroup>
+          {/* <DropdownMenuGroup>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>Group By</DropdownMenuSubTrigger>
               <DropdownMenuPortal>
@@ -372,7 +470,7 @@ const TitleDataSheet = ({ column }: { column: any }) => {
                 </DropdownMenuSubContent>
               </DropdownMenuPortal>
             </DropdownMenuSub>
-          </DropdownMenuGroup>
+          </DropdownMenuGroup> */}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

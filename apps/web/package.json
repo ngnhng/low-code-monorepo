@@ -17,6 +17,7 @@
     "@repo/ui": "*",
     "@tanstack/match-sorter-utils": "^8.8.4",
     "@tanstack/react-table": "^8.11.7",
+    "@types/uuid": "^9.0.8",
     "axios": "^1.5.1",
     "bpmn-js": "^15.1.2",
     "bpmn-js-custom": "*",
@@ -47,6 +48,7 @@
     "tailwindcss-animate": "^1.0.7",
     "ui": "*",
     "uuid": "^9.0.1",
+    "uuidv4": "^6.2.13",
     "zod": "^3.22.4"
   },
   "devDependencies": {
