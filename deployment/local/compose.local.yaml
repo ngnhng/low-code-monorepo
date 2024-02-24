@@ -40,10 +40,10 @@ services:
 
         labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.auth-api.rule=Host(`auth.localhost`)"
+            - "traefik.http.routers.auth-api.rule=Host(`localhost`) && PathPrefix(`/auth-api`)"
             - "traefik.http.routers.auth-api.entrypoints=web"
-            #- "traefik.http.middlewares.auth-api-stripprefix.stripprefix.prefixes=/auth-api"
-            #- "traefik.http.routers.auth-api.middlewares=auth-api-stripprefix@docker"
+            - "traefik.http.middlewares.auth-api-stripprefix.stripprefix.prefixes=/auth-api"
+            - "traefik.http.routers.auth-api.middlewares=auth-api-stripprefix@docker"
 
     token-cache:
         build:
@@ -72,15 +72,18 @@ services:
         depends_on:
             reverse-proxy:
                 condition: service_started
+            auth-api:
+                condition: service_started
             user-db:
                 condition: service_healthy
 
         labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.user-api.rule=Host(`user.localhost`)"
+            - "traefik.http.routers.user-api.rule=Host(`localhost`) && PathPrefix(`/user-api`)"
             - "traefik.http.routers.user-api.entrypoints=web"
-            #- "traefik.http.middlewares.user-api-stripprefix.stripprefix.prefixes=/user-api"
-            #- "traefik.http.routers.user-api.middlewares=user-api-stripprefix@docker"
+            - "traefik.http.middlewares.user-api-forwardauth.forwardauth.address=http://localhost/auth-api/api/v1/validate/token"
+            - "traefik.http.middlewares.user-api-stripprefix.stripprefix.prefixes=/user-api"
+            - "traefik.http.routers.user-api.middlewares=user-api-stripprefix@docker,user-api-forwardauth@docker"
 
     #table-api:
     #    build:

@@ -5,9 +5,12 @@ import (
 )
 
 type JwtCustomClaims struct {
-	Email            string               `json:"email"`
-	Role             string               `json:"role"`
-	RegisteredClaims jwt.RegisteredClaims `json:"registered_claims"`
+	FirstName            string `json:"first_name"`
+	LastName             string `json:"last_name"`
+	Email                string `json:"email"`
+	Role                 string `json:"role"`
+	ProfileImage         string `json:"profile_image"`
+	jwt.RegisteredClaims `json:"registered_claims"`
 }
 
 type JwtCustomRefreshClaims struct {

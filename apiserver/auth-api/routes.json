@@ -1,13 +1,18 @@
 [
   {
-    "method": "POST",
+    "method": "GET",
     "path": "/api/v1/oauth/google",
     "name": "yalc/auth-service/api/controller/oauth-login.(*GoogleOAuthLoginController).Login-fm"
   },
   {
-    "method": "POST",
+    "method": "GET",
     "path": "/api/v1/oauth/google/callback",
     "name": "yalc/auth-service/api/controller/oauth-login.(*GoogleOAuthLoginController).Callback-fm"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/validate/token",
+    "name": "yalc/auth-service/api/controller/oauth-login.(*GoogleOAuthLoginController).ValidateToken-fm"
   },
   {
     "method": "POST",

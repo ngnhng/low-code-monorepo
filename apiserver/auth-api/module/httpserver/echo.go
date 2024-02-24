@@ -12,6 +12,7 @@ import (
 	"yalc/auth-service/module/logger"
 
 	"github.com/labstack/echo/v4"
+	echo_middleware "github.com/labstack/echo/v4/middleware"
 	"go.uber.org/fx"
 )
 
@@ -104,6 +105,32 @@ func NewEchoServer(p Params) *server {
 	e.Use(
 		middleware.InvalidPathResponseFormatMiddleware,
 	)
+
+	// CORS
+	e.Use(echo_middleware.CORSWithConfig(echo_middleware.CORSConfig{
+		AllowOrigins: []string{p.Configs.App.FrontendURL},
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+			echo.HeaderAuthorization,
+			echo.HeaderAccessControlAllowCredentials,
+			echo.HeaderAccessControlAllowHeaders,
+			"next-router-state-tree",
+			"next-router-prefetch",
+			"next-url",
+			"rsc",
+		},
+		AllowMethods: []string{
+			echo.GET,
+			echo.HEAD,
+			echo.PUT,
+			echo.PATCH,
+			echo.POST,
+			echo.DELETE,
+			echo.OPTIONS,
+		},
+	}))
 
 	rateLimit := 0
 	if p.Configs.Env.App.Server.RateLimit.Enabled {

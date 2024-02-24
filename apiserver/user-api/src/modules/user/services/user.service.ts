@@ -35,4 +35,22 @@ export class UserService {
 
     return result;
   }
+
+  async upsertUserByEmail(data: {
+    email: string;
+    firstName: string;
+    lastName: string;
+  }): Promise<User> {
+    // look up the user by email and update the user
+    // if the user is not found, create a new user
+    return this.prisma.user.upsert({
+      where: { email: data.email },
+      update: {},
+      create: {
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+      },
+    });
+  }
 }

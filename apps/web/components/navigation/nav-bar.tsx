@@ -4,6 +4,10 @@ import styles from './style.module.css';
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { observer } from 'mobx-react-lite';
+import { useMobxStore } from 'lib/mobx/store-provider';
+import { Button } from '@repo/ui';
+import useSWR from 'swr';
 
 const NavLink = ({
   href,
@@ -19,11 +23,24 @@ const NavLink = ({
   </Link>
 );
 
-export default function NavBar() {
+export const NavBar = observer(() => {
+  const {
+    user: { isLoggedIn, currentUser, fetchCurrentUser },
+  } = useMobxStore();
+
+  useSWR('CURRENT_USER_DETAILS', () => fetchCurrentUser(), {
+    refreshInterval: 0,
+    shouldRetryOnError: true,
+    revalidateOnFocus: false,
+  });
+
   const renderNavLinks = () => {
     return (
       <>
-        <NavLink href="./projects" className="px-4 py-2.5 font-medium text-sm rounded-md hover:bg-slate-100">
+        <NavLink
+          href="/projects"
+          className="px-4 py-2.5 font-medium text-sm rounded-md hover:bg-slate-100"
+        >
           Projects
         </NavLink>
       </>
@@ -32,16 +49,23 @@ export default function NavBar() {
 
   const renderUserSection = () => {
     return (
-      <div className="flex px-4 py-2.5 items-center gap-2.5 text-sm font-semibold rounded-md hover:bg-slate-100 select-none">
-        <Image
-          src="/g-logo.png"
-          width={30}
-          height={30}
-          alt="User profile"
-          priority
-        />
-        <div className={styles.userName}>Test userName</div>
-      </div>
+      <Button asChild>
+        <Link
+          className="flex px-4 py-2.5 items-center gap-2.5 select-none max-w-64"
+          href={isLoggedIn ? '/profile' : '/auth/login'}
+        >
+          <Image
+            src="/google.svg"
+            width={22}
+            height={22}
+            alt="User profile"
+            priority
+          />
+          <div className={styles.userName}>
+            {isLoggedIn ? `Hi, ${currentUser?.display_name}` : 'Sign In'}
+          </div>
+        </Link>
+      </Button>
     );
   };
 
@@ -58,4 +82,4 @@ export default function NavBar() {
       <div>{renderUserSection()}</div>
     </nav>
   );
-}
+});

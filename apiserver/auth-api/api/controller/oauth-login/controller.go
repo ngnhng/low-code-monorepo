@@ -1,6 +1,7 @@
 package oauth_login
 
 import (
+	"time"
 	"yalc/auth-service/module/config"
 	"yalc/auth-service/module/logger"
 	"yalc/auth-service/shared/util"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	response "yalc/auth-service/domain/response"
 	error_response "yalc/auth-service/domain/response/error"
 	"yalc/auth-service/domain/user"
 
@@ -59,61 +61,80 @@ func (ctrl *GoogleOAuthLoginController) Callback(c echo.Context) error {
 	// exchange code for token
 	token, err := ctrl.Provider.Exchange(c.Request().Context(), code)
 
-	if err != nil {
+	if err != nil || token == nil {
 		//return c.String(500, "Failed to exchange code for token: "+err.Error())
 		return error_response.InternalServerError(c, "error", "failed to exchange code for token: "+err.Error())
 	}
 
 	// fetch user info
-	userInfo, err := ctrl.Usecase.FetchUserInfoFromProvider(c.Request().Context(), token.AccessToken)
-	if err != nil {
+	userInfo, err := ctrl.Usecase.FetchUserInfoFromProvider(c.Request().Context(), token)
+	if err != nil || userInfo == nil {
 		//return c.String(500, "Failed to fetch user info: "+err.Error())
 		return error_response.InternalServerError(c, "error", "failed to fetch user info: "+err.Error())
 	}
 
-	// store state -- this may overwrite the state if it already exists
-	err = ctrl.Usecase.UpdateAccessToken(token, userInfo)
+	// upsert user info with our database
+	upsertedUserId, err := ctrl.Usecase.SaveUser(c.Request().Context(), userInfo)
+
 	if err != nil {
-		return error_response.InternalServerError(c, "error", "failed to save state: "+err.Error())
+		//return c.String(500, "Failed to save user: "+err.Error())
+		return error_response.InternalServerError(c, "error", "failed to save user: "+err.Error())
 	}
 
-	// generate a pair of jwt tokens
-	at, err := util.CreateAccessToken(&user.User{
-		ID:    "0",
-		Email: userInfo.Email,
-		Name:  "test",
-	}, ctrl.Config.Secret.JwtSecret.Access.Key, ctrl.Config.Secret.JwtSecret.Access.Expiration)
+	// store state -- this may overwrite the state if it already exists
+	err = ctrl.Usecase.SaveToken(c.Request().Context(), token, userInfo)
+	if err != nil {
+		return error_response.InternalServerError(c, "error", "failed to save token: "+err.Error())
+	}
+
+	// generate an access token with expiration time equal to the oauth provider access token expiration time
+	at, err := util.CreateAccessToken(
+		&user.User{
+			Id:           upsertedUserId,
+			Email:        userInfo.Email,
+			FirstName:    userInfo.GivenName,
+			LastName:     userInfo.FamilyName,
+			ProfileImage: userInfo.Picture,
+		},
+		ctrl.Config.Secret.JwtSecret.Access.Key,
+		time.Now().Add(ctrl.Config.Secret.JwtSecret.Access.Expiration),
+	)
 	if err != nil {
 		return error_response.InternalServerError(c, "error", "failed to generate access token: "+err.Error())
 	}
 
-	rt, err := util.CreateRefreshToken(&user.User{
-		ID:    "0",
-		Email: userInfo.Email,
-		Name:  "test",
-	}, ctrl.Config.Secret.JwtSecret.Refresh.Key, ctrl.Config.Secret.JwtSecret.Refresh.Expiration)
-	if err != nil {
-		return error_response.InternalServerError(c, "error", "failed to generate refresh token: "+err.Error())
-	}
+	//rt, err := util.CreateRefreshToken(&user.User{
+	//	Email: userInfo.Email,
+	//	Name:  "test",
+	//}, ctrl.Config.Secret.JwtSecret.Refresh.Key, ctrl.Config.Secret.JwtSecret.Refresh.Expiration)
+	//if err != nil {
+	//	return error_response.InternalServerError(c, "error", "failed to generate refresh token: "+err.Error())
+	//}
 
 	// redirect to frontend with token as query param
-	return c.Redirect(302, ctrl.Config.App.FrontendURL+"?access_token="+at+"&refresh_token="+rt)
+	return c.Redirect(302, ctrl.Config.App.FrontendURL+"/auth/login"+"?access_token="+at)
 }
 
 // ValidateToken validates the token
 func (ctrl *GoogleOAuthLoginController) ValidateToken(c echo.Context) error {
-	token := c.FormValue("token")
-	if token == "" {
-		return error_response.BadRequestError(c, "error", "no token provided")
-	}
-
-	// validate token
-	_, err := util.ValidateToken(token, ctrl.Config.Secret.JwtSecret.Access.Key)
+	token, err := util.ExtractToken(c.Request().Header.Get("Authorization"))
 	if err != nil {
-		return error_response.UnauthorizedError(c, "error", "invalid token")
+		return error_response.BadRequestError(c, "error", err.Error())
 	}
 
-	return c.JSON(200, map[string]interface{}{
-		"message": "valid token",
-	})
+	_, err = util.ValidateToken(token, ctrl.Config.Secret.JwtSecret.Access.Key)
+	if err != nil {
+		return error_response.UnauthorizedError(c, err.Error(), "invalid token")
+	}
+
+	return c.JSON(
+		200, response.NewResponse(
+			response.ResponseMeta{
+				StatusCode: 200,
+				Message:    "valid token",
+				Error:      "",
+			},
+			map[string]interface{}{},
+		),
+	)
 }

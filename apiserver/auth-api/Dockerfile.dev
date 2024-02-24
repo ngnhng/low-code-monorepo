@@ -33,4 +33,9 @@ COPY --from=builder /app/config_dev.json /app/config_dev.json
 
 # Run the web service on container startup.
 WORKDIR /app
+
+ENV ENVIRONMENT=development
+
+EXPOSE 3000
+
 CMD ["./server"]

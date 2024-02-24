@@ -9,11 +9,12 @@ type (
 		Database   Database   `mapstructure:"DATABASE"`
 		Repository Repository `mapstructure:"REPOSITORY"`
 		Secret     Secret     `mapstructure:"SECRET"`
-		OAuth2     OAuth2     `mapstructure:"OAUTH"`
+		OAuth2     OAuth2     `mapstructure:"OAUTH2"`
 	}
 
 	App struct {
 		Server      Server `mapstructure:"SERVER"`
+		UserApiUrl  string `mapstructure:"USER_API_URL"`
 		FrontendURL string `mapstructure:"FRONTEND_URL"`
 		Login       Login  `mapstructure:"LOGIN"`
 		BypassDB    bool   `mapstructure:"BYPASS_DB"`

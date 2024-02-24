@@ -1,6 +1,7 @@
 package util
 
 import (
+	"errors"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -11,13 +12,21 @@ import (
 	jwt "github.com/golang-jwt/jwt/v4"
 )
 
-func CreateAccessToken(user *user.User, secret string, expiration time.Duration) (accessToken string, err error) {
-	exp := time.Now().Add(expiration)
+const (
+	bearerPrefix = "Bearer "
+)
+
+func CreateAccessToken(user *user.User, secret string, expiration time.Time) (accessToken string, err error) {
 	claims := &auth.JwtCustomClaims{
-		Email: user.Email,
-		Role:  "webuser",
+		FirstName:    user.FirstName,
+		LastName:     user.LastName,
+		Email:        user.Email,
+		Role:         "webuser",
+		ProfileImage: user.ProfileImage,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: &jwt.NumericDate{Time: exp},
+			IssuedAt:  &jwt.NumericDate{Time: time.Now()},
+			ExpiresAt: &jwt.NumericDate{Time: expiration},
+			Issuer:    "yalc-api",
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -62,4 +71,16 @@ func ValidateToken(tokenString string, secret string) (*jwt.Token, error) {
 		return nil, err
 	}
 	return token, nil
+}
+
+func ExtractToken(authHeader string) (string, error) {
+	if authHeader == "" {
+		return "", errors.New("no token provided")
+	}
+
+	if len(authHeader) > len(bearerPrefix) && authHeader[:len(bearerPrefix)] == bearerPrefix {
+		return authHeader[len(bearerPrefix):], nil
+	}
+
+	return "", errors.New("invalid authorization header")
 }

@@ -7,6 +7,7 @@ networks:
 volumes:
     user-data:
     table-data:
+    token-cache-data:
 
 services:
     reverse-proxy:
@@ -21,21 +22,65 @@ services:
             - "--entrypoints.websecure.address=:443"
             - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
             - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-            - "--api.dashboard=true"
+
             - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
             #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
             - "--certificatesresolvers.myresolver.acme.email=mountngubinh@gmail.com"
             - "--certificatesresolvers.myresolver.acme.storage=/certificates/acme.json"
+
+            - "--api.dashboard=true"
+            - "traefik.http.routers.dashboard.rule=Host(`dashboard.yalc.live`)"
+            - "traefik.http.routers.dashboard.service=api@internal"
+            - "traefik.http.routers.dashboard.entrypoints=websecure"
+            - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
+            - "traefik.http.routers.dashboard.middlewares=auth"
+            - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$05$$jBDbAygvgK7Ld4FClNn3oe5EQL7pwkcqU0HnVIHFd.p6OMc10Wy46"
+
         ports:
             - "443:443"
             # The Web UI (enabled by --api.insecure=true)
-            - "8080:8080"
+            #- "8080:8080"
         networks:
             - dev-network
         volumes:
             - ./certificates:/certificates
             # So that Traefik can listen to the Docker events
             - /var/run/docker.sock:/var/run/docker.sock
+
+    auth-api:
+        build:
+            context: ../../apiserver/auth-api
+            dockerfile: Dockerfile.dev
+        networks:
+            - dev-network
+        depends_on:
+            reverse-proxy:
+                condition: service_started
+            token-cache:
+                condition: service_healthy
+
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.auth-api.rule=Host(`auth.localhost`)"
+            - "traefik.http.routers.auth-api.entrypoints=websecure"
+            - "traefik.http.routers.auth-api.tls.certresolver=myresolver"
+            #- "traefik.http.middlewares.auth-api-stripprefix.stripprefix.prefixes=/auth-api"
+            #- "traefik.http.routers.auth-api.middlewares=auth-api-stripprefix@docker"
+
+    token-cache:
+        build:
+            context: ../../apiserver/auth-api/infra/redis
+            dockerfile: Dockerfile.dev
+        networks:
+            - dev-network
+        volumes:
+            - token-cache-data:/var/lib/redis/data
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 5s
 
     user-api:
         image: "ghcr.io/nguyendhst/user-api:latest"
@@ -57,7 +102,7 @@ services:
             - "traefik.http.routers.user-api.tls.certresolver=myresolver"
 
     table-api:
-        image: "ghcr.io/nguyendhst/table-api:latest" 
+        image: "ghcr.io/nguyendhst/table-api:latest"
         networks:
             - dev-network
         depends_on:

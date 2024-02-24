@@ -8,7 +8,7 @@ import { RootStore } from './root';
 export interface IAppConfigStore {
   envConfig: IAppConfig | undefined;
 
-  fetchEnvConfig: () => Promise<IAppConfig>;
+  fetchEnvConfig: () => Promise<IAppConfig | undefined>;
 }
 
 export class AppConfigStore implements IAppConfigStore {
@@ -35,22 +35,12 @@ export class AppConfigStore implements IAppConfigStore {
     this.rootStore = _rootStore;
   }
 
-  fetchEnvConfig = async () => {
-    try {
-      const config = await this.appConfigService.getEnvConfig();
-      // temporary action that is immediately invoked
-      if (config) {
-        runInAction(() => {
-          this.envConfig = config;
-        });
-      } else {
-        throw new Error('Config not found');
-      }
+  fetchEnvConfig = async () =>
+    await this.appConfigService.getEnvConfig().then((config) => {
+      runInAction(() => {
+        this.envConfig = config;
+      });
 
       return config;
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  };
+    });
 }

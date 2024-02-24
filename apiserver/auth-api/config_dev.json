@@ -16,21 +16,22 @@
             "timeout": "5s"
         },
         "bypass_db": true,
-		"log_level": "debug",
-		"frontend_url": "http://localhost:3000"
+        "log_level": "debug",
+        "frontend_url": "http://localhost:3000",
+		"user_api_url": "http://user-api:3000"
     },
-	"secret": {
-		"jwt": {
-			"access": {
-				"key": "secret_213455342425",
-				"expiration": "6h"
-			},
-			"refresh": {
-				"key": "secret_345678654332453",
-				"expiration": "12h"
-			}
-		}
-	},
+    "secret": {
+        "jwt": {
+            "access": {
+                "key": "fb309976d721c4c3d428abad787c58fd",
+                "expiration": "6h"
+            },
+            "refresh": {
+                "key": "fb309976d721c4c3d428abad787c58fd",
+                "expiration": "12h"
+            }
+        }
+    },
     "repository": {
         "user": {
             "store": "postgres"
@@ -48,16 +49,16 @@
             "host": "token-cache",
             "port": 6379,
             "password": "redis",
-			"db": 0
+            "db": 0
         }
     },
-	"oauth2": {
-		"provider": {
-			"google": {
-				"client_id": "client_id",
-				"client_secret": "client_secret",
-				"redirect_url": "http://localhost:3000/auth/google/callback"
-			}
-		}
-	}
+    "oauth2": {
+        "provider": {
+            "google": {
+                "client_id": "201951095412-843vr4ljf1uo49u9vp3v3c0u687nolj4.apps.googleusercontent.com",
+                "client_secret": "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",
+                "redirect_url": "http://localhost:80/auth-api/api/v1/oauth/google/callback"
+            }
+        }
+    }
 }

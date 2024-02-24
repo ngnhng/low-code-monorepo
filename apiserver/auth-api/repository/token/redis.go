@@ -31,6 +31,21 @@ func (r *RedisTokenRepository) Update(ctx context.Context, token auth.OAuthToken
 	return nil
 }
 
+func (r *RedisTokenRepository) Get(ctx context.Context, token auth.OAuthToken) (auth.OAuthToken, error) {
+	key := createRedisKey(token)
+	value, err := r.Client.Get(ctx, key).Result()
+	if err != nil {
+		return auth.OAuthToken{}, err
+	}
+
+	return auth.OAuthToken{
+		OwnerID:  token.OwnerID,
+		Provider: token.Provider,
+		Type:     token.Type,
+		Value:    value,
+	}, nil
+}
+
 func (r *RedisTokenRepository) GetAllFromOwner(ctx context.Context, ownerId string) ([]auth.OAuthToken, error) {
 	keyPattern := ownerId + ":*"
 	keys, err := r.Client.Keys(ctx, keyPattern).Result()

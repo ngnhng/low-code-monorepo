@@ -5,7 +5,9 @@ const (
 )
 
 type User struct {
-	ID    string `bson:"_id" json:"id"`
-	Name  string `bson:"name" json:"name"`
-	Email string `bson:"email" json:"email"`
+	Id           string `bson:"_id" json:"_id"`
+	FirstName    string `bson:"first_name" json:"first_name"`
+	LastName     string `bson:"last_name" json:"last_name"`
+	Email        string `bson:"email" json:"email"`
+	ProfileImage string `bson:"profile_image" json:"profile_image"`
 }

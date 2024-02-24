@@ -8,10 +8,10 @@ import (
 	"time"
 
 	auth "yalc/auth-service/domain/auth"
-	user "yalc/auth-service/domain/user"
 	"yalc/auth-service/module/config"
 	repository "yalc/auth-service/repository"
 
+	user_connector "yalc/auth-service/connector/user"
 	oauth2_module "yalc/auth-service/module/oauth2"
 
 	oauth2 "golang.org/x/oauth2"
@@ -29,24 +29,20 @@ type (
 		GetRedirectURL(state string) string
 
 		// FetchUserInfo returns the user info from the oauth2 provider
-		FetchUserInfoFromProvider(ctx context.Context, code string) (*auth.GoogleOAuthUserInfo, error)
+		FetchUserInfoFromProvider(ctx context.Context, token *oauth2.Token, opts ...*RefreshTokenOptions) (*auth.GoogleOAuthUserInfo, error)
 
-		// UserInfoFromStore gets the user info from the store
-		FetchUserInfoFromStore(ctx context.Context, ownerId string) (*auth.GoogleOAuthUserInfo, error)
+		// SaveUser saves/updates a user in our system
+		SaveUser(ctx context.Context, info *auth.GoogleOAuthUserInfo) (string, error)
+		// SaveToken saves/updates a user's token in our system
+		SaveToken(ctx context.Context, token *oauth2.Token, userInfo *auth.GoogleOAuthUserInfo) error
+		// GetToken gets a user's token from our system
+		GetToken(ctx context.Context, userInfo *auth.GoogleOAuthUserInfo) (*oauth2.Token, error)
 
-		// SaveUser saves or updates a user in your system
-		SaveUser(ctx context.Context, info *user.User) error
+		// RefreshToken refreshes the token
+		RefreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error)
 
 		// Exchange converts an authorization code into a token.
 		Exchange(ctx context.Context, code string) (*oauth2.Token, error)
-
-		CreateAccessToken(user *user.User, secret string, expiry time.Duration) (accessToken string, err error)
-		CreateRefreshToken(user *user.User, secret string, expiry time.Duration) (refreshToken string, err error)
-
-		// UpdateAccessToken updates a user's token in the store
-		UpdateAccessToken(token *oauth2.Token, userInfo *auth.GoogleOAuthUserInfo) error
-		// UpdateRefreshToken updates a user's token in the store
-		UpdateRefreshToken(token *oauth2.Token, userInfo *auth.GoogleOAuthUserInfo) error
 	}
 
 	googleOAuthLoginUsecase struct {
@@ -54,8 +50,13 @@ type (
 		tokenRepository repository.TokenRepository
 		contextTimeout  time.Duration
 
-		Provider *oauth2_module.GoogleProvider
-		Client   *http.Client
+		Provider             *oauth2_module.GoogleProvider
+		UserServiceConnector user_connector.UserConnector
+		Client               *http.Client
+	}
+
+	RefreshTokenOptions struct {
+		*auth.GoogleOAuthUserInfo
 	}
 
 	Param struct {
@@ -63,19 +64,18 @@ type (
 
 		Config          *config.Config
 		TokenRepository repository.TokenRepository
+		OAuthProvider   *oauth2_module.GoogleProvider
+		user_connector.UserConnector
 	}
 )
 
 func NewGoogleOAuthLoginUsecase(p Param) GoogleOAuthLoginUsecase {
 	return &googleOAuthLoginUsecase{
-		contextTimeout:  time.Millisecond * time.Duration(1000),
-		config:          p.Config,
-		tokenRepository: p.TokenRepository,
-		Provider: oauth2_module.NewGoogleProvider(
-			p.Config.OAuth2.Provider.Google.ClientID,
-			p.Config.OAuth2.Provider.Google.ClientSecret,
-			p.Config.OAuth2.Provider.Google.RedirectURL,
-		),
+		contextTimeout:       time.Millisecond * time.Duration(1000),
+		config:               p.Config,
+		tokenRepository:      p.TokenRepository,
+		Provider:             p.OAuthProvider,
+		UserServiceConnector: p.UserConnector,
 	}
 }
 
@@ -83,44 +83,28 @@ func (lu *googleOAuthLoginUsecase) GetProvider() *oauth2_module.GoogleProvider {
 	return lu.Provider
 }
 
-func (lu *googleOAuthLoginUsecase) FetchUserInfoFromProvider(ctx context.Context, at string) (*auth.GoogleOAuthUserInfo, error) {
-	// create a new http client with the google token
-	lu.Client = lu.Provider.Client(ctx, &oauth2.Token{
-		AccessToken: at,
+// FetchUserInfoFromProvider fetches the user info from the oauth2 provider
+// If opts is provided, it will refresh the token and save the new token
+func (lu *googleOAuthLoginUsecase) FetchUserInfoFromProvider(ctx context.Context, token *oauth2.Token, opts ...*RefreshTokenOptions) (*auth.GoogleOAuthUserInfo, error) {
+	// First refresh the token if opts is provided
+	if len(opts) > 0 {
+		token, err := lu.RefreshToken(ctx, token)
+		if err != nil {
+			return nil, err
+		}
+		// save the token
+		err = lu.SaveToken(ctx, token, opts[0].GoogleOAuthUserInfo)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// create a new http client with the refreshed google token
+	lu.Client = lu.Provider.Config.Client(ctx, &oauth2.Token{
+		AccessToken: token.AccessToken,
 	})
 
 	return lu.fetchGoogleUserInfo(ctx)
-}
-
-func (lu *googleOAuthLoginUsecase) FetchUserInfoFromStore(ctx context.Context, ownerId string) (*auth.GoogleOAuthUserInfo, error) {
-	// get all tokens from the owner
-	tokens, err := lu.tokenRepository.GetAllFromOwner(ctx, ownerId)
-	if err != nil {
-		return nil, err
-	}
-	// get the google access token
-	var googleToken *auth.OAuthToken
-	for _, token := range tokens {
-		if token.Provider == "google" && token.Type == auth.AccessToken {
-			googleToken = &token
-			break
-		}
-	}
-	// if the google token is not found, return an error
-	if googleToken == nil {
-		return nil, &auth.ErrTokenNotFound{
-			OwnerID:  ownerId,
-			Provider: "google",
-		}
-	}
-	// create a new http client with the google token
-	lu.Client = lu.Provider.Client(ctx, &oauth2.Token{
-		AccessToken: googleToken.Value,
-	})
-
-	// get the user info from google
-	return lu.fetchGoogleUserInfo(ctx)
-
 }
 
 func (lu *googleOAuthLoginUsecase) GetRedirectURL(state string) string {
@@ -131,11 +115,59 @@ func (lu *googleOAuthLoginUsecase) Exchange(ctx context.Context, code string) (*
 	return lu.Provider.Exchange(ctx, code)
 }
 
-func (lu *googleOAuthLoginUsecase) SaveUser(ctx context.Context, info *user.User) error {
+func (lu *googleOAuthLoginUsecase) SaveUser(ctx context.Context, info *auth.GoogleOAuthUserInfo) (string, error) {
+	return lu.UserServiceConnector.SaveUser(ctx, info)
+}
+
+func (lu *googleOAuthLoginUsecase) SaveToken(ctx context.Context, token *oauth2.Token, userInfo *auth.GoogleOAuthUserInfo) error {
+	if token.AccessToken != "" {
+		if err := lu.UpdateAccessToken(token, userInfo); err != nil {
+			return err
+		}
+	}
+	if token.RefreshToken != "" {
+		if err := lu.UpdateRefreshToken(token, userInfo); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
+func (lu *googleOAuthLoginUsecase) GetToken(ctx context.Context, userInfo *auth.GoogleOAuthUserInfo) (*oauth2.Token, error) {
+	accessToken, err := lu.tokenRepository.Get(context.Background(), auth.OAuthToken{
+		OwnerID:  userInfo.Email,
+		Provider: "google",
+		Type:     auth.AccessToken,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := lu.tokenRepository.Get(context.Background(), auth.OAuthToken{
+		OwnerID:  userInfo.Email,
+		Provider: "google",
+		Type:     auth.RefreshToken,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &oauth2.Token{
+		AccessToken:  accessToken.Value,
+		RefreshToken: refreshToken.Value,
+	}, nil
+}
+
+func (lu *googleOAuthLoginUsecase) RefreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error) {
+	return lu.Provider.RefreshToken(ctx, token)
+}
+
 func (lu *googleOAuthLoginUsecase) UpdateAccessToken(token *oauth2.Token, userInfo *auth.GoogleOAuthUserInfo) error {
+	if userInfo == nil {
+		return fmt.Errorf("userInfo is nil")
+	}
 	return lu.tokenRepository.Update(context.Background(), auth.OAuthToken{
 		OwnerID:  userInfo.Email,
 		Provider: "google",
@@ -151,17 +183,6 @@ func (lu *googleOAuthLoginUsecase) UpdateRefreshToken(token *oauth2.Token, userI
 		Type:     auth.RefreshToken,
 		Value:    token.RefreshToken,
 	})
-}
-
-// Generate a custom access token different from the one generated by the oauth2 provider.
-// Main use case is to add custom claims to the token for custom business logic.
-func (lu *googleOAuthLoginUsecase) CreateAccessToken(user *user.User, secret string, expiry time.Duration) (accessToken string, err error) {
-	return "", nil
-}
-
-// Generate a custom refresh token different from the one generated by the oauth2 provider.
-func (lu *googleOAuthLoginUsecase) CreateRefreshToken(user *user.User, secret string, expiry time.Duration) (refreshToken string, err error) {
-	return "", nil
 }
 
 func (lu *googleOAuthLoginUsecase) fetchGoogleUserInfo(ctx context.Context) (*auth.GoogleOAuthUserInfo, error) {

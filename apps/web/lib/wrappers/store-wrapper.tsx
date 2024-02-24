@@ -20,23 +20,21 @@ const StoreWrapper: FC<IStoreWrapper> = observer((properties) => {
     appConfig: { envConfig, fetchEnvConfig },
   } = useMobxStore();
 
-  const {
-    data: env,
-  } = useSWR('ENV_CONFIG', () => fetchEnvConfig(), {
+  const { data: env } = useSWR('ENV_CONFIG', () => fetchEnvConfig(), {
     revalidateIfStale: false,
     revalidateOnFocus: false,
   });
 
   useEffect(() => {
-    console.log('StoreWrapper', 'env:', env);
-
     // if no_auth, set default user
     if (env?.mode.no_auth) {
       setDefaultUser();
     }
   }, [envConfig]);
 
-  //  const { projectId, tableId } = useParams();
+  if (!env) {
+    return <div>Loading...</div>;
+  }
 
   return <>{children}</>;
 });

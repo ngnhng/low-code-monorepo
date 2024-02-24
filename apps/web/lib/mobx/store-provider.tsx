@@ -14,8 +14,9 @@ let rootStore: RootStore = new RootStore();
 export const MobxStoreContext = createContext<RootStore>(rootStore);
 
 export const MobxStoreProvider = ({ children }: { children: ReactNode }) => {
+  const store = rootStore ?? new RootStore();
   return (
-    <MobxStoreContext.Provider value={rootStore}>
+    <MobxStoreContext.Provider value={store}>
       {children}
     </MobxStoreContext.Provider>
   );
