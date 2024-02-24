@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React from 'react';
 
-import './SignInButton.css';
+import './sign-in-button.css';
 import { useLocalStorage } from 'hooks/use-local-storage';
 
 const SignInButton = () => {

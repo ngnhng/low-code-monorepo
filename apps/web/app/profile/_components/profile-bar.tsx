@@ -1,7 +1,7 @@
 import Link from "next/link";
 import React from "react";
-import './ProfileBar.css'
-import SignInButton from "./SignInButton";
+import './profile-bar.css'
+import SignInButton from "./sign-in-button";
 
 const ProfileBar = () => {
   return (

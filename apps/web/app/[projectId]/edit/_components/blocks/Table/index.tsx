@@ -15,7 +15,7 @@ export const Table: ComponentConfig<TableProps> = {
   defaultProps: {
     dataSourceId: 'api',
   },
-  render: ({ title, dataSourceId }: TableProps) => {
+  render: () => {
     return (
       <div>
         <TableRenderer />

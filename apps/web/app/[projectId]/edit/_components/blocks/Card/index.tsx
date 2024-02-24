@@ -8,6 +8,7 @@ import dynamicIconImports from "lucide-react/dynamicIconImports";
 
 const getClassName = getClassNameFactory("Card", styles);
 
+// eslint-disable-next-line unicorn/no-array-reduce
 const icons = Object.keys(dynamicIconImports).reduce((acc, iconName) => {
   const El = dynamic(dynamicIconImports[iconName]);
 

@@ -12,7 +12,7 @@ import { Switch, Label } from '@repo/ui';
 
 const isBrowser = typeof window !== 'undefined';
 
-export default function Page({ params }: { params: { projectId: string } }) {
+export default function Page() {
   const path = '/';
   const componentKey = Buffer.from(
     Object.keys(config.components).join('-'),
@@ -49,7 +49,9 @@ export default function Page({ params }: { params: { projectId: string } }) {
       <div
         className={`${
           isEdit ? 'flex' : 'border-2 border-slate-300 rounded-md'
-        } flex-1 box-border puckContainer ${isEdit ? "overflow-hidden" : "overflow-auto"}`}
+        } flex-1 box-border puckContainer ${
+          isEdit ? 'overflow-hidden' : 'overflow-auto'
+        }`}
       >
         {isEdit ? (
           // https://puckeditor.com/docs/extending-puck/custom-interfaces
@@ -75,7 +77,7 @@ export default function Page({ params }: { params: { projectId: string } }) {
             </div>
           </Puck>
         ) : (
-          <div className='flex-1 overflow-auto'>
+          <div className="flex-1 overflow-auto">
             <div className="w-full h-full overflow-auto">
               <Render
                 config={config}

@@ -22,6 +22,7 @@ export class UserService extends APIService {
       const utf8Payload = decodeURIComponent(
         [...window.atob(base64)]
           .map(function (c) {
+            // eslint-disable-next-line unicorn/prefer-code-point
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
           })
           .join(''),

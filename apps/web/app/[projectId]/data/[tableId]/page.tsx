@@ -1,19 +1,17 @@
 'use client';
 
-import { FC, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   DataSheetGrid,
   DataSheetGridRef,
   checkboxColumn,
   textColumn,
   keyColumn,
-  createAddRowsComponent,
 } from 'react-datasheet-grid';
 
 // Import the style only once in your app!
 import 'react-datasheet-grid/dist/style.css';
 import {
-  AddRowsComponentProps,
   Operation,
 } from 'react-datasheet-grid/dist/types';
 
@@ -22,11 +20,6 @@ type DataType = {
   firstName: string;
   lastName: string;
 };
-
-const AddRows = createAddRowsComponent({
-  button: 'Ajouter', // Add
-  unit: 'lignes', // rows
-});
 
 const AnotherAddRows = () => {
   return <div>Another add rows: </div>;
@@ -42,6 +35,7 @@ const Example = () => {
 
   const handleOnChange = (
     value: Record<string, any>[],
+    // eslint-disable-next-line no-unused-vars
     operations: Operation[],
   ) => {
     const newData = value.map((item: Record<string, any>) => ({
