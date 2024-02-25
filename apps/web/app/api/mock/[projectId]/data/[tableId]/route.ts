@@ -1,8 +1,10 @@
-import fs from 'fs/promises';
+import fs from 'fs';
+import fsa from 'fs/promises';
 import path from 'path';
 import { faker } from '@faker-js/faker';
-import { type NextRequest } from 'next/server';
-import { ColumnDef } from 'types/table-data';
+import { NextRequest } from 'next/server';
+import { ColumnDef, TableItem } from 'types/table-data';
+import { NextResponse } from 'next/server';
 
 // * User Column
 export const columns: ColumnDef[] = [
@@ -171,7 +173,24 @@ export function generateMockData(size: number): any[] {
   return data;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { projectId: string; tableId: string } },
+) {
+  // const databasePath = path.join(
+  //   process.cwd(),
+  //   `app/api/mock/[projectId]/data/[tableId]/example.json`,
+  // );
+
+  // try {
+  //   const data = await fsa.readFile(databasePath, 'utf-8')
+
+  //   console.log("data: " + JSON.stringify(data));
+  // } catch (error) {
+  //   console.log(error);
+  //   return new NextResponse("", { status: 500 });
+  // }
+  // --------------------------------- CURRENT VERSIONS --------------------------------
   const searchParams = request.nextUrl.searchParams;
   const page = searchParams.get('page') || 0;
   const limit = searchParams.get('limit') || 10;
@@ -182,10 +201,27 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const data = generateMockData(100);
+  let data: any = generateMockData(100);
+  let cols: any = columns;
+
+  if (params.tableId === '0') {
+    data = generateMockData(100);
+    cols = columns;
+  }
+
+  if (params.tableId === '1') {
+    data = generateMockAddresses(100);
+    cols = addresses;
+  }
+
+  if (params.tableId === '2') {
+    data = generateMockPosts(100);
+    cols = posts;
+  }
+
   const response = {
     data: {
-      columns,
+      columns: cols,
       rows: data.slice(Number(page) * Number(limit), Number(limit)),
       maxIndex: data.length,
     },
@@ -200,19 +236,120 @@ export async function GET(request: NextRequest) {
   });
 }
 
-export async function GET() {
+const translateData = (data) => {
+  const columns = data.requiredFields.map((item) => {
+    return {
+      id: item.id,
+      label: item.id,
+      type: item.type,
+      isActive: true,
+      isPrimaryKey: false,
+      isForeignKey: false,
+      foreignKeyId: '',
+    };
+  });
+
+  return {
+    id: data.tablename as string,
+    name: data.tablename as string,
+    source: 'Source 1',
+    created: '2021-08-01',
+    updated: '2021-08-01',
+    status: 'Active',
+    columns: columns,
+    foreignKey: '',
+  };
+};
+
+export async function POST(
+  request: Request,
+  { params }: { params: { projectId: string; tableId: string } },
+) {
   const databasePath = path.join(
     process.cwd(),
-    'app/api/mock/[projectId]/data/[tableId]/database.json',
+    `app/api/mock/[projectId]/data/all/${params.projectId}.json`,
   );
+
+  console.error(databasePath);
+
+  const { data } = await request.json();
+  const realData = translateData(data);
+  // const arrayData = [realData]
+
   try {
-    const database = await fs.readFile(databasePath, 'utf8');
-    return new Response(database, {
-      headers: { 'content-type': 'application/json' },
+    const initData = await fsa.readFile(databasePath, 'utf-8');
+
+    const initObject = JSON.parse(initData);
+
+    initObject.push(realData);
+
+    const dataToWrite = JSON.stringify(initObject);
+
+    fs.writeFile(databasePath, dataToWrite, (err) => {
+      if (err) {
+        console.log('Error writing file:', err);
+      } else {
+        console.log('Successfully wrote file');
+      }
     });
-  } catch {
-    return new Response(undefined, {
-      status: 404,
+
+    return NextResponse.json(dataToWrite, { status: 200 });
+  } catch (error) {
+    console.log(error);
+    return new NextResponse('', { status: 500 });
+  }
+
+  console.log('DATA POSTED', realData);
+
+  // try {
+  //   const dataToWrite = JSON.stringify(initObject);
+
+  //   fs.writeFile(databasePath, dataToWrite, (err) => {
+  //     if (err) {
+  //         console.log('Error writing file:', err);
+  //     } else {
+  //         console.log('Successfully wrote file');
+  //     }
+  //   });
+
+  //   return NextResponse.json(dataToWrite);
+  // } catch (err) {
+  //   return new NextResponse("Error in posting data!", {
+  //     status: 500,
+  //   });
+  // }
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: { projectId: string; tableId: string } },
+) {
+  const databasePath = path.join(
+    process.cwd(),
+    `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`,
+  );
+
+  console.error(databasePath);
+
+  const { data } = await request.json();
+
+  console.log('DATA POSTED', data);
+
+  try {
+    const dataToWrite = JSON.stringify(data);
+
+    fs.writeFile(databasePath, dataToWrite, (err) => {
+      if (err) {
+        console.log('Error writing file:', err);
+      } else {
+        console.log('Successfully wrote file');
+      }
+    });
+
+    return NextResponse.json(dataToWrite);
+  } catch (err) {
+    return new NextResponse('Something went wrong!', {
+      status: 500,
     });
   }
 }

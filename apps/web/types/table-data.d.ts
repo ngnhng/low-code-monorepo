@@ -58,6 +58,7 @@ interface ColumnDef {
   isPrimaryKey: boolean;
   isForeignKey: boolean;
   foreignKeyId?: string;
+  defaultValue?: string;
 }
 
 interface RowDef {
