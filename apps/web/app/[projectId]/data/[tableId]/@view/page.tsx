@@ -37,11 +37,18 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button, Input } from '@repo/ui';
 import { FlaskConical  } from 'lucide-react';
 
-export default function Page({ params: { tableId } }) {
+import { toast } from 'sonner'
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import CreateColumnForm from '../../_components/create-form/create-column-form';
+
+export default function Page({ params: { tableId, projectId } }) {
   const {
     tableData: { fetchTableData, fetchAppliedQueries },
     projectData: { currentProjectId },
   } = useMobxStore();
+
+  const router = useRouter();
 
   const { data, isLoading, error, mutate } = useSWR<DataTable>(
     `TABLE_DATA-${currentProjectId}-${tableId}`,
@@ -52,9 +59,19 @@ export default function Page({ params: { tableId } }) {
       }),
   );
 
-  console.log("Data loaded:", data);
+  // console.log("Data loaded:", data);
 
-  const handleCommit = () => {
+  const handleCommit = async () => {
+    try {
+      await axios.put(`/api/mock/${projectId}/data/${tableId}`, {
+        data: data,
+      });
+      toast.success('Table updated')
+      router.refresh();
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong");
+    }
     // TODO: axios data
     console.log('committing data', data);
   };
@@ -108,6 +125,7 @@ const TableEditor = ({
     direction: "",
   })
 
+  console.log("Data Recieved: ", data);
   console.log("Data present:", localData);
 
   const handleSortClickDesc = (header) => {
@@ -151,6 +169,8 @@ const TableEditor = ({
     if (sort.direction === "asc") {
       return data.sort((a, b) => (a[sort.keyToSort] > b[sort.keyToSort] ? 1 : -1))
     }
+
+    console.log("sorted", data);
 
     return data.sort((a, b) => (a[sort.keyToSort] > b[sort.keyToSort] ? -1 : 1))
   }
@@ -263,6 +283,11 @@ const TableEditor = ({
         onAddNewColumn={() => {}}
         onQuery={onQuery}
         setSearch={setSearch}
+        localTable={{
+          localColumns: localColumns,
+        }}
+        setLocalColumns={setLocalColumns}
+        setLocalData={setLocalData}
       />
 
       <DynamicDataSheetGrid
@@ -343,12 +368,18 @@ const ViewMenubar = ({
   onAddNewColumn,
   onQuery,
   setSearch,
+  localTable,
+  setLocalColumns,
+  setLocalData,
 }: {
   onCommit: any;
   discardData: any;
   onAddNewColumn: any;
   onQuery: any;
   setSearch: any;
+  localTable: any;
+  setLocalColumns: any;
+  setLocalData: any;
 }) => {
 
   return (
@@ -366,8 +397,11 @@ const ViewMenubar = ({
         </div>
 
         <div className="flex w-full max-w-sm items-center space-x-2">
-          <Input type="email" placeholder="Find DB ..." onChange={(e) => setSearch(e.target.value)}/>
-          <Button onClick={onQuery} variant={"outline"}>Search</Button>
+          <CreateColumnForm 
+            localTable={localTable} 
+            setLocalColumns={setLocalColumns}
+            setLocalData={setLocalData}
+          />
         </div>
       </div>
     </div>

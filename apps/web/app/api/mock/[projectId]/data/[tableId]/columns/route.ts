@@ -8,7 +8,10 @@ import path from "path";
 //   type: string,
 //   role?: string,
 // } }
-export async function POST(request: Request) {
+export async function POST(
+   request: Request,
+   { params }:  { params: {projectId: string, tableId: string}}
+) {
    const databasePath = path.join(
       process.cwd(),
       "app/api/mock/[projectId]/data/[tableId]/database.json"
@@ -51,7 +54,10 @@ export async function POST(request: Request) {
 
 // DELETE /api/mock/[projectId]/data/[tableId]/columns :delete column
 // body: { columnId: string }
-export async function DELETE(request: Request) {
+export async function DELETE(
+   request: Request,   
+   { params }:  { params: {projectId: string, tableId: string}}
+) {
    const databasePath = path.join(
       process.cwd(),
       "app/api/mock/[projectId]/data/[tableId]/database.json"
@@ -59,8 +65,8 @@ export async function DELETE(request: Request) {
 
    const url = new URL(request.url);
 
-   const projectId = url.pathname.split("/")[3];
-   const tableId = url.pathname.split("/")[5];
+   // const projectId = url.pathname.split("/")[3];
+   // const tableId = url.pathname.split("/")[5];
 
    const requestBody = await request.json();
 
@@ -89,7 +95,10 @@ export async function DELETE(request: Request) {
 
 // PUT /api/mock/[projectId]/data/[tableId]/columns :update column
 // body: { column: {} }
-export async function PUT(request: Request) {
+export async function PUT(
+   request: Request
+
+   ) {
    const databasePath = path.join(
       process.cwd(),
       "app/api/mock/[projectId]/data/[tableId]/database.json"

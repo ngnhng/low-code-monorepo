@@ -36,7 +36,7 @@ import { OptionDialog } from './_components/table-list/options-cards';
 import { useMobxStore } from '../../../lib/mobx/store-provider';
 import React, { ReactComponentElement, useEffect, useRef } from 'react';
 import { table } from 'console';
-import CreateTableForm from './_components/create-table/create-table-form';
+import CreateTableForm from './_components/create-form/create-table-form';
 
 export default function Page() {
   const {
@@ -55,7 +55,7 @@ export default function Page() {
 
   return (
     <>
-      <DatabaseTabs data={data} columns={columns}/>
+      <DatabaseTabs data={data} columns={columns} projectId={currentProjectId}/>
     </>
   );
 }
@@ -92,7 +92,7 @@ const HorizontalList = ({ children, ...props }) => (
   </ul>
 );
 
-export function DatabaseTabs({data, columns}) {
+export function DatabaseTabs({data, columns, projectId}) {
 
   // const tableRef = useRef<ReactComponentElement>(null);
 
@@ -115,7 +115,7 @@ export function DatabaseTabs({data, columns}) {
       <TabsContent value="tables">
         <div className="container mx-auto">
           <HorizontalList>
-            <CreateTableForm />
+            <CreateTableForm projectId={projectId}/>
 
             <CardButtonWithIcon
               className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "

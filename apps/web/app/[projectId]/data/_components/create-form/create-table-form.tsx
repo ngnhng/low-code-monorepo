@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { CardButtonWithIcon } from '@repo/ui'
 import { PlusSquare, XCircle } from 'lucide-react'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useFieldArray } from "react-hook-form"
 import { uuid } from 'uuidv4';
+import axios from 'axios';
 
 import {
   Sheet,
@@ -34,20 +35,25 @@ import {
 } from "@repo/ui"
 
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 
 interface CreateTableFormProps {
-
+  projectId: string;
 }
 
 const requiredFieldsSchema = z.object({
-  key: z.string().trim().min(2, {
+  id: z.string().trim().min(2, {
     message: 'Key must be at least 2 characters.',
   }),
   type: z.string().min(1, {
     message: "Type is required",
   }),
   defaultValue: z.union([z.string(), z.number(), z.boolean()]).optional(),
+  // isActive: z.boolean().default(true),
+  // isPrimaryKey: z.boolean().default(false),
+  // isForeignKey: z.boolean().default(false),
+  // foreignKeyId: z.string().default(""),
 })
 
 const arrayRequiredFields = z.array(requiredFieldsSchema);
@@ -59,18 +65,13 @@ const formSchema = z.object({
   requiredFields: arrayRequiredFields,
 })
 
-const CreateTableForm = () => {
+const CreateTableForm = ({
+  projectId,
+}: CreateTableFormProps) => {
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    // defaultValues: {
-    //   tablename: "",
-    //   requiredFields: [{
-    //     "key": "",
-    //     "type": "",
-    //     // "defaultValue": "",
-    //   }]
-    // },
   })
 
   const {
@@ -84,10 +85,12 @@ const CreateTableForm = () => {
   })
 
   const { isSubmitting, isValid } = form.formState;
- 
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      // TODO: axios data
+      await axios.post(`/api/mock/${projectId}/data/${values.tablename}`, {
+        data: values
+      })
       toast.success("Table has been created.", {
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
@@ -95,7 +98,8 @@ const CreateTableForm = () => {
           </pre>
         ),
       })
-      // TODO: router
+
+      router.push(`/${projectId}/data/${values.tablename}`)
     } catch (error) {
       toast.error('Something went wrong')
     }
@@ -141,7 +145,7 @@ const CreateTableForm = () => {
                       <FormItem>
                         <FormLabel>Key</FormLabel>
                         <FormControl>
-                          <Input {...form.register(`requiredFields.${index}.key`)} placeholder="Input Key" className='w-[13rem] mr-2'/>
+                          <Input {...form.register(`requiredFields.${index}.id`)} placeholder="Input Key" className='w-[13rem] mr-2'/>
                         </FormControl>
                         {/* <FormMessage /> */}
                       </FormItem>
@@ -153,7 +157,7 @@ const CreateTableForm = () => {
                             onValueChange={(value) => {
                               field.field.value.type = value;
                             }} 
-                            defaultValue={field.field.value.type}
+                            defaultValue={""}
                             {...form.register(`requiredFields.${index}.type`)}
                           >
                             <FormControl>
@@ -169,9 +173,6 @@ const CreateTableForm = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                        {/* <FormControl>
-                          <Input {...form.register(`requiredFields.${index}.type`)} placeholder="Input type" className='w-[13rem] mr-2'/>
-                        </FormControl> */}
                       </FormItem>
 
                       <FormItem>
@@ -189,11 +190,14 @@ const CreateTableForm = () => {
             })}
 
             <Button disabled={isSubmitting} variant={"ghost"} className="mr-4" type="button" onClick={() => requiredFieldsAppend({
-              key: "",
+              id: "",
               type: "",
               defaultValue: "",
             })}>Add a column</Button>
-            <Button type="submit">Submit</Button>
+            <Button 
+              type="submit"
+              disabled={isSubmitting}  
+            >Submit</Button>
           </form>
         </Form>
       </SheetContent>
