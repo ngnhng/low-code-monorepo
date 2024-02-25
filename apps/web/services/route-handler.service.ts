@@ -1,12 +1,16 @@
-import axios, { AxiosResponse } from "axios";
-import { API_BASE_URL, CLIENT_BASE_URL } from "helpers/common.helper";
-import { APIService } from "./api.service";
+import axios, { AxiosResponse } from 'axios';
+import { API_BASE_URL, CLIENT_BASE_URL } from 'helpers/common.helper';
+import { APIService } from './api.service';
 
 export abstract class RouteHandlerAPIService extends APIService {
   clientURL: string;
 
-  constructor() {
-    super(API_BASE_URL);
+  constructor(customBaseURL?: string) {
+    if (customBaseURL) {
+      super(customBaseURL);
+    } else {
+      super(API_BASE_URL);
+    }
 
     this.clientURL = CLIENT_BASE_URL;
   }
@@ -17,7 +21,7 @@ export abstract class RouteHandlerAPIService extends APIService {
       method: 'get',
       url: this.createURL(this.clientURL, url),
       ...config,
-    })
+    });
   }
 
   postServerSide(url: string, data = {}, config = {}): Promise<AxiosResponse> {
@@ -26,7 +30,7 @@ export abstract class RouteHandlerAPIService extends APIService {
       url: this.createURL(this.clientURL, url),
       data,
       ...config,
-    })
+    });
   }
 
   putServerSide(url: string, data = {}, config = {}): Promise<AxiosResponse> {
@@ -35,7 +39,6 @@ export abstract class RouteHandlerAPIService extends APIService {
       url: this.createURL(this.clientURL, url),
       data,
       ...config,
-    })
+    });
   }
 }
-

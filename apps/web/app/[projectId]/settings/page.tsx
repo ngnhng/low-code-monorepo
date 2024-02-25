@@ -3,26 +3,6 @@ import { Input } from '@repo/ui';
 import { Label } from '@repo/ui';
 import { Button } from '@repo/ui';
 
-import {
-  CalendarIcon,
-  EnvelopeClosedIcon,
-  FaceIcon,
-  GearIcon,
-  PersonIcon,
-  RocketIcon,
-} from '@radix-ui/react-icons';
-
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-  CommandShortcut,
-} from '@repo/ui';
-
 import { Trash2 } from 'lucide-react';
 
 export default function Page() {

@@ -7,7 +7,7 @@ export type RootProps = {
   title: string;
 } & DefaultRootProps;
 
-function Root({ children, editMode }: RootProps): JSX.Element {
+function Root({ children }: RootProps): JSX.Element {
   return <>{children}</>;
 }
 

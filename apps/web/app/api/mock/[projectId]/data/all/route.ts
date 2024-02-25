@@ -24,9 +24,9 @@ const TABLES = [
    },
 ];
 
-export async function GET(request: Request) {
-   const url = new URL(request.url);
-   const projectId = url.pathname.split("/")[3];
+export async function GET() {
+//   const url = new URL(request.url);
+//   const projectId = url.pathname.split("/")[3];
 
    const tables = TABLES;
 

@@ -1,7 +1,5 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import fs from "fs";
-import { NextApiRequest, NextApiResponse } from "next";
 
 const data = {
    columns: [

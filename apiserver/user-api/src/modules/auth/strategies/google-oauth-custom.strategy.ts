@@ -48,6 +48,11 @@ export class CustomGoogleStrategy extends PassportStrategy(
     // Exchange the code for access token and ID token
     this.logger.debug('authenticateWithGoogle: ', JSON.stringify(req.query));
     const { code } = req.query;
+
+    if (!code) {
+      throw new UnauthorizedException();
+    }
+
     const tokenResponse = await this.getToken(code.toString());
 
     const user = await this.getGoogleProfile(tokenResponse.access_token);

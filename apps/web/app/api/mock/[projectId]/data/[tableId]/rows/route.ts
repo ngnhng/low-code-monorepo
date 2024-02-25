@@ -1,6 +1,6 @@
 // POST /api/mock/[project-id]/data/[table-id]/rows
 
-export async function POST(request: Request) {
+export async function POST() {
    return new Response(
       JSON.stringify({
          success: true,

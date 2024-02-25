@@ -1,4 +1,4 @@
-import ProfileBar from './_components/ProfileBar';
+import ProfileBar from './_components/profile-bar';
 import { UserAuthWrapper } from 'lib/wrappers/user-auth-wrapper';
 
 export default function ProfileLayout({
