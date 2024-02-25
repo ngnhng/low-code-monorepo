@@ -1,4 +1,3 @@
-# BUILD FOR LOCAL DEVELOPMENT
 FROM node:18-alpine AS development
 
 WORKDIR /app
@@ -13,8 +12,8 @@ COPY prisma ./prisma/
 
 RUN yarn run build
 
-COPY ./start-dev.sh ./start-dev.sh
+COPY ./start-prod.sh ./start-prod.sh
 
 EXPOSE 3000
 
-CMD chmod +x ./start-dev.sh && /bin/sh -c ./start-dev.sh
+CMD chmod +x ./start-prod.sh && /bin/sh -c ./start-prod.sh
