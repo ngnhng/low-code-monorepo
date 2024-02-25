@@ -56,7 +56,7 @@
         "provider": {
             "google": {
                 "client_id": "201951095412-843vr4ljf1uo49u9vp3v3c0u687nolj4.apps.googleusercontent.com",
-                "client_secret": "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",
+                "client_secret": "",
                 "redirect_url": "http://localhost:80/auth-api/api/v1/oauth/google/callback"
             }
         }
