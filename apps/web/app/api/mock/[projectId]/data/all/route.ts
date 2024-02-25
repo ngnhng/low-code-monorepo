@@ -3,10 +3,10 @@
 
 // GET /api/mock/{projectId}/data/all: Get all data for a project
 
-import { NextResponse, type NextRequest } from "next/server";
-import fs from "fs";
-import fsa from "fs/promises";
-import path from "path";
+import { NextResponse } from "next/server";
+// import fs from "fs";
+import fsa from "node:fs/promises";
+import path from "node:path";
 import { columns, addresses, posts } from "../[tableId]/route";
 
 import { TableItem } from "types/table-data";
@@ -56,7 +56,7 @@ export async function GET(
   let previosData;
 
   try {
-    const data = await fsa.readFile(databasePath, "utf-8");
+    const data = await fsa.readFile(databasePath, "utf8");
 
     previosData = JSON.parse(data);
 

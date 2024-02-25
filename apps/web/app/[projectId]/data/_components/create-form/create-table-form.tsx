@@ -1,14 +1,14 @@
-import React from 'react';
-import { CardButtonWithIcon } from '@repo/ui';
-import { PlusSquare, XCircle } from 'lucide-react';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, useFieldArray } from 'react-hook-form';
+import React from "react";
+import { CardButtonWithIcon } from "@repo/ui";
+import { PlusSquare, XCircle } from "lucide-react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useFieldArray } from "react-hook-form";
 // import { uuid } from 'uuidv4';
-import axios from 'axios';
+import axios from "axios";
 
-import { Sheet, SheetContent, SheetTrigger } from '@repo/ui';
-import { Button, Input } from '@repo/ui';
+import { Sheet, SheetContent, SheetTrigger } from "@repo/ui";
+import { Button, Input } from "@repo/ui";
 import {
   Form,
   FormControl,
@@ -16,35 +16,35 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@repo/ui';
+} from "@repo/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/ui';
+} from "@repo/ui";
 
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import { useMobxStore } from 'lib/mobx/store-provider';
-import useSWR from 'swr';
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useMobxStore } from "lib/mobx/store-provider";
+import useSWR from "swr";
 // import { TableItem } from 'types/table-data'
 
 interface CreateTableFormProps {
   projectId: string;
 }
 
-const typeValues = ['date', 'text', 'number', 'boolean'] as const;
+const typeValues = ["date", "text", "number", "boolean"] as const;
 
 const requiredFieldsSchema = z.object({
   id: z.string().trim().min(2, {
-    message: 'Key must be at least 2 characters.',
+    message: "Key must be at least 2 characters.",
   }),
   type: z.string().min(1, {
-    message: 'Type is required',
+    message: "Type is required",
   }),
-  referenceTable: z.string().optional().default(''),
+  referenceTable: z.string().optional().default(""),
   // defaultValue: z.union([z.string(), z.number(), z.boolean()]).optional(),
   // isActive: z.boolean().default(true),
   // isPrimaryKey: z.boolean().default(false),
@@ -56,7 +56,7 @@ const arrayRequiredFields = z.array(requiredFieldsSchema);
 
 const formSchema = z.object({
   tablename: z.string().min(2, {
-    message: 'Tablename must be at least 2 characters.',
+    message: "Tablename must be at least 2 characters.",
   }),
   requiredFields: arrayRequiredFields,
 });
@@ -73,7 +73,7 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
 
   const { data, isLoading, error, mutate } = useSWR(
     `TABLE_DATA-${currentProjectId}-all`,
-    () => fetchTables(),
+    () => fetchTables()
   );
 
   const references = data?.map((data) => ({
@@ -92,7 +92,7 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
     // register
   } = useFieldArray({
     control: form.control,
-    name: 'requiredFields',
+    name: "requiredFields",
   });
 
   const { isSubmitting, isValid } = form.formState;
@@ -101,13 +101,13 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
     try {
       await axios.post(
         `/api/mock/${projectId}/data/${values.tablename
-          .replaceAll(/\s/g, '')
+          .replaceAll(/\s/g, "")
           .toLowerCase()}`,
         {
           data: values,
-        },
+        }
       );
-      toast.success('Table has been created.', {
+      toast.success("Table has been created.", {
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
             <code className="text-white">
@@ -120,7 +120,7 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
       router.refresh();
       // router.push(`/${projectId}/data/${values.tablename}`)
     } catch {
-      toast.error('Something went wrong');
+      toast.error("Something went wrong");
     }
   };
 
@@ -134,7 +134,7 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
         <CardButtonWithIcon
           className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
           icon={<PlusSquare size={40} />}
-          onClick={() => console.log('Card')}
+          onClick={() => console.log("Card")}
         >
           <span className="text-xl font-light">Add Table</span>
         </CardButtonWithIcon>
@@ -185,7 +185,7 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
                               field.field.value.type = value;
                               // return field.field.onChange(value);
                             }}
-                            defaultValue={''}
+                            defaultValue={""}
                             {...form.register(`requiredFields.${index}.type`)}
                           >
                             <FormControl>
@@ -213,7 +213,7 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
                             // return field.field.onChange(value)
                           }}
                           {...form.register(
-                            `requiredFields.${index}.referenceTable`,
+                            `requiredFields.${index}.referenceTable`
                           )}
                           // defaultValue={""}
                           // value={field.field.value.referenceTable}
@@ -254,14 +254,14 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
 
             <Button
               disabled={isSubmitting}
-              variant={'ghost'}
+              variant={"ghost"}
               className="mr-4"
               type="button"
               onClick={() =>
                 requiredFieldsAppend({
-                  id: '',
-                  type: 'text',
-                  referenceTable: '',
+                  id: "",
+                  type: "text",
+                  referenceTable: "",
                 })
               }
             >

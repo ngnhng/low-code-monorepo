@@ -1,7 +1,7 @@
 // POST /api/mock/[projectId]/data/[tableId]/columns :add new column
 
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import fs from "node:fs/promises";
+import path from "node:path";
 // body: { column: {
 //   key: string,
 //   label: string,
@@ -9,28 +9,28 @@ import path from 'node:path';
 //   role?: string,
 // } }
 
-export async function GET (
-   request: Request,
-   { params }:  { params: {projectId: string, tableId: string}}
+export async function GET(
+  request: Request,
+  { params }: { params: { projectId: string; tableId: string } }
 ) {
-   const databasePath = path.join(
-      process.cwd(),
-      `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`,
-   );
+  const databasePath = path.join(
+    process.cwd(),
+    `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`
+  );
 
-   const database = await fs.readFile(databasePath);
+  const database = await fs.readFile(databasePath);
 }
 
 export async function POST(
   request: Request,
-  { params }: { params: { projectId: string; tableId: string } },
+  { params }: { params: { projectId: string; tableId: string } }
 ) {
   const databasePath = path.join(
     process.cwd(),
-    'app/api/mock/[projectId]/data/[tableId]/database.json',
+    "app/api/mock/[projectId]/data/[tableId]/database.json"
   );
 
-  const database = await fs.readFile(databasePath, 'utf8');
+  const database = await fs.readFile(databasePath, "utf8");
 
   //   const url = new URL(request.url);
 
@@ -69,11 +69,11 @@ export async function POST(
 // body: { columnId: string }
 export async function DELETE(
   request: Request,
-  { params }: { params: { projectId: string; tableId: string } },
+  { params }: { params: { projectId: string; tableId: string } }
 ) {
   const databasePath = path.join(
     process.cwd(),
-    'app/api/mock/[projectId]/data/[tableId]/database.json',
+    "app/api/mock/[projectId]/data/[tableId]/database.json"
   );
 
   //   const url = new URL(request.url);
@@ -85,7 +85,7 @@ export async function DELETE(
 
   const columnId = requestBody.columnId;
 
-  const tableData = JSON.parse(await fs.readFile(databasePath, 'utf8'));
+  const tableData = JSON.parse(await fs.readFile(databasePath, "utf8"));
 
   const searchResult = tableData.columns.filter((column) => {
     return column.key !== columnId;
@@ -111,7 +111,7 @@ export async function DELETE(
 export async function PUT(request: Request) {
   const databasePath = path.join(
     process.cwd(),
-    'app/api/mock/[projectId]/data/[tableId]/database.json',
+    "app/api/mock/[projectId]/data/[tableId]/database.json"
   );
 
   //   const url = new URL(request.url);
@@ -123,7 +123,7 @@ export async function PUT(request: Request) {
 
   const column = requestBody.column;
 
-  const tableData = JSON.parse(await fs.readFile(databasePath, 'utf8'));
+  const tableData = JSON.parse(await fs.readFile(databasePath, "utf8"));
 
   tableData.columns = tableData.columns.map((c) => {
     return c.key === column.key ? column : c;

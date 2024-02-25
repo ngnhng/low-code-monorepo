@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from "react";
 
-import useSWR from 'swr';
-import { useMobxStore } from 'lib/mobx/store-provider';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
+import useSWR from "swr";
+import { useMobxStore } from "lib/mobx/store-provider";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 
 import {
   Command,
@@ -20,8 +20,8 @@ import {
   Sheet,
   SheetContent,
   SheetTrigger,
-} from '@repo/ui';
-import { Button, Input } from '@repo/ui';
+} from "@repo/ui";
+import { Button, Input } from "@repo/ui";
 import {
   Form,
   FormControl,
@@ -29,17 +29,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@repo/ui';
+} from "@repo/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/ui';
-import { ColumnDef } from 'types/table-data';
-import { toast } from 'sonner';
-import cn from '../../../../../lib';
+} from "@repo/ui";
+import { ColumnDef } from "types/table-data";
+import { toast } from "sonner";
+import cn from "../../../../../lib";
 
 interface CreateColumnFormProps {
   setLocalColumns: any;
@@ -48,39 +48,39 @@ interface CreateColumnFormProps {
   tableId: string;
 }
 
-const typeValues = ['date', 'text', 'number', 'boolean', 'link'] as const;
+const typeValues = ["date", "text", "number", "boolean", "link"] as const;
 
 const formSchema = z
   .object({
     columnname: z.string().min(2, {
-      message: 'columnname must be at least 2 characters.',
+      message: "columnname must be at least 2 characters.",
     }),
     type: z.enum(typeValues),
     referenceTable: z.string().optional(),
   })
   .refine(
     (data) => {
-      if (data.type === 'link' && !data.referenceTable) {
+      if (data.type === "link" && !data.referenceTable) {
         return false;
       }
       return true;
     },
     {
-      message: 'Reference Table is required for Link type.',
-      path: ['referenceTable'],
-    },
+      message: "Reference Table is required for Link type.",
+      path: ["referenceTable"],
+    }
   )
   .refine(
     (data) => {
-      if (data.type !== 'link' && data.referenceTable) {
+      if (data.type !== "link" && data.referenceTable) {
         return false;
       }
       return true;
     },
     {
-      message: 'Reference Table is not required for non-Link type.',
-      path: ['referenceTable'],
-    },
+      message: "Reference Table is not required for non-Link type.",
+      path: ["referenceTable"],
+    }
   );
 
 const CreateColumnForm = ({
@@ -100,13 +100,13 @@ const CreateColumnForm = ({
 
   const { data: allTables, isLoading } = useSWR(
     `TABLE_DATA-${currentProjectId}-all`,
-    () => fetchTables(),
+    () => fetchTables()
   );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      columnname: '',
+      columnname: "",
       type: undefined,
     },
   });
@@ -119,7 +119,7 @@ const CreateColumnForm = ({
 
   useEffect(() => {
     if (selectedTable) {
-      console.log('Selected Table:', selectedTable);
+      console.log("Selected Table:", selectedTable);
       const columns = selectedTable.columns.map((col) => ({
         id: col.id,
         label: col.label,
@@ -136,7 +136,7 @@ const CreateColumnForm = ({
     // transform data from form schema
     // check logic naming for foreign key id
     let newColData: ColumnDef = {
-      id: values.columnname.replaceAll(/\s/g, '').toLowerCase(),
+      id: values.columnname.replaceAll(/\s/g, "").toLowerCase(),
       label: values.columnname,
       type: values.type,
       isActive: true,
@@ -144,10 +144,10 @@ const CreateColumnForm = ({
       isForeignKey: values.referenceTable ? true : false,
       foreignKeyId: values.referenceTable
         ? `${tableId}-${values.referenceTable}`
-        : '',
+        : "",
     };
 
-    console.log('Creating Column:', newColData);
+    console.log("Creating Column:", newColData);
 
     if (values.referenceTable) {
       newColData = {
@@ -176,7 +176,7 @@ const CreateColumnForm = ({
         return;
       });
 
-      console.log('Existing:', existingColumns);
+      console.log("Existing:", existingColumns);
 
       if (existingColumns) {
         flag = true;
@@ -189,12 +189,12 @@ const CreateColumnForm = ({
     if (flag) {
       form.reset();
       setOpen(false);
-      toast.error('Column existing');
+      toast.error("Column existing");
       return;
     }
 
     // set default value for type link and newReferencetableid
-    if (values.type === 'link') {
+    if (values.type === "link") {
       setLocalData((previous) => {
         const newData = previous.map((row) => {
           const newRow = {
@@ -205,7 +205,7 @@ const CreateColumnForm = ({
             },
           };
 
-          console.log('New Created', newRow[values.columnname]);
+          console.log("New Created", newRow[values.columnname]);
           return newRow;
         });
 
@@ -236,9 +236,9 @@ const CreateColumnForm = ({
 
   // callback when validation failed
   const onError = (errors: any) => {
-    console.log('Error:', errors);
+    console.log("Error:", errors);
     // reset the reference table if the type is not link
-    setValue('referenceTable', undefined);
+    setValue("referenceTable", undefined);
   };
 
   const references = useMemo(() => {
@@ -326,12 +326,12 @@ const CreateColumnForm = ({
                           variant="outline"
                           role="combobox"
                           className={cn(
-                            'justify-between',
-                            !field.value && 'text-muted-foreground',
+                            "justify-between",
+                            !field.value && "text-muted-foreground"
                           )}
                         >
                           {references?.find((ref) => ref.id === field.value)
-                            ?.tablename || 'Select a category'}
+                            ?.tablename || "Select a category"}
                           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
@@ -349,32 +349,32 @@ const CreateColumnForm = ({
                                 key={index}
                                 value={ref.id}
                                 onSelect={(value) => {
-                                  console.log('Selected:', value);
+                                  console.log("Selected:", value);
                                   setSelectedTable(
                                     allTables.find(
-                                      (table) => table.id === value,
-                                    ),
+                                      (table) => table.id === value
+                                    )
                                   );
 
                                   setValue(
-                                    'referenceTable',
-                                    value == field.value ? undefined : value,
+                                    "referenceTable",
+                                    value == field.value ? undefined : value
                                   );
                                 }}
                                 className={cn(
-                                  'flex items-center',
+                                  "flex items-center",
                                   field.value === ref.id &&
-                                    'bg-slate-950 text-white',
+                                    "bg-slate-950 text-white"
                                 )}
                               >
                                 {ref.tablename}
                                 {field.value === ref.id && (
                                   <CheckIcon
                                     className={cn(
-                                      'ml-auto h-4 w-4',
+                                      "ml-auto h-4 w-4",
                                       ref.id === field.value
-                                        ? 'opacity-100'
-                                        : 'opacity-0',
+                                        ? "opacity-100"
+                                        : "opacity-0"
                                     )}
                                   />
                                 )}
