@@ -81,7 +81,7 @@ services:
             - "traefik.enable=true"
             - "traefik.http.routers.user-api.rule=Host(`localhost`) && PathPrefix(`/user-api`)"
             - "traefik.http.routers.user-api.entrypoints=web"
-            - "traefik.http.middlewares.user-api-forwardauth.forwardauth.address=http://localhost/auth-api/api/v1/validate/token"
+            - "traefik.http.middlewares.user-api-forwardauth.forwardauth.address=http://auth-api:3000/api/v1/validate/token"
             - "traefik.http.middlewares.user-api-stripprefix.stripprefix.prefixes=/user-api"
             - "traefik.http.routers.user-api.middlewares=user-api-stripprefix@docker,user-api-forwardauth@docker"
 
