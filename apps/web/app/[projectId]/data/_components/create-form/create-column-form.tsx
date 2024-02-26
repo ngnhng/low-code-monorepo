@@ -1,5 +1,9 @@
-import React, { useState } from 'react'
+'use client'
 
+import React, { useEffect, useState } from 'react'
+
+import useSWR from 'swr';
+import { useMobxStore } from 'lib/mobx/store-provider';
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useFieldArray } from "react-hook-form"
@@ -14,7 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@repo/ui"
-import { Button, Textarea, Input, Switch, Label } from "@repo/ui"
+import { Button, Input } from "@repo/ui"
 import {
   Form,
   FormControl,
@@ -34,7 +38,7 @@ import { ColumnDef } from 'types/table-data'
 import { toast } from 'sonner'
 
 interface CreateColumnFormProps {
-  localTable: any;
+  // localTable: any;
   setLocalColumns: any;
   setLocalData: any;
 }
@@ -47,20 +51,46 @@ const formSchema = z.object({
   }),
   type: z.enum(typeValues),
   defaultValue: z.string().optional(),
+  referenceTable: z.string().optional(),
+  referenceColumn: z.string().optional(),
 })
 
 const CreateColumnForm = ({
-  localTable,
+  // localTable,
   setLocalColumns,
   setLocalData,
 }: CreateColumnFormProps ) => {
   const [open, setOpen] = useState(false);
+  const [selectedTable, setSelectedTable] = useState<any>( );
+  const [columnOfTable, setColumnOfTable] = useState<any[]>();
+
+  // const []
+  const {
+    tableData: { fetchTables },
+    projectData: { currentProjectId },
+  } = useMobxStore();
+
+  const { data, isLoading, error, mutate } = useSWR(
+    `TABLE_DATA-${currentProjectId}-all`,
+    () => fetchTables(),
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
   const { isSubmitting, isValid } = form.formState;
+
+  useEffect(() => {
+    if (selectedTable) {
+      console.log("Selected Table: ", selectedTable);
+      const columns = selectedTable.columns.map(col => ({
+        id: col.id,
+        label: col.label,
+      }));
+      setColumnOfTable(columns)
+    }
+  }, [selectedTable])
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     
@@ -72,7 +102,7 @@ const CreateColumnForm = ({
       isActive: true,
       isPrimaryKey: false,
       isForeignKey: false,
-      foreignKeyId: '',
+      foreignKeyId: `${values.referenceTable}-${values.referenceColumn}`,
     }
 
     setLocalData(previous => {
@@ -95,6 +125,15 @@ const CreateColumnForm = ({
         </pre>
       ),
     })
+  }
+
+  const references =  data?.map((data) => ({
+    id: data.id,
+    tablename: data.name,
+  }));
+
+  if (!data || isLoading) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -127,7 +166,7 @@ const CreateColumnForm = ({
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Type</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -145,21 +184,88 @@ const CreateColumnForm = ({
                 </FormItem>
               )}
             />
+            
+            <FormField
+              control={form.control}
+              name="referenceTable"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Reference Table</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      const table = data.find(table => table.id === value);
+                      setSelectedTable(table);
+                      return field.onChange(value)
+                    }}
+                    // defaultValue={field.value}
+                    // value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {references && references.map((ref, index) => (
+                        <SelectItem key={index} value={ref.id}>
+                          {ref.tablename}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {selectedTable === undefined ? null : (
+              <FormField
+                control={form.control}
+                name="referenceColumn"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Reference Column</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        // setSelectedTable(value)
+                        return field.onChange(value)
+                      }}
+                      // defaultValue={field.value}
+                      // value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {columnOfTable && columnOfTable.map((ref, index) => (
+                          <SelectItem key={index} value={ref.id}>
+                            {ref.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
               name="defaultValue"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Table Name</FormLabel>
+                  <FormLabel>Default Value</FormLabel>
                   <FormControl>
-                    <Input placeholder="shadcn" {...field} />
+                    <Input placeholder="DEFAULT" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <Button 
               type="submit"
               disabled={isSubmitting}  

@@ -13,31 +13,34 @@ import { TableItem } from 'types/table-data';
 
 const TABLES: TableItem[] = [
   {
-    id: '1',
+    id: '0',
     name: 'Table 1',
     source: 'Source 1',
     created: '2021-08-01',
     updated: '2021-08-01',
     status: 'Active',
     columns: columns,
+    referenceTable: [],
   },
   {
-    id: '2',
+    id: '1',
     name: 'Table 2',
     source: 'Source 2',
     created: '2021-08-01',
     updated: '2021-08-01',
     status: 'Active',
     columns: posts,
+    referenceTable: [],
   },
   {
-    id: '3',
+    id: '2',
     name: 'Table 3',
     source: 'Source 3',
     created: '2021-08-01',
     updated: '2021-08-01',
     status: 'Active',
     columns: addresses,
+    referenceTable: [],
   },
 ];
 

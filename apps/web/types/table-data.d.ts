@@ -27,7 +27,7 @@ interface TableItem {
   updated: string;
   status: string;
   columns: ColumnDef[];
-  foreignKey?: string;
+  referenceTable?: string[];
 }
 
 interface TableOperation {
