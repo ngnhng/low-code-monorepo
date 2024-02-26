@@ -1,0 +1,14 @@
+Dockerfile
+.dockerignore
+node_modules/
+npm-debug.log
+dist/
+**/node_modules/
+**/dist/
+.git
+.coverage
+.coverage.*
+.env
+.aws
+db-data/
+**/db-data/

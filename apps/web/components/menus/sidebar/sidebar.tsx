@@ -1,5 +1,3 @@
-import styles from './styles.module.css';
-
 import Link from 'next/link';
 import { NavigationMenuProps } from 'types/navigation';
 

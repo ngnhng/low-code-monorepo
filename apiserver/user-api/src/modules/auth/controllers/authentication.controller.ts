@@ -10,7 +10,7 @@ export class AuthenticationController {
   constructor(private readonly authService: AuthenticationService) {}
 
   @Public()
-  @UseGuards(PasetoAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('refresh')
   async refresh(@Body() refreshDto: RefreshDto) {
     return await this.authService.refresh(refreshDto);

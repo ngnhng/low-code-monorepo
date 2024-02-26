@@ -25,7 +25,6 @@ import { PasetoStrategy } from './strategies/paseto.strategy';
     JwtStrategy,
     PasetoStrategy,
   ],
-  controllers: [AuthenticationController, OAuthController],
   exports: [AuthenticationService],
 })
 export class AuthModule {}

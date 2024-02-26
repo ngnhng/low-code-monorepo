@@ -32,11 +32,14 @@ const chartTypes = [
   'bubble',
 ];
 
+const cssValueCheck = (value: string) =>
+  /\d+(\.\d+)?(%|px|em|rem|(d|s|l)v(w|h))/g.test(value);
+
 export const Charts: ComponentConfig<ChartsProps> = {
   fields: {
     config: {
       type: 'custom',
-      render: ({ field, value, onChange }) => {
+      render: ({ value, onChange }) => {
         const Select = ({ prop, name }) => {
           return (
             <label className={getClassNameInput()}>
@@ -72,6 +75,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
         }: {
           prop: string;
           name: string;
+          // eslint-disable-next-line no-unused-vars
           checkCallback?: (value: string) => boolean;
         }) => {
           return (
@@ -98,10 +102,6 @@ export const Charts: ComponentConfig<ChartsProps> = {
             </label>
           );
         };
-
-        const cssValueCheck = (value: string) =>
-          /[0-9]+(\.[0-9]+)?(%|px|em|rem|(d|s|l)v(w|h))/g.test(value);
-
         return (
           <div>
             <Input prop="title" name="Title" />

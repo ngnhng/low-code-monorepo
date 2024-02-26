@@ -31,7 +31,7 @@
     "lucide-react": "^0.322.0",
     "mobx": "^6.12.0",
     "mobx-react-lite": "^4.0.5",
-    "next": "^14.0.3",
+    "next": "^14.1.0",
     "react": "^18.2.0",
     "react-bpmn": "^0.2.0",
     "react-chartjs-2": "^5.2.0",

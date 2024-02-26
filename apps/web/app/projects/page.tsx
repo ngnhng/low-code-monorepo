@@ -102,7 +102,7 @@ const ProjectLists = (): JSX.Element => {
             <TableRow
               key={`${project.id}${idx}`}
               className="border-0"
-              onClick={(e) => {
+              onClick={() => {
                 router.push(`/${project.id}/edit`);
               }}
             >

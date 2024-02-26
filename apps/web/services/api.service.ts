@@ -1,5 +1,7 @@
+'use client';
+
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import Cookies from 'js-cookie';
+import { getLocalStorage } from '../lib/local-storage';
 
 interface HTTPHeaders {
   [key: string]: string;
@@ -13,9 +15,9 @@ export abstract class APIService {
     this.baseURL = _baseURL;
   }
 
-  getAccessToken() {
+  getAccessToken(): string {
     // TODO: constant this string
-    return Cookies.get("low-code_access-token");
+    return getLocalStorage('yalc_at') || ''; 
   }
 
   getHeaders() {
@@ -24,53 +26,69 @@ export abstract class APIService {
     };
   }
 
-  get(url: string, config: AxiosRequestConfig = {}): Promise<AxiosResponse> {
+  get<T = any>(url: string, config: AxiosRequestConfig = {}): Promise<AxiosResponse<T>> {
     return axios({
       method: 'get',
       url: this.createURL(this.baseURL, url),
       headers: this.getAccessToken() ? this.getHeaders() : {},
       ...config,
-    })
+    });
   }
 
-  post(url: string, data: any = {}, config: AxiosRequestConfig = {}): Promise<AxiosResponse> {
+  post(
+    url: string,
+    data: any = {},
+    config: AxiosRequestConfig = {},
+  ): Promise<AxiosResponse> {
     return axios({
       method: 'post',
       url: this.createURL(this.baseURL, url),
       data,
       headers: this.getAccessToken() ? this.getHeaders() : {},
       ...config,
-    })
+    });
   }
 
-  put(url: string, data: any = {}, config: AxiosRequestConfig = {}): Promise<AxiosResponse> {
+  put(
+    url: string,
+    data: any = {},
+    config: AxiosRequestConfig = {},
+  ): Promise<AxiosResponse> {
     return axios({
       method: 'put',
       url: this.createURL(this.baseURL, url),
       data,
       headers: this.getAccessToken() ? this.getHeaders() : {},
       ...config,
-    })
+    });
   }
 
-  patch(url: string, data: any = {}, config: AxiosRequestConfig = {}): Promise<AxiosResponse> {
+  patch(
+    url: string,
+    data: any = {},
+    config: AxiosRequestConfig = {},
+  ): Promise<AxiosResponse> {
     return axios({
       method: 'patch',
       url: this.createURL(this.baseURL, url),
       data,
       headers: this.getAccessToken() ? this.getHeaders() : {},
       ...config,
-    })
+    });
   }
 
-  delete(url: string, data: any = {}, config: AxiosRequestConfig = {}): Promise<AxiosResponse> {
+  delete(
+    url: string,
+    data: any = {},
+    config: AxiosRequestConfig = {},
+  ): Promise<AxiosResponse> {
     return axios({
       method: 'delete',
       url: this.createURL(this.baseURL, url),
       data,
       headers: this.getAccessToken() ? this.getHeaders() : {},
       ...config,
-    })
+    });
   }
 
   protected createURL(base: string, rest: string): string {
@@ -78,4 +96,3 @@ export abstract class APIService {
     return url.replace(`//+/g`, '/');
   }
 }
-

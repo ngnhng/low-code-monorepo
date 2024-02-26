@@ -1,7 +1,7 @@
 // POST /api/mock/[projectId]/data/[tableId]/columns :add new column
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 // body: { column: {
 //   key: string,
 //   label: string,
@@ -14,12 +14,12 @@ export async function POST(request: Request) {
       "app/api/mock/[projectId]/data/[tableId]/database.json"
    );
 
-   const database = await fs.readFile(databasePath, "utf-8");
+   const database = await fs.readFile(databasePath, "utf8");
 
-   const url = new URL(request.url);
+//   const url = new URL(request.url);
 
-   const projectId = url.pathname.split("/")[3];
-   const tableId = url.pathname.split("/")[5];
+//   const projectId = url.pathname.split("/")[3];
+//   const tableId = url.pathname.split("/")[5];
 
    const requestBody = await request.json();
 
@@ -57,16 +57,16 @@ export async function DELETE(request: Request) {
       "app/api/mock/[projectId]/data/[tableId]/database.json"
    );
 
-   const url = new URL(request.url);
+//   const url = new URL(request.url);
 
-   const projectId = url.pathname.split("/")[3];
-   const tableId = url.pathname.split("/")[5];
+//   const projectId = url.pathname.split("/")[3];
+//   const tableId = url.pathname.split("/")[5];
 
    const requestBody = await request.json();
 
    const columnId = requestBody.columnId;
 
-   const tableData = JSON.parse(await fs.readFile(databasePath, "utf-8"));
+   const tableData = JSON.parse(await fs.readFile(databasePath, "utf8"));
 
    const searchResult = tableData.columns.filter((column) => {
       return column.key !== columnId;
@@ -95,23 +95,19 @@ export async function PUT(request: Request) {
       "app/api/mock/[projectId]/data/[tableId]/database.json"
    );
 
-   const url = new URL(request.url);
+//   const url = new URL(request.url);
 
-   const projectId = url.pathname.split("/")[3];
-   const tableId = url.pathname.split("/")[5];
+//   const projectId = url.pathname.split("/")[3];
+//   const tableId = url.pathname.split("/")[5];
 
    const requestBody = await request.json();
 
    const column = requestBody.column;
 
-   const tableData = JSON.parse(await fs.readFile(databasePath, "utf-8"));
+   const tableData = JSON.parse(await fs.readFile(databasePath, "utf8"));
 
    tableData.columns = tableData.columns.map((c) => {
-      if (c.key === column.key) {
-         return column;
-      } else {
-         return c;
-      }
+      return c.key === column.key ? column : c;
    });
 
    await fs.writeFile(databasePath, JSON.stringify(tableData));

@@ -35,7 +35,7 @@ export default function Page() {
   );
 }
 
-export function TabsDemo() {
+function TabsDemo() {
   return (
     <Tabs defaultValue="account" className="w-[400px]">
       <TabsList className="grid w-full grid-cols-2">

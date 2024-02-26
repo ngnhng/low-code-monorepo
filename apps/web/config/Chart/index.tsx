@@ -1,22 +1,13 @@
-import styles from "./style.module.css";
+//import styles from "./style.module.css";
 
-import React, { useState, useEffect } from "react";
+import React, {  } from "react";
 import { ComponentConfig } from "@measured/puck";
-import getClassNameFactory from "lib/classname-factory/get-classname-factory";
-import axios, { CancelTokenSource } from "axios";
-import {
-   Trash,
-   Type,
-   List,
-   ChevronDown,
-   CheckCircle,
-   Hash,
-} from "react-feather";
+//import { getClassNameFactory } from "lib";
 
-const getClassName = getClassNameFactory("Chart", styles);
-const getClassNameInput = getClassNameFactory("Input", styles);
+//const getClassName = getClassNameFactory("Chart", styles);
+//const getClassNameInput = getClassNameFactory("Input", styles);
 
-const initialData = {};
+//const initialData = {};
 
 export type ChartProps = {
    config: {

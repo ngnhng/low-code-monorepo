@@ -1,20 +1,11 @@
 'use client';
 
-import { useUserAuth } from 'hooks/use-user-auth';
 import './styles.css';
-
-import NavBar from 'components/navigation/nav-bar';
-import { useRouter } from 'next/navigation';
-
 import { Button } from '@repo/ui';
+import { NavBar } from 'components/navigation/nav-bar';
+import Link from 'next/link';
 
 export default function Page() {
-  const router = useRouter();
-  const { isLoading, error, user } = useUserAuth('revalidate');
-  if (isLoading) return <div>Loading...</div>;
-
-  if (error) return <div>Error: {error.message}</div>;
-
   return (
     <div className="w-full h-full flex flex-col">
       <NavBar />
@@ -27,11 +18,13 @@ export default function Page() {
             Yet another low-code platform
           </div>
         </div>
-        <div className='w-[700px] break-words'>
+        <div className="w-[700px] break-words">
           Our aim is to provide the users an easy application development
           process with us literally don't even know what we are doing.
         </div>
-        <Button className='w-min'>Join us now!</Button>
+        <Button className="w-min" asChild>
+          <Link href="/auth/login">Join us now</Link>
+        </Button>
       </div>
     </div>
   );

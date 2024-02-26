@@ -337,9 +337,9 @@ const TABLES = [
    },
 ];
 
-export async function GET(request: Request) {
-   const url = new URL(request.url);
-   const tableId = url.searchParams.get("tableId");
+export async function GET() {
+//   const url = new URL(request.url);
+//   const tableId = url.searchParams.get("tableId");
    const table = await TABLES[0];
    return new Response(JSON.stringify(table), {
       headers: { "content-type": "application/json" },

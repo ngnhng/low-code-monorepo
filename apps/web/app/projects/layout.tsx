@@ -1,19 +1,13 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { Inter } from 'next/font/google';
-
-import NavBar from 'components/navigation/nav-bar';
 import { UserAuthWrapper } from 'lib/wrappers/user-auth-wrapper';
-
-const font = Inter({ subsets: ['latin'] });
+import { NavBar } from 'components/navigation/nav-bar';
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }): JSX.Element {
-  const path = usePathname();
 
   return (
     <UserAuthWrapper>

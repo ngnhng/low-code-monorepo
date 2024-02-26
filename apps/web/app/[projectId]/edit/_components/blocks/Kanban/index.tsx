@@ -104,7 +104,7 @@ export const Kanban: ComponentConfig<KanbanProps> = {
   fields: {
     config: {
       type: 'custom',
-      render: ({ field, value, onChange }) => {
+      render: ({ value, onChange }) => {
         const [rawData, setData] = useState<Object[]>([]);
         const [categoryList, setCategoryList] = useState<string[]>([]);
         const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -113,13 +113,12 @@ export const Kanban: ComponentConfig<KanbanProps> = {
           setIsLoading(true);
 
           try {
-            const response = (
-              await axios.get(value.url, {
-                cancelToken: source.token,
-              })
-            ).data;
+            const response = await axios.get(value.url, {
+              cancelToken: source.token,
+            });
+            const data = response.data;
 
-            setData(response);
+            setData(data);
             setIsLoading(false);
           } catch (error) {
             console.log(error);
@@ -138,27 +137,28 @@ export const Kanban: ComponentConfig<KanbanProps> = {
         useEffect(() => {
           if (value.url === '') return;
 
-          const keys = Array.from(
-            new Set(
+          const keys = [
+            ...new Set(
+              // eslint-disable-next-line unicorn/no-array-reduce
               rawData.reduce((accumulated: string[], element: Object) => {
                 accumulated.push(...Object.keys(element));
                 return accumulated;
               }, []) as string[],
             ),
-          ).filter((key) =>
+          ].filter((key) =>
             rawData.every((entry) => Object.keys(entry).includes(key)),
           );
 
           setCategoryList(keys);
           onChange({
             ...value,
-            groupBy: value.groupBy !== '' ? value.groupBy : keys[0] ?? '',
+            groupBy: value.groupBy === '' ? keys[0] ?? '' : value.groupBy,
             headerField:
-              value.headerField !== '' ? value.headerField : keys[0] ?? '',
+              value.headerField === '' ? keys[0] ?? '' : value.headerField,
             secondaryField:
-              value.secondaryField !== ''
-                ? value.secondaryField
-                : keys[0] ?? '',
+              value.secondaryField === ''
+                ? keys[0] ?? ''
+                : value.secondaryField,
           });
         }, [JSON.stringify(rawData)]);
 
@@ -222,7 +222,13 @@ export const Kanban: ComponentConfig<KanbanProps> = {
         return (
           <>
             <Input prop="url" name="Data source URL" />
-            {!isLoading ? (
+            {isLoading ? (
+              value.url === '' ? (
+                ''
+              ) : (
+                <LoadingAnimation />
+              )
+            ) : (
               <>
                 <Select prop="groupBy" name="Group by" />
                 <Select prop="headerField" name="Header Field" />
@@ -233,10 +239,6 @@ export const Kanban: ComponentConfig<KanbanProps> = {
                   name="Format Secondary Field"
                 />
               </>
-            ) : value.url === '' ? (
-              ''
-            ) : (
-              <LoadingAnimation />
             )}
           </>
         );
@@ -261,13 +263,12 @@ export const Kanban: ComponentConfig<KanbanProps> = {
     const fetchData = async (source: CancelTokenSource) => {
       setIsLoading(true);
       try {
-        const response = (
-          await axios.get(config.url, {
-            cancelToken: source.token,
-          })
-        ).data;
+        const response = await axios.get(config.url, {
+          cancelToken: source.token,
+        });
+        const data = response.data;
 
-        setData(response);
+        setData(data);
         setIsLoading(false);
       } catch (error) {
         console.log(error);
@@ -288,12 +289,14 @@ export const Kanban: ComponentConfig<KanbanProps> = {
     useEffect(() => {
       if (config.groupBy === '') return;
 
+      // eslint-disable-next-line unicorn/no-array-reduce
       const categorizedList = rawData.reduce((accumulate, element) => {
         const value = element[config.groupBy as string];
 
         let key = '';
-        if (['boolean', 'number', 'string'].includes(typeof value)) key = value;
-        else key = JSON.stringify(value);
+        key = ['boolean', 'number', 'string'].includes(typeof value)
+          ? value
+          : JSON.stringify(value);
 
         accumulate[key] = accumulate[key] || [];
         accumulate[key].push(element);
