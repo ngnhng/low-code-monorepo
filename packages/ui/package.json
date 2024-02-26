@@ -49,7 +49,6 @@
         "zod": "^3.22.4",
         "cmdk": "^0.2.1",
         "react": "^18.2.0",
-        "lucide-react": "^0.314.0",
         "tailwind-merge": "^2.2.1",
         "tailwindcss-animate": "^1.0.7",
         "tsup": "^8.0.1"
