@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Run the migrations
-yarn run db:migrate
+yarn prisma migrate deploy
 
 # Start the application
-yarn run start:prod
+node dist/main.js

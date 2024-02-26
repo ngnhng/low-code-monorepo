@@ -29,9 +29,12 @@ services:
             - "--certificatesresolvers.myresolver.acme.storage=/certificates/acme.json"
 
             - "--api.dashboard=true"
+        labels:
+            - "traefik.enable=true"
             - "traefik.http.routers.dashboard.rule=Host(`dashboard.yalc.live`)"
-            - "traefik.http.routers.dashboard.service=api@internal"
             - "traefik.http.routers.dashboard.entrypoints=websecure"
+            - "traefik.http.routers.dashboard.service=api@internal"
+            - "traefik.http.routers.dashboard.tls=true"
             - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
             - "traefik.http.routers.dashboard.middlewares=auth"
             - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$05$$EBozzs8Ojtir8qAuUj1FFekGMsNA3wk9MtgvDyG33X2UIkqQfJIuq"
@@ -39,7 +42,7 @@ services:
         ports:
             - "443:443"
             # The Web UI (enabled by --api.insecure=true)
-            #- "8080:8080"
+            - "8080:8080"
         networks:
             - dev-network
         volumes:
@@ -56,6 +59,8 @@ services:
                 condition: service_started
             yalc-token-cache:
                 condition: service_healthy
+        volumes:
+            - ../../apiserver/auth-api/config_dev.json:/app/config.json
 
         labels:
             - "traefik.enable=true"
@@ -77,6 +82,8 @@ services:
             timeout: 10s
             retries: 3
             start_period: 5s
+        environment:
+            - REDIS_PASSWORD=redis
 
     yalc-user-api:
         image: "ghcr.io/nguyendhst/low-code-monorepo/user-api:latest"
@@ -92,13 +99,15 @@ services:
                 condition: service_started
             yalc-user-db:
                 condition: service_healthy
+        env_file:
+            - ../../apiserver/user-api/.env
 
         labels:
             - "traefik.enable=true"
             - "traefik.http.routers.user-api.rule=Host(`user.yalc.live`)"
             - "traefik.http.routers.user-api.entrypoints=websecure"
             - "traefik.http.routers.user-api.tls.certresolver=myresolver"
-            - "traefik.http.middlewares.user-api-forwardauth.forwardauth.address=https://auth.yalc.live"
+            - "traefik.http.middlewares.user-api-forwardauth.forwardauth.address=http://yalc-auth-api:3000"
             - "traefik.http.routers.user-api.middlewares=user-api-forwardauth@docker"
 
     #table-api:
@@ -119,7 +128,7 @@ services:
     #        - "traefik.http.routers.table-api.middlewares=table-api-forwardauth@docker"
 
     yalc-user-db:
-        image: "ghcr.io/nguyendhst/user-db:latest"
+        image: "ghcr.io/nguyendhst/low-code-monorepo/yalc-user-db:latest"
         healthcheck:
             test: ["CMD", "pg_isready", "-U", "postgres"]
             interval: 30s

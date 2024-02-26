@@ -8,11 +8,18 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 RUN yarn prisma generate
-COPY prisma ./prisma/
 
 RUN yarn run build
 
+# PROD
+FROM node:18-alpine AS production
+
+WORKDIR /app
+
+COPY --from=development /app/dist ./dist
 COPY ./start-prod.sh ./start-prod.sh
+COPY yarn.lock package.json ./
+COPY --from=development /app/node_modules ./node_modules
 
 EXPOSE 3000
 
