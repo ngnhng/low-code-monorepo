@@ -40,7 +40,7 @@ func NewLocalEnv(reader *LocalConfigReader) (*Env, error) {
 			return nil, err
 		}
 		log.Println("CWD: ", cwd)
-		filePath, err := filepath.Abs(filepath.Join(cwd, "config_dev.json"))
+		filePath, err := filepath.Abs(filepath.Join(cwd, reader.fileName+"."+reader.fileType))
 		if err != nil {
 			return nil, err
 		}
