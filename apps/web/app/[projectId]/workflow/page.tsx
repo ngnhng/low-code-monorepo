@@ -137,7 +137,7 @@ const DebugXML: FC<{ modeler: any }> = ({ modeler }) => {
 
   return (
     <div className="overflow-auto">
-      <pre>{xml}</pre>
+      <pre className="w-full whitespace-pre-wrap">{xml}</pre>
     </div>
   );
 };
