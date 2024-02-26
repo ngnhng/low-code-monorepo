@@ -78,7 +78,7 @@ const Modeler = observer(() => {
   }
 
   return (
-    <div className="flex-1 flex flex-col gap-2.5">
+    <div className="flex-1 flex flex-col gap-2.5 overflow-hidden">
       <ResizablePanelGroup
         direction="horizontal"
         className="h-full rounded-lg border"
