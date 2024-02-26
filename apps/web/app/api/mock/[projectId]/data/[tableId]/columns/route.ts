@@ -8,6 +8,19 @@ import path from "path";
 //   type: string,
 //   role?: string,
 // } }
+
+export async function GET (
+   request: Request,
+   { params }:  { params: {projectId: string, tableId: string}}
+) {
+   const databasePath = path.join(
+      process.cwd(),
+      `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`,
+   );
+
+   const database = await fs.readFile(databasePath);
+}
+
 export async function POST(
    request: Request,
    { params }:  { params: {projectId: string, tableId: string}}

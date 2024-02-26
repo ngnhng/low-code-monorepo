@@ -84,6 +84,7 @@ export function DataTable<TData, TValue>({
   });
 
   useEffect(() => {
+    console.log("Check Table: ", table.getRowModel().rows);
     console.log("Table: ", table.getHeaderGroups())
   }, [])
 
@@ -115,8 +116,10 @@ export function DataTable<TData, TValue>({
                 <TableRowButton
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  onClick={() =>
-                    router.push(window.location.pathname + '/' + row.id)
+                  onClick={() => {
+                      console.log("Check Row:", row.getVisibleCells()[row.id].row.original.id);
+                      router.push(window.location.pathname + '/' + row.getVisibleCells()[row.id].row.original.id)
+                    }
                   }
                 >
                   {row.getVisibleCells().map((cell) => (

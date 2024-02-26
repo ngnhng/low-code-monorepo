@@ -32,7 +32,7 @@ import 'react-datasheet-grid/dist/style.css';
 import { Operation } from 'react-datasheet-grid/dist/types';
 import useSWR from 'swr';
 import { useMobxStore } from 'lib/mobx/store-provider';
-import { ColumnType, DataTable, RowDef } from 'types/table-data';
+import { ColumnDef, ColumnType, DataTable, RowDef } from 'types/table-data';
 import { useEffect, useMemo, useState } from 'react';
 import { Button, Input } from '@repo/ui';
 import { FlaskConical  } from 'lucide-react';
@@ -61,12 +61,16 @@ export default function Page({ params: { tableId, projectId } }) {
 
   // console.log("Data loaded:", data);
 
-  const handleCommit = async () => {
+  const handleCommit = async (localColumns: ColumnDef[], localData: RowDef[]) => {
     try {
       await axios.put(`/api/mock/${projectId}/data/${tableId}`, {
-        data: data,
+        data: {
+          columns: localColumns,
+          rows: localData,
+        },
       });
-      toast.success('Table updated')
+      toast.success('Table updated');
+      mutate();
       router.refresh();
     } catch (error) {
       console.log(error);
@@ -283,9 +287,8 @@ const TableEditor = ({
         onAddNewColumn={() => {}}
         onQuery={onQuery}
         setSearch={setSearch}
-        localTable={{
-          localColumns: localColumns,
-        }}
+        localColumns={localColumns}
+        localData={localData}
         setLocalColumns={setLocalColumns}
         setLocalData={setLocalData}
       />
@@ -368,7 +371,8 @@ const ViewMenubar = ({
   onAddNewColumn,
   onQuery,
   setSearch,
-  localTable,
+  localColumns,
+  localData,
   setLocalColumns,
   setLocalData,
 }: {
@@ -377,7 +381,8 @@ const ViewMenubar = ({
   onAddNewColumn: any;
   onQuery: any;
   setSearch: any;
-  localTable: any;
+  localColumns: ColumnDef[];
+  localData: RowDef[];
   setLocalColumns: any;
   setLocalData: any;
 }) => {
@@ -385,7 +390,7 @@ const ViewMenubar = ({
   return (
     <div className="flex items-center justify-between w-full px-4">
       <div className="flex flex-start space-x-4">
-        <Button onClick={onCommit}>Commit</Button>
+        <Button onClick={() => onCommit(localColumns, localData)}>Commit</Button>
         <Button onClick={discardData}>Discard</Button>
       </div>
       {/* <div className="flex flex-start">
@@ -397,8 +402,7 @@ const ViewMenubar = ({
         </div>
 
         <div className="flex w-full max-w-sm items-center space-x-2">
-          <CreateColumnForm 
-            localTable={localTable} 
+          <CreateColumnForm  
             setLocalColumns={setLocalColumns}
             setLocalData={setLocalData}
           />

@@ -36,11 +36,16 @@ import {
 
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useMobxStore } from 'lib/mobx/store-provider'
+import useSWR from 'swr'
+import { TableItem } from 'types/table-data'
 
 
 interface CreateTableFormProps {
   projectId: string;
 }
+
+const typeValues = ["date", "text", "number", "boolean"] as const;
 
 const requiredFieldsSchema = z.object({
   id: z.string().trim().min(2, {
@@ -49,7 +54,8 @@ const requiredFieldsSchema = z.object({
   type: z.string().min(1, {
     message: "Type is required",
   }),
-  defaultValue: z.union([z.string(), z.number(), z.boolean()]).optional(),
+  referenceTable: z.string().optional().default(""),
+  // defaultValue: z.union([z.string(), z.number(), z.boolean()]).optional(),
   // isActive: z.boolean().default(true),
   // isPrimaryKey: z.boolean().default(false),
   // isForeignKey: z.boolean().default(false),
@@ -65,10 +71,27 @@ const formSchema = z.object({
   requiredFields: arrayRequiredFields,
 })
 
+// many references table considered
+
 const CreateTableForm = ({
   projectId,
 }: CreateTableFormProps) => {
   const router = useRouter();
+
+  const {
+    tableData: { fetchTables },
+    projectData: { currentProjectId },
+  } = useMobxStore();
+
+  const { data, isLoading, error, mutate } = useSWR(
+    `TABLE_DATA-${currentProjectId}-all`,
+    () => fetchTables(),
+  );
+
+  const references =  data?.map((data) => ({
+    id: data.id,
+    tablename: data.name,
+  }));
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,11 +121,16 @@ const CreateTableForm = ({
           </pre>
         ),
       })
-
-      router.push(`/${projectId}/data/${values.tablename}`)
+      mutate();
+      router.refresh();
+      // router.push(`/${projectId}/data/${values.tablename}`)
     } catch (error) {
       toast.error('Something went wrong')
     }
+  }
+
+  if (!data || isLoading) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -156,6 +184,7 @@ const CreateTableForm = ({
                           <Select 
                             onValueChange={(value) => {
                               field.field.value.type = value;
+                              // return field.field.onChange(value);
                             }} 
                             defaultValue={""}
                             {...form.register(`requiredFields.${index}.type`)}
@@ -167,21 +196,49 @@ const CreateTableForm = ({
                             </FormControl>
                             {/* <FormMessage /> */}
                             <SelectContent>
-                              <SelectItem value="string">string</SelectItem>
+                              <SelectItem value="text">text</SelectItem>
                               <SelectItem value="number">number</SelectItem>
                               <SelectItem value="boolean">boolean</SelectItem>
+                              <SelectItem value="date">date</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                       </FormItem>
 
                       <FormItem>
+                        <FormLabel>Reference Table</FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            field.field.value.referenceTable = value;
+                            // return field.field.onChange(value)
+                          }}
+                          {...form.register(`requiredFields.${index}.referenceTable`)}
+                          // defaultValue={""}
+                          // value={field.field.value.referenceTable}
+                        >
+                          <FormControl>
+                            <SelectTrigger className='w-[13rem] mr-2'>
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {references && references.map((ref, index) => (
+                              <SelectItem key={index} value={ref.id}>
+                                {ref.tablename}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {/* <FormMessage /> */}
+                      </FormItem>
+
+                      {/* <FormItem>
                         <FormLabel>Default</FormLabel>
                         <FormControl>
                           <Input {...form.register(`requiredFields.${index}.defaultValue`)} placeholder="Default" className='w-[13rem] mr-2'/>
                         </FormControl>
+                      </FormItem> */}
                         {/* <FormMessage /> */}
-                      </FormItem>
                       <XCircle size={24} onClick={() => requiredFieldsRemove(index)}/>
                     </div>
                   )}
@@ -191,8 +248,8 @@ const CreateTableForm = ({
 
             <Button disabled={isSubmitting} variant={"ghost"} className="mr-4" type="button" onClick={() => requiredFieldsAppend({
               id: "",
-              type: "",
-              defaultValue: "",
+              type: "text",
+              referenceTable: "",
             })}>Add a column</Button>
             <Button 
               type="submit"
@@ -202,9 +259,6 @@ const CreateTableForm = ({
         </Form>
       </SheetContent>
     </Sheet>
-
-
-    
   )
 }
 
