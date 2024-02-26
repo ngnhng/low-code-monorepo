@@ -37,6 +37,8 @@ services:
                 condition: service_started
             token-cache:
                 condition: service_healthy
+        volumes:
+          - ../../apiserver/auth-api/config_dev.json:/app/config_dev.json
 
         labels:
             - "traefik.enable=true"
