@@ -1,7 +1,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@measured/puck';
 import {
   Form,
   FormField,
@@ -11,6 +10,7 @@ import {
   Input,
   FormDescription,
   FormMessage,
+  Button,
 } from '@repo/ui';
 import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 import { useState, useEffect } from 'react';
