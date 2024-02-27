@@ -193,21 +193,21 @@ export async function GET(
         `app/api/mock/[projectId]/data/all/${params.projectId}.json`,
       );
 
-      const data = JSON.parse(await fsa.readFile(dbPath, 'utf-8'));
+      const data: TableItem[] = JSON.parse(await fsa.readFile(dbPath, 'utf-8'));
 
       const tableData = data.find((table) => table.id === params.tableId);
+
+      if (!tableData) {
+        return new NextResponse('NO TABLE FOUND', {
+          status: 404,
+        });
+      }
 
       const response = {
         data: {
           columns: tableData.columns,
-          rows:
-            tableData.length > 30
-              ? tableData.rows.slice(
-                  Number(page) * Number(limit),
-                  Number(limit),
-                )
-              : tableData.rows || [],
-          maxIndex: tableData.length,
+          rows: [],
+          maxIndex: 0,
         },
         meta: {
           page,
@@ -227,16 +227,14 @@ export async function GET(
   try {
     const data = JSON.parse(await fsa.readFile(databasePath, 'utf-8'));
 
-    console.log('data: ' + JSON.stringify(data));
-
     const response = {
       data: {
         columns: data.columns,
         rows:
-          data.length > 30
+          data.rows.length > 30
             ? data.rows.slice(Number(page) * Number(limit), Number(limit))
             : data.rows,
-        maxIndex: data.length,
+        maxIndex: data.rows.length,
       },
       meta: {
         page,
@@ -297,7 +295,7 @@ export async function GET(
   // });
 }
 
-const translateData = (data) => {
+const translateData = (data): TableItem => {
   const tableId = data.tablename.replace(/\s/g, '').toLowerCase();
 
   const columns = data.requiredFields.map((item) => {
@@ -324,7 +322,6 @@ const translateData = (data) => {
     updated: '2021-08-01',
     status: 'Active',
     columns: columns,
-    foreignKey: '',
   };
 };
 

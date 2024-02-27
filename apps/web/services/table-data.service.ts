@@ -32,7 +32,7 @@ export class TableDataService extends RouteHandlerAPIService {
         pageSize: response.data.meta.pageSize,
         totalPage: response.data.meta.totalPage,
       },
-	    maxIndex: response.data.data.maxIndex,
+      maxIndex: response.data.data.maxIndex,
     };
 
     return result;
