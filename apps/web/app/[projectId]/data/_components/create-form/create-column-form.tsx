@@ -138,8 +138,8 @@ const CreateColumnForm = ({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger>
-        <Button variant={"default"} onClick={() => setOpen(true)}>
+      <SheetTrigger asChild>
+        <Button variant="default" onClick={() => setOpen(true)}>
           Add Column
         </Button>
       </SheetTrigger>

@@ -11,22 +11,6 @@ import {
   AddRowsComponentProps,
 } from "react-datasheet-grid";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@repo/ui";
-
 // Import the style only once in your app!
 import "react-datasheet-grid/dist/style.css";
 import { Operation } from "react-datasheet-grid/dist/types";
@@ -41,6 +25,18 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import CreateColumnForm from "../../_components/create-form/create-column-form";
+import QueryBuilderList from "../_components/query-builder-list";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@repo/ui";
 
 export default function Page({ params: { tableId, projectId } }) {
   const {
@@ -84,8 +80,6 @@ export default function Page({ params: { tableId, projectId } }) {
       console.log(error);
       toast.error("Something went wrong");
     }
-    // TODO: axios data
-    console.log("committing data", data);
   };
 
   const handleQuery = (query: any, data: any) => {
@@ -137,9 +131,6 @@ const TableEditor = ({
     direction: "",
   });
 
-  console.log("Data Recieved: ", data);
-  console.log("Data present:", localData);
-
   const handleSortClickDesc = (header) => {
     setSort({
       keyToSort: header.id,
@@ -160,10 +151,6 @@ const TableEditor = ({
     }
 
     const keys = localColumns.map((column) => column.id);
-
-    console.log("Keys:", keys);
-    console.log(search);
-
     const result = data.filter((row) => {
       return keys.some((key) =>
         row[key].toString().toLowerCase().includes(search.toLowerCase())
@@ -185,8 +172,6 @@ const TableEditor = ({
         a[sort.keyToSort] > b[sort.keyToSort] ? 1 : -1
       );
     }
-
-    console.log("sorted", data);
 
     return data.sort((a, b) =>
       a[sort.keyToSort] > b[sort.keyToSort] ? -1 : 1
@@ -244,13 +229,6 @@ const TableEditor = ({
         }
 
         case "DELETE": {
-          console.log("OP fromIndex: " + op.fromRowIndex);
-          console.log("OP toIndex: " + op.toRowIndex);
-          console.log(
-            "DELETE data:" +
-              localData.slice(op.fromRowIndex, op.toRowIndex).entries()
-          );
-
           for (const [, { id }] of localData
             .slice(op.fromRowIndex, op.toRowIndex)
             .entries()) {
@@ -268,9 +246,6 @@ const TableEditor = ({
             op.toRowIndex - op.fromRowIndex,
             ...localData.slice(op.fromRowIndex, op.toRowIndex + 1)
           );
-
-          console.log(value);
-          console.log("DELETED ID:" + [...deletedRowIds]);
 
           break;
         }
@@ -375,7 +350,11 @@ function AddRows({
   addRows,
   table,
 }: AddRowsComponentProps & { table: DataTable }) {
-  return <button onClick={() => addRows(1)}>Add 1 row</button>;
+  return (
+    <div>
+      <button onClick={() => addRows(1)}>Add 1 row</button>
+    </div>
+  );
 }
 
 const colTypeMapper = (type: ColumnType) => {
@@ -430,10 +409,9 @@ const ViewMenubar = ({
           Commit
         </Button>
         <Button onClick={discardData}>Discard</Button>
+        <QueryBuilderList />
       </div>
-      {/* <div className="flex flex-start">
-        <Button onClick={onAddNewColumn}>Add New Column</Button>
-      </div> */}
+
       <div className="flex flex-end space-x-4 pb-2">
         <div className="flex w-full max-w-sm items-center space-x-2">
           <Input
@@ -454,9 +432,6 @@ const ViewMenubar = ({
   );
 };
 
-// A button "Filter" - can be clicked to filter by each columns
-//
-
 const TitleDataSheet = ({
   column,
   handleSortClickAsc,
@@ -466,7 +441,7 @@ const TitleDataSheet = ({
   handleSortClickAsc: any;
   handleSortClickDesc: any;
 }) => {
-  const [position, setPosition] = useState("bottom");
+  // const [position, setPosition] = useState("bottom")
   const onSelect = (event: Event) => {
     event.preventDefault();
   };
@@ -477,9 +452,7 @@ const TitleDataSheet = ({
 
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <Button size={"sm"} variant={"ghost"}>
-            <FlaskConical size={24} />
-          </Button>
+          <FlaskConical size={24} />
         </DropdownMenuTrigger>
 
         <DropdownMenuContent>
@@ -495,39 +468,6 @@ const TitleDataSheet = ({
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-
-          <DropdownMenuGroup>
-            <DropdownMenuItem>Filter By Conditions</DropdownMenuItem>
-            <DropdownMenuItem className="" onSelect={onSelect}>
-              Filter By Values
-              <Input type="email" placeholder="Find ..." />
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          {/* <DropdownMenuSeparator /> */}
-
-          {/* <DropdownMenuGroup>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>Group By</DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                  <DropdownMenuRadioGroup
-                    value={position}
-                    onValueChange={setPosition}
-                  >
-                    <DropdownMenuRadioItem value="top">
-                      Top
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="bottom">
-                      Bottom
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="right">
-                      Right
-                    </DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
-          </DropdownMenuGroup> */}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
