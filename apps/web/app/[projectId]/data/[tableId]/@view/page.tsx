@@ -61,7 +61,11 @@ export default function Page({ params: { tableId, projectId } }) {
 
   // console.log("Data loaded:", data);
 
-  const handleCommit = async (localColumns: ColumnDef[], localData: RowDef[]) => {
+  const handleCommit = async (localColumns: ColumnDef[], localData: RowDef[], deletedRowIds: Set<number>) => {
+    if (deletedRowIds.size !== 0) {
+      localData = localData.filter(row => !deletedRowIds.has(row.id));
+    }
+
     try {
       await axios.put(`/api/mock/${projectId}/data/${tableId}`, {
         data: {
@@ -222,6 +226,12 @@ const TableEditor = ({
         }
 
         case 'DELETE': {
+          console.log("OP fromIndex: " + op.fromRowIndex);
+          console.log("OP toIndex: " + op.toRowIndex);
+          console.log("DELETE data:" + localData
+          .slice(op.fromRowIndex, op.toRowIndex)
+          .entries())
+
           for (const [, { id }] of localData
             .slice(op.fromRowIndex, op.toRowIndex)
             .entries()) {
@@ -239,6 +249,9 @@ const TableEditor = ({
             op.toRowIndex - op.fromRowIndex,
             ...localData.slice(op.fromRowIndex, op.toRowIndex + 1),
           );
+
+          console.log(value);
+          console.log("DELETED ID:" + [...deletedRowIds])
 
           break;
         }
@@ -291,6 +304,7 @@ const TableEditor = ({
         localData={localData}
         setLocalColumns={setLocalColumns}
         setLocalData={setLocalData}
+        deletedRowIds={deletedRowIds}
       />
 
       <DynamicDataSheetGrid
@@ -330,8 +344,8 @@ const TableEditor = ({
             return 'cell-deleted';
           }
         }}
-        //gutterColumn={{ component: ({ rowData }) => <div>{rowData.id}</div> }}
-        gutterColumn={false}
+        gutterColumn={{ component: ({ rowData }) => <div>{rowData.id}</div> }}
+        // gutterColumn={false}
         addRowsComponent={(props) => <AddRows {...props} table={data} />}
       />
     </>
@@ -342,7 +356,7 @@ function AddRows({
   addRows,
   table,
 }: AddRowsComponentProps & { table: DataTable }) {
-  return <button onClick={() => addRows(10)}>Add 10 rows</button>;
+  return <button onClick={() => addRows(1)}>Add 1 row</button>;
 }
 
 const colTypeMapper = (type: ColumnType) => {
@@ -375,6 +389,7 @@ const ViewMenubar = ({
   localData,
   setLocalColumns,
   setLocalData,
+  deletedRowIds
 }: {
   onCommit: any;
   discardData: any;
@@ -385,12 +400,13 @@ const ViewMenubar = ({
   localData: RowDef[];
   setLocalColumns: any;
   setLocalData: any;
+  deletedRowIds: any
 }) => {
 
   return (
     <div className="flex items-center justify-between w-full px-4">
       <div className="flex flex-start space-x-4">
-        <Button onClick={() => onCommit(localColumns, localData)}>Commit</Button>
+        <Button onClick={() => onCommit(localColumns, localData, deletedRowIds)}>Commit</Button>
         <Button onClick={discardData}>Discard</Button>
       </div>
       {/* <div className="flex flex-start">
