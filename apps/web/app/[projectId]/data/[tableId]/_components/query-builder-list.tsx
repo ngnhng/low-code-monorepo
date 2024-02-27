@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 import {
   Field,
   QueryBuilder,
   RuleGroupType,
   formatQuery,
-} from 'react-querybuilder';
-import 'react-querybuilder/dist/query-builder.css';
+} from "react-querybuilder";
+import "react-querybuilder/dist/query-builder.css";
 
 import {
   Button,
@@ -26,13 +26,13 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/ui';
-import { toast } from 'sonner';
-import { useMobxStore } from 'lib/mobx/store-provider';
-import useSWR from 'swr';
-import { ColumnDef } from 'types/table-data';
+} from "@repo/ui";
+import { toast } from "sonner";
+import { useMobxStore } from "lib/mobx/store-provider";
+import useSWR from "swr";
+import { ColumnDef } from "types/table-data";
 
-const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
+const initialQuery: RuleGroupType = { combinator: "and", rules: [] };
 
 interface QueryBuilderListProps {
   columns: ColumnDef[];
@@ -51,7 +51,7 @@ const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
   } = useMobxStore();
 
   const { data, isLoading } = useSWR(`TABLE_DATA-${currentProjectId}-all`, () =>
-    fetchTables(),
+    fetchTables()
   );
 
   if (!data || isLoading) {
@@ -74,7 +74,7 @@ const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
   const onQuery = () => {
     const postValues = { ...query, groupby: groupby, sortby: sortby };
 
-    toast.success('Column has been created.', {
+    toast.success("Column has been created.", {
       description: (
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
           <code className="text-white">
@@ -92,7 +92,7 @@ const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
     <div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant={'primary'}>Query Builder</Button>
+          <Button variant={"primary"}>Query Builder</Button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent className="min-w-[750px] max-w-full">
@@ -106,7 +106,7 @@ const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
               autoSelectField={false}
               translations={{
                 fields: {
-                  placeholderLabel: 'Field format: table - column...',
+                  placeholderLabel: "Field format: table - column...",
                 },
               }}
             />
@@ -150,13 +150,13 @@ const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
               <span>Preview SQL</span>
               <Input
                 disabled
-                value={formatQuery(query, 'sql')}
+                value={formatQuery(query, "sql")}
                 className="font-bold text-blue-700"
               />
             </DropdownMenuItem>
           </DropdownMenuGroup>
 
-          <Button className="my-4" variant={'secondary'} onClick={onQuery}>
+          <Button className="my-4" variant={"secondary"} onClick={onQuery}>
             Query
           </Button>
         </DropdownMenuContent>
