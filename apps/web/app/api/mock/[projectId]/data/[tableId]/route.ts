@@ -227,9 +227,20 @@ export async function GET(
   try {
     const data = JSON.parse(await fsa.readFile(databasePath, 'utf-8'));
 
+    const dbPath = path.join(
+      process.cwd(),
+      `app/api/mock/[projectId]/data/all/${params.projectId}.json`,
+    );
+
+    const projectTables = JSON.parse(await fsa.readFile(dbPath, 'utf-8'));
+
+    const requestTable = projectTables.find(
+      (table) => table.id === params.tableId,
+    );
+
     const response = {
       data: {
-        columns: data.columns,
+        columns: requestTable.columns,
         rows:
           data.rows.length > 30
             ? data.rows.slice(Number(page) * Number(limit), Number(limit))
@@ -297,11 +308,14 @@ export async function GET(
 
 const translateData = (data): TableItem => {
   const tableId = data.tablename.replace(/\s/g, '').toLowerCase();
-
+  const referenceTables: string[] = [];
   const columns = data.requiredFields.map((item) => {
     const isForeignKey = item.referenceTable !== '' ? true : false;
     const foreignKeyId =
       item.referenceTable !== '' ? `${tableId}-${item.referenceTable}` : '';
+
+    if (item.referenceTable)
+      referenceTables.push(item.referenceTable as string);
 
     return {
       id: item.id.replace(/\s/g, '').toLowerCase(),
@@ -322,6 +336,7 @@ const translateData = (data): TableItem => {
     updated: '2021-08-01',
     status: 'Active',
     columns: columns,
+    referenceTables: referenceTables,
   };
 };
 
@@ -342,15 +357,13 @@ export async function POST(
   try {
     const initData = await fsa.readFile(databasePath, 'utf-8');
 
-    const initObject = JSON.parse(initData);
+    const projectTables = JSON.parse(initData);
 
     data.requiredFields.forEach((column) => {
       if (column.referenceTable) {
-        const referenceTable = initObject.find(
+        const referenceTable = projectTables.find(
           (table) => table.id === column.referenceTable,
         );
-
-        console.log('referenceTable: ' + referenceTable);
 
         if (referenceTable) {
           referenceTable.columns.push({
@@ -363,12 +376,16 @@ export async function POST(
             foreignKeyId: `${realData.id}-${referenceTable.id}`,
           });
         }
+
+        console.log('referenceTable: ' + JSON.stringify(referenceTable));
       }
     });
 
-    initObject.push(realData);
+    console.log('Project Table: ', JSON.stringify(projectTables));
 
-    const dataToWrite = JSON.stringify(initObject);
+    projectTables.push(realData);
+
+    const dataToWrite = JSON.stringify(projectTables);
 
     fs.writeFile(databasePath, dataToWrite, (err) => {
       if (err) {
