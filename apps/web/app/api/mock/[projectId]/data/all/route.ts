@@ -24,7 +24,7 @@ const TABLES: TableItem[] = [
       updated: '2021-08-01',
       status: 'Active',
       columns: columns,
-      referenceTable: [],
+      referenceTables: [],
    },
    {
       id: '1',
@@ -34,7 +34,7 @@ const TABLES: TableItem[] = [
       updated: '2021-08-01',
       status: 'Active',
       columns: posts,
-      referenceTable: [],
+      referenceTables: [],
    },
    {
       id: '2',
@@ -44,7 +44,7 @@ const TABLES: TableItem[] = [
       updated: '2021-08-01',
       status: 'Active',
       columns: addresses,
-      referenceTable: [],
+      referenceTables: [],
    },
 ];
 
@@ -64,7 +64,7 @@ export async function GET(
 
       previosData = JSON.parse(data);
 
-      console.log("data: " + JSON.stringify(data));
+      // console.log("data: " + JSON.stringify(data));
    } catch (error) {
       console.log(error);
       return new NextResponse("", { status: 500 });

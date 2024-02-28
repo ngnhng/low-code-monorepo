@@ -25,9 +25,9 @@ import { useEffect } from 'react';
 
 import { TableItem } from 'types/table-data';
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+interface DataTableProps<TableItem, TValue> {
+  columns: ColumnDef<TableItem, TValue>[];
+  data: TableItem[];
 }
 
 // ? move to type files
@@ -70,10 +70,10 @@ export const columns: ColumnDef<TableItem>[] = [
   },
 ];
 
-export function DataTable<TData, TValue>({
+export function DataTable<TableItem, TValue>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TableItem, TValue>) {
   const router = useRouter();
 
   const table = useReactTable({
@@ -82,11 +82,6 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
-
-  useEffect(() => {
-    console.log("Check Table: ", table.getRowModel().rows);
-    console.log("Table: ", table.getHeaderGroups())
-  }, [])
 
   return (
     <div>
@@ -117,8 +112,9 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   onClick={() => {
-                      console.log("Check Row:", row.getVisibleCells()[row.id].row.original.id);
-                      router.push(window.location.pathname + '/' + row.getVisibleCells()[row.id].row.original.id)
+                      console.log("Check Row:", row.original);
+
+                      router.push(window.location.pathname + '/' + row.original.id);
                     }
                   }
                 >
