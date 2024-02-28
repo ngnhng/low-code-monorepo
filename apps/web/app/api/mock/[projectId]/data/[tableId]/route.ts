@@ -375,13 +375,11 @@ export async function POST(
             isForeignKey: true,
             foreignKeyId: `${realData.id}-${referenceTable.id}`,
           });
-        }
 
-        console.log('referenceTable: ' + JSON.stringify(referenceTable));
+          referenceTable.referenceTables.push(realData.id);
+        }
       }
     });
-
-    console.log('Project Table: ', JSON.stringify(projectTables));
 
     projectTables.push(realData);
 

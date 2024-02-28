@@ -93,6 +93,26 @@ export class TableDataStore implements ITableDataStore {
     };
   };
 
+  fetchTableRelations = async(tableId) => {
+    try {
+      const response = await this.tableDataService.getTableRelations({
+        projectId: this.rootStore.projectData.currentProjectId,
+        tableId: tableId,
+      })
+
+      if (response) {
+        // validate
+        return response;
+      } else {
+        throw new Error('Table data not found');
+      }
+
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
   fetchTables = async () => {
     try {
       const response = await this.tableDataService.getTables({

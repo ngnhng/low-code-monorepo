@@ -62,4 +62,14 @@ export class TableDataService extends RouteHandlerAPIService {
 
     return result;
   }
+
+  async getTableRelations({projectId, tableId}) {
+    const response = await this.getServerSide(
+      `/api/mock/${projectId}/data/${tableId}/relations`,
+    );
+
+    const result: TableItem[] = response.data;
+
+    return result;
+  }
 }
