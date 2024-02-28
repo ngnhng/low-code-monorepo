@@ -552,6 +552,8 @@ export async function OLD_POST(
 
           referenceTable.referenceTables.push(realData.id);
         }
+
+        console.log("referenceTable: " + JSON.stringify(referenceTable));
       }
     });
 
