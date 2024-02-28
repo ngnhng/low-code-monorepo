@@ -57,7 +57,7 @@ export default function Page({ params: { tableId, projectId } }) {
 
   // console.log("Data loaded:", data);
 
-  const handleCommit = async (localColumns: ColumnDef[], localData: RowDef[], deletedRowIds: Set<number>) => {
+  const handleCommit = async (localColumns: ColumnDef[], localData: RowDef[], deletedRowIds: Set<number>, newReferenceTable) => {
     if (deletedRowIds.size !== 0) {
       localData = localData.filter(row => !deletedRowIds.has(row.id));
     }
@@ -68,8 +68,15 @@ export default function Page({ params: { tableId, projectId } }) {
           columns: localColumns,
           rows: localData,
         },
+        newReferenceTableId: newReferenceTable,
       });
-      toast.success('Table updated');
+      toast.success("Table has been created.", {
+        description: (
+          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+            <code className="text-white">{JSON.stringify(newReferenceTable, null, 2)}</code>
+          </pre>
+        ),
+      })
       mutate();
       router.refresh();
     } catch (error) {
@@ -113,6 +120,7 @@ const TableEditor = ({
   const [localColumns, setLocalColumns] = useState(data.columns);
   const [maxIndex, setMaxIndex] = useState(data.maxIndex);
   const [fields, setFields] = useState<Column[]>([]);
+  const [newReferenceTableId, setNewReferenceTableId] = useState<string[]>([]);
 
   const createdRowIds = useMemo(() => new Set<number>(), [tableId]);
   const deletedRowIds = useMemo(() => new Set<number>(), [tableId]);
@@ -266,6 +274,7 @@ const TableEditor = ({
   const discardData = () => {
     setLocalData(data.rows);
     setLocalColumns(data.columns);
+    setNewReferenceTableId([]);
   };
 
   return (
@@ -281,6 +290,9 @@ const TableEditor = ({
         setLocalColumns={setLocalColumns}
         setLocalData={setLocalData}
         deletedRowIds={deletedRowIds}
+        tableId={tableId}
+        newReferenceTableId={newReferenceTableId}
+        setNewReferenceTableId={setNewReferenceTableId}
       />
 
       <DynamicDataSheetGrid
@@ -369,7 +381,10 @@ const ViewMenubar = ({
   localData,
   setLocalColumns,
   setLocalData,
-  deletedRowIds
+  deletedRowIds,
+  tableId,
+  setNewReferenceTableId,
+  newReferenceTableId
 }: {
   onCommit: any;
   discardData: any;
@@ -380,15 +395,18 @@ const ViewMenubar = ({
   localData: RowDef[];
   setLocalColumns: any;
   setLocalData: any;
-  deletedRowIds: any
+  deletedRowIds: any;
+  tableId: any;
+  setNewReferenceTableId: any;
+  newReferenceTableId: any;
 }) => {
 
   return (
     <div className="flex items-center justify-between w-full px-4">
       <div className="flex flex-start space-x-4">
-        <Button onClick={() => onCommit(localColumns, localData, deletedRowIds)}>Commit</Button>
+        <Button onClick={() => onCommit(localColumns, localData, deletedRowIds, newReferenceTableId)}>Commit</Button>
         <Button onClick={discardData}>Discard</Button>
-        <QueryBuilderList />
+        <QueryBuilderList columns={localColumns}/>
       </div>
       
       <div className="flex flex-end space-x-4 pb-2">
@@ -400,6 +418,8 @@ const ViewMenubar = ({
           <CreateColumnForm  
             setLocalColumns={setLocalColumns}
             setLocalData={setLocalData}
+            tableId={tableId}
+            setNewReferenceTableId={setNewReferenceTableId}
           />
         </div>
       </div>
