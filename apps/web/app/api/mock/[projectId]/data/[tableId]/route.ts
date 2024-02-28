@@ -608,6 +608,11 @@ export async function OLD_GET(
     `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`,
   );
 
+  const tablesPath = path.join(
+    process.cwd(),
+    `app/api/mock/[projectId]/data/all/${params.projectId}.json`,
+  );
+
   if (!fs.existsSync(databasePath)) {
     try {
       const dbPath = path.join(
