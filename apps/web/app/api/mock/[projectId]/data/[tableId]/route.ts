@@ -360,7 +360,6 @@ export async function POST(
       if (column.referenceTable) {
         const referenceTable = projectTables.find(table => table.id === column.referenceTable)
 
-        
         if (referenceTable) {
           referenceTable.columns.push({
             id: `${realData.id}-${referenceTable.id}`,
@@ -371,13 +370,11 @@ export async function POST(
             isForeignKey: true,
             foreignKeyId: `${realData.id}-${referenceTable.id}`,
           })
-        }
 
-        console.log("referenceTable: " + JSON.stringify(referenceTable));
+          referenceTable.referenceTables.push(realData.id);
+        }
       }
     })
-
-    console.log("Project Table: ", JSON.stringify(projectTables));
 
     projectTables.push(realData);
 

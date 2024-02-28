@@ -24,7 +24,7 @@ const nodeTypes = {
 
 export default function Page({ params: { tableId } }) {
   const {
-    tableData: { fetchTableData, fetchAppliedQueries, fetchTables },
+    tableData: { fetchTableData, fetchAppliedQueries, fetchTableRelations },
     projectData: { currentProjectId },
   } = useMobxStore();
 
@@ -38,36 +38,49 @@ export default function Page({ params: { tableId } }) {
   // );
 
   const { data, isLoading, error, mutate } = useSWR(
-    `TABLE_DATA-${currentProjectId}-all`,
-    () => fetchTables(),
+    `TABLE_DATA-${currentProjectId}-${tableId}-relations`,
+    () => fetchTableRelations(tableId),
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   useEffect(() => {
-    console.log(data);
+    
+    const displayNodes: any[] = []
+    const displayEdges: any[] = []
+
+    for (const d in data) {
+      const newNodes = [
+        {
+          id: data[d].id,
+          type: 'entity',
+          data: { fields: data[d], isSource: data[d].id === tableId },
+          position: { x: 100, y: 100 },
+        },
+      ];
+
+      displayNodes.push(...newNodes);
+    }
 
     if (data) {
-      const tempNodes: any[] = [];
+      for (let i = 0; i < data.length; i++) {
+        for (let j = i + 1; j < displayNodes.length; j++) {
+          if (data[i]?.referenceTables?.includes(data[j]?.id as string)) {
+            const edge = {
+              id: `${data[i]?.id}-${data[j]?.id}`,
+              source: data[i]?.id,
+              target: data[j]?.id,
+            }
 
-      for (const d in data) {
-        const newNodes = [
-          {
-            id: data[d]?.id,
-            type: 'entity',
-            data: { fields: data[d] },
-            position: { x: 100, y: 100 },
-          },
-        ];
-
-        tempNodes.push(...newNodes);
+            displayEdges.push(edge);
+          }
+        }
       }
-
-      console.log("temp: ", tempNodes);
-
-      setNodes(tempNodes);
     }
+
+    setNodes(displayNodes);
+    setEdges(displayEdges);
   }, [data, isLoading]);
 
   // const onConnect = useCallback(
@@ -100,7 +113,12 @@ function EntityNode({ data }: { data }) {
 
   return (
     <div>
-      {/* <Handle type="target" position={Position.Right} className="!w-4 !h-4 !left-[5rem] !bg-teal-500" /> */}
+      {/* {data.isSource ? 
+        <Handle type="source" position={Position.Right} className="!bg-teal-500" /> :
+        <Handle type="target" position={Position.Left} className="!bg-teal-500" />
+      } */}
+      <Handle type="source" position={Position.Right} className="!bg-teal-500" /> :
+      <Handle type="target" position={Position.Left} className="!bg-teal-500" />
       <table className='bg-accent rounded-custom'>
         <thead className='bg-primary text-white border border-solid border-blue-700'>
           <tr>
