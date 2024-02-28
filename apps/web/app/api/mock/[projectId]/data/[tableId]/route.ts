@@ -5,6 +5,7 @@ import { faker } from '@faker-js/faker';
 import { NextRequest } from 'next/server';
 import { ColumnDef, TableItem } from 'types/table-data';
 import { NextResponse } from 'next/server';
+import * as _ from 'lodash';
 
 // * User Column
 export const columns: ColumnDef[] = [
@@ -427,14 +428,74 @@ export async function PUT(
     `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`,
   );
 
+  const tablesPath = path.join(
+    process.cwd(),
+    `app/api/mock/[projectId]/data/all/${params.projectId}.json`,
+  );
+
   console.error(databasePath);
 
-  const { data } = await request.json();
+  const { data, newReferenceTableId } = await request.json();
 
   console.log('DATA POSTED', data);
 
   try {
     const dataToWrite = JSON.stringify(data);
+
+    const projectTables = JSON.parse(await fsa.readFile(tablesPath, 'utf-8'));
+
+    if (newReferenceTableId.length > 0) {
+      newReferenceTableId.forEach((tableId) => {
+        const referenceTable = projectTables.find(
+          (table) => table.id === tableId,
+        );
+        const requestTable = projectTables.find(
+          (table) => table.id === params.tableId,
+        );
+
+        const { id, label } = data.columns.find(
+          (column) =>
+            column.foreignKeyId === `${params.tableId}-${referenceTable.id}`,
+        );
+        console.log(id, label);
+
+        if (referenceTable) {
+          referenceTable.columns.push({
+            id: `${params.tableId}-${referenceTable.id}`,
+            label: `${params.tableId}-${referenceTable.id}`,
+            type: 'text',
+            isActive: true,
+            isPrimaryKey: false,
+            isForeignKey: true,
+            foreignKeyId: `${params.tableId}-${referenceTable.id}`,
+          });
+
+          requestTable.columns.push({
+            id: `${id}`,
+            label: `${label}`,
+            type: 'text',
+            isActive: true,
+            isPrimaryKey: false,
+            isForeignKey: true,
+            foreignKeyId: `${params.tableId}-${referenceTable.id}`,
+          });
+
+          requestTable.referenceTables.push(tableId);
+          referenceTable.referenceTables.push(params.tableId);
+        }
+      });
+      const dataToUpdate = JSON.stringify(projectTables);
+
+      fs.writeFile(tablesPath, dataToUpdate, (err) => {
+        if (err) {
+          console.log('Error writing file:', err);
+        } else {
+          console.log('Successfully wrote file');
+        }
+      });
+    }
+
+    // console.log(_.isEqual(requestTable.columns, data.columns))
 
     fs.writeFile(databasePath, dataToWrite, (err) => {
       if (err) {

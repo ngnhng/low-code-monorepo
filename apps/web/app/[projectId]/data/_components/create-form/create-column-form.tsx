@@ -41,6 +41,8 @@ interface CreateColumnFormProps {
   // localTable: any;
   setLocalColumns: any;
   setLocalData: any;
+  tableId: any;
+  setNewReferenceTableId: any;
 }
 
 const typeValues = ["date", "text", "number", "boolean"] as const;
@@ -52,13 +54,15 @@ const formSchema = z.object({
   type: z.enum(typeValues),
   defaultValue: z.string().optional(),
   referenceTable: z.string().optional(),
-  referenceColumn: z.string().optional(),
+  // referenceColumn: z.string().optional(),
 })
 
 const CreateColumnForm = ({
   // localTable,
   setLocalColumns,
   setLocalData,
+  tableId,
+  setNewReferenceTableId,
 }: CreateColumnFormProps ) => {
   const [open, setOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<any>( );
@@ -102,7 +106,7 @@ const CreateColumnForm = ({
       isActive: true,
       isPrimaryKey: false,
       isForeignKey: false,
-      foreignKeyId: `${values.referenceTable}-${values.referenceColumn}`,
+      foreignKeyId: `${tableId}-${values.referenceTable}`,
     }
 
     setLocalData(previous => {
@@ -114,6 +118,7 @@ const CreateColumnForm = ({
       return newData;
     })
     setLocalColumns(previous => [ ...previous, data]);
+    setNewReferenceTableId(previous => [...previous, values.referenceTable]);
 
     form.reset();
     setOpen(false);
@@ -121,7 +126,7 @@ const CreateColumnForm = ({
     toast.success("Column has been created.", {
       description: (
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
+          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
         </pre>
       ),
     })
@@ -218,7 +223,7 @@ const CreateColumnForm = ({
               )}
             />
 
-            {selectedTable === undefined ? null : (
+            {/* {selectedTable === undefined ? null : (
               <FormField
                 control={form.control}
                 name="referenceColumn"
@@ -250,7 +255,7 @@ const CreateColumnForm = ({
                   </FormItem>
                 )}
               />
-            )}
+            )} */}
 
             <FormField
               control={form.control}
