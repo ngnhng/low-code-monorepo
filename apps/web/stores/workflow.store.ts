@@ -5,10 +5,12 @@ import { RootStore } from './root';
 import { BpmnWorkflowService } from 'services/bpmn-workflow.service';
 
 export interface IWorkflowStore {
+  // eslint-disable-next-line no-unused-vars
   newRenderer: (options?: any) => Promise<any> | any;
   //  setRenderer: (renderer: any) => void;
 
   currentWorkflow: any;
+  // eslint-disable-next-line no-unused-vars
   setCurrentWorkflow: (workflow: any) => void;
 
   //  fetchWorkflow: (id: string) => Promise<any>;

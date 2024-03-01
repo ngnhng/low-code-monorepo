@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';

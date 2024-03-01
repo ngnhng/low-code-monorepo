@@ -1,4 +1,4 @@
-import QAIcon from "./custom-icons";
+import QAIcon, { GSIcon64 } from "./custom-icons";
 
 const SUITABILITY_SCORE_HIGH = 100,
     SUITABILITY_SCORE_AVERGE = 50,
@@ -32,6 +32,21 @@ export default class CustomPalette {
             };
         }
 
+        function createGSTask(type) {
+            return function (event) {
+                const businessObject = bpmnFactory.create(type);
+
+                businessObject.accessToken = "trole";
+
+                const shape = elementFactory.createShape({
+                    type: type,
+                    businessObject: businessObject,
+                });
+
+                create.start(event, shape);
+            };
+        }
+
         return {
             "create.qa-task": {
                 group: "activity",
@@ -40,6 +55,15 @@ export default class CustomPalette {
                 action: {
                     dragstart: createTask("bpmn:ServiceTask"),
                     click: createTask("bpmn:ServiceTask"),
+                },
+            },
+            "create.gs-task": {
+                group: "activity",
+                title: translate("Create Google Sheet Task"),
+                imageUrl: GSIcon64,
+                action: {
+                    dragstart: createGSTask("bpmn:ServiceTask"),
+                    click: createGSTask("bpmn:ServiceTask"),
                 },
             },
             //"create.average-task": {

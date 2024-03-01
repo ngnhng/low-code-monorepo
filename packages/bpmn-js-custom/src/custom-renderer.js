@@ -1,11 +1,6 @@
 import BaseRenderer from "diagram-js/lib/draw/BaseRenderer";
 
-import {
-    append as svgAppend,
-    attr as svgAttr,
-    classes as svgClasses,
-    create as svgCreate,
-} from "tiny-svg";
+import { append as svgAppend, attr as svgAttr, classes as svgClasses, create as svgCreate } from "tiny-svg";
 
 import { getRoundRectPath } from "bpmn-js/lib/draw/BpmnRenderUtil";
 
@@ -36,6 +31,11 @@ export default class CustomRenderer extends BaseRenderer {
         const shape = this.bpmnRenderer.drawShape(parentNode, element);
 
         const suitabilityScore = this.getSuitabilityScore(element);
+        const accessToken = this.getAccessToken(element);
+
+        if (accessToken) {
+            this.drawGoogleSheet(parentNode);
+        }
 
         if (!isNil(suitabilityScore)) {
             //const color = this.getColor(suitabilityScore);
@@ -71,14 +71,8 @@ export default class CustomRenderer extends BaseRenderer {
         return shape;
     }
 
-    drawCustomQA(parentNode) {
-        const background = drawRect(
-            parentNode,
-            50,
-            20,
-            TASK_BORDER_RADIUS,
-            COLOR_BLACK
-        );
+    drawGoogleSheet(parentNode) {
+        const background = drawRect(parentNode, 50, 20, TASK_BORDER_RADIUS, COLOR_GREEN);
         svgAttr(background, {
             fill: "#000",
             transform: "translate(8, 52)",
@@ -86,9 +80,26 @@ export default class CustomRenderer extends BaseRenderer {
 
         const text = svgCreate("text");
         svgAttr(text, {
-			fill: "#fff",
-			transform: "translate(15, 69)",
-		});
+            fill: "#fff",
+            transform: "translate(15, 69)",
+        });
+
+        svgAppend(text, document.createTextNode("GS"));
+        svgAppend(parentNode, text);
+    }
+
+    drawCustomQA(parentNode) {
+        const background = drawRect(parentNode, 50, 20, TASK_BORDER_RADIUS, COLOR_BLACK);
+        svgAttr(background, {
+            fill: "#000",
+            transform: "translate(8, 52)",
+        });
+
+        const text = svgCreate("text");
+        svgAttr(text, {
+            fill: "#fff",
+            transform: "translate(15, 69)",
+        });
 
         svgAppend(text, document.createTextNode("QA"));
 
@@ -109,6 +120,12 @@ export default class CustomRenderer extends BaseRenderer {
         const { suitable } = businessObject;
 
         return Number.isFinite(suitable) ? suitable : null;
+    }
+
+    getAccessToken(element) {
+        const businessObject = getBusinessObject(element);
+        const { accessToken } = businessObject;
+        return accessToken ?? null;
     }
 
     getColor(suitabilityScore) {

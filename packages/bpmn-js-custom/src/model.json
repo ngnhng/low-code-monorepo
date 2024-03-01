@@ -1,0 +1,48 @@
+{
+    "name": "GoogleSheet",
+    "prefix": "gs",
+    "xml": {
+        "tagAlias": "lowerCase"
+    },
+    "type": [
+        {
+            "name": "AnalyzedNode",
+            "extends": ["bpmn:FlowNode"],
+            "properties": [
+                {
+                    "name": "accessToken",
+                    "isAttr": true,
+                    "type": "String"
+                }
+            ]
+        },
+        {
+            "name": "AnalysisDetails",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "comments",
+                    "isMany": true,
+                    "type": "Comment"
+                }
+            ]
+        },
+        {
+            "name": "Comment",
+            "properties": [
+                {
+                    "name": "author",
+                    "isAttr": true,
+                    "type": "String"
+                },
+                {
+                    "name": "text",
+                    "isBody": true,
+                    "type": "String"
+                }
+            ]
+        }
+    ],
+    "emumerations": [],
+    "associations": []
+}

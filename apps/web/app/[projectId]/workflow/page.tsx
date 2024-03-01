@@ -50,6 +50,7 @@ const Modeler = observer(() => {
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line unicorn/no-null
   const [modeler, setModeler] = useState(null);
 
   useEffect(() => {
@@ -136,7 +137,7 @@ const DebugXML: FC<{ modeler: any }> = ({ modeler }) => {
   }, [modeler]);
 
   return (
-    <div className="overflow-auto">
+    <div className="overflow-auto p-5">
       <pre className="w-full whitespace-pre-wrap">{xml}</pre>
     </div>
   );

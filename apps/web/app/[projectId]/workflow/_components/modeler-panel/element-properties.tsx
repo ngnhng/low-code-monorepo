@@ -1,5 +1,6 @@
+/* eslint-disable unicorn/no-null */
 import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
-import { useState, useEffect, useReducer } from 'react';
+import { useEffect, useReducer } from 'react';
 import { hasDefinition } from 'helpers/bpmn.helper';
 import { QAElementProperties } from './qa-element-form';
 import {
@@ -8,6 +9,13 @@ import {
   AccordionItem,
   AccordionTrigger,
   Button,
+  Label,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@repo/ui';
 
 const initialState = {
@@ -43,6 +51,8 @@ export function ElementProperties({ element, modeler }) {
     element = element.labelTarget;
   }
 
+//   console.log(element, modeler, state);
+
   useEffect(() => {
     const bObject = getBusinessObject(element);
     //console.log(bObject);
@@ -55,17 +65,17 @@ export function ElementProperties({ element, modeler }) {
     }
   }, [element]);
 
-  const updateName = (name) => {
-    const modeling = modeler.get('modeling');
-    modeling.updateLabel(element, name);
-  };
+  // const updateName = (name) => {
+  //   const modeling = modeler.get('modeling');
+  //   modeling.updateLabel(element, name);
+  // };
 
-  const updateTopic = (topic) => {
-    const modeling = modeler.get('modeling');
-    modeling.updateProperties(element, {
-      'custom:topic': topic,
-    });
-  };
+  // const updateTopic = (topic) => {
+  //   const modeling = modeler.get('modeling');
+  //   modeling.updateProperties(element, {
+  //     'custom:topic': topic,
+  //   });
+  // };
 
   const makeMessageEvent = () => {
     const bpmnReplace = modeler.get('bpmnReplace');
@@ -75,7 +85,7 @@ export function ElementProperties({ element, modeler }) {
     });
   };
 
-  const makeServiceTask = (name) => {
+  const makeServiceTask = (/* name */) => {
     const bpmnReplace = modeler.get('bpmnReplace');
     bpmnReplace.replaceElement(element, {
       type: 'bpmn:ServiceTask',
@@ -84,7 +94,7 @@ export function ElementProperties({ element, modeler }) {
 
   const attachTimeout = () => {
     const modeling = modeler.get('modeling');
-    const autoPlace = modeler.get('autoPlace');
+    // const autoPlace = modeler.get('autoPlace');
     const selection = modeler.get('selection');
 
     const attrs = {
@@ -162,6 +172,29 @@ export function ElementProperties({ element, modeler }) {
             </div>
           </AccordionContent>
         </AccordionItem>
+        {is(element, 'bpmn:Event') ? (
+          <AccordionItem value="link">
+            <AccordionTrigger>Behaviour Definition</AccordionTrigger>
+            <AccordionContent>
+              <div className="flex flex-col gap-5 p-5">
+                <Label>Choose a UI element to listen to:</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select one..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="one">ID #1</SelectItem>
+                      <SelectItem value="two">ID #2</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        ) : (
+          ''
+        )}
       </Accordion>
     </div>
   );
