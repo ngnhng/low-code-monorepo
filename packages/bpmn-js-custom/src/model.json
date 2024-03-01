@@ -1,10 +1,11 @@
 {
     "name": "GoogleSheet",
+	"uri": "http://some-company/schema/bpmn/gs",
     "prefix": "gs",
     "xml": {
         "tagAlias": "lowerCase"
     },
-    "type": [
+    "types": [
         {
             "name": "AnalyzedNode",
             "extends": ["bpmn:FlowNode"],
