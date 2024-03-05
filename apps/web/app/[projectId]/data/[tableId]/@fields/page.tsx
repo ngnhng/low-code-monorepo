@@ -117,7 +117,7 @@ function EntityNode({ data }: { data }) {
         <Handle type="source" position={Position.Right} className="!bg-teal-500" /> :
         <Handle type="target" position={Position.Left} className="!bg-teal-500" />
       } */}
-      <Handle type="source" position={Position.Right} className="!bg-teal-500" /> :
+      <Handle type="source" position={Position.Right}   className="!bg-teal-500" /> :
       <Handle type="target" position={Position.Left} className="!bg-teal-500" />
       <table className='bg-accent rounded-custom'>
         <thead className='bg-primary text-white border border-solid border-blue-700'>

@@ -1,5 +1,9 @@
 // POST /api/mock/[project-id]/data/[table-id]/rows
 
+import path from 'path';
+import fs from 'fs/promises'
+import { NextRequest, NextResponse } from "next/server";
+
 export async function POST(request: Request) {
    return new Response(
       JSON.stringify({
@@ -25,4 +29,34 @@ export async function POST(request: Request) {
          },
       }
    );
+}
+
+// * [GET]: table data records
+export async function GET(
+   request: NextRequest,
+   { params }:  { params: {projectId: string, tableId: string}}
+) {
+   const tableDataPath = path.join(
+      process.cwd(),
+      `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`,
+   )
+
+   try {
+      const tableData = JSON.parse(await fs.readFile(tableDataPath, 'utf-8'));
+
+      const records = tableData.rows;
+
+      return NextResponse.json(records, {
+         status: 200,
+      })
+      
+   } catch (error) {
+      return new NextResponse(
+         "Internal Server Error",
+         {
+            status: 500,
+         }
+      )
+   }
+
 }

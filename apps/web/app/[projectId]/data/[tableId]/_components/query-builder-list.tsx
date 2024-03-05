@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
-import { Field, QueryBuilder, RuleGroupType } from 'react-querybuilder';
+import { Field, QueryBuilder, RuleGroupType, RuleType, defaultOperators } from 'react-querybuilder';
 import 'react-querybuilder/dist/query-builder.css';
+import { ColumnDef } from 'types/table-data';
 
 import {
   Button,
@@ -15,25 +16,46 @@ import {
   DropdownMenuTrigger,
   Input,
 } from "@repo/ui"
-import { FlaskConical } from 'lucide-react';
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation';
+
+
 
 const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
 
 interface QueryBuilderListProps {
-
+  columns: any;
 }
 
-const QueryBuilderList = () => {
-  const [query, setQuery] = useState();
+const QueryBuilderList = ({
+  columns
+} 
+  : QueryBuilderListProps) => {
+
+  const [query, setQuery] = useState(initialQuery);
+  const router = useRouter();
+
+  const queryFields: Field[] = columns.map((col) => ({
+    name: col.id,
+    label: col.label,
+  }))
 
   const onSelect = (event: Event) => {
     event.preventDefault();
   }
 
-  const fields: Field[] = [
-    { name: 'firstName', label: 'First Name' },
-    { name: 'lastName', label: 'Last Name' },
-  ];
+  const onQuery = (e: React.MouseEvent<HTMLElement>) => {
+
+    toast.success("Column has been created.", {
+      description: (
+        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{JSON.stringify(query, null, 2)}</code>
+        </pre>
+      ),
+    })
+    
+    // router.push(``);
+  }
 
   return (
     <div>
@@ -48,7 +70,10 @@ const QueryBuilderList = () => {
           <DropdownMenuLabel>Action Filter</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <QueryBuilder fields={fields}/>
+            <QueryBuilder fields={queryFields} query={query} onQueryChange={q => setQuery(q)}/>
+            <Button className='my-4' variant={"secondary"} onClick={onQuery}>
+              Query
+            </Button>
             <DropdownMenuItem className='' onSelect={onSelect}>
               Filter By Values
               <Input type="email" placeholder="Find ..."/>
