@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nats
+spec:
+  containers:
+  - name: nats
+    image: nats:2.8.4
+    ports: 
+    - containerPort: 4222
+    args:
+    - "--js"
+    - "--server_name"
+    - "compose_nats"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jaeger
+spec:
+  containers:
+  - name: jaeger
+    image: jaegertracing/all-in-one
+    ports: 
+    - containerPort: 16686
+    - containerPort: 14268

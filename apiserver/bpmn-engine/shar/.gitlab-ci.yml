@@ -1,0 +1,162 @@
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+
+# container_scanning:
+#   variables:
+#     DOCKER_IMAGE: ...
+#     DOCKER_USER: ...
+#     DOCKER_PASSWORD: ...
+variables:
+  VER: '1.1'
+  PROJECT_NAME: shar
+  CI_VERSION: "${CI_PIPELINE_IID}"
+  TAG_KEY: "${TAG_KEY}"
+  CI_JOB_TOKEN: "${CI_JOB_TOKEN}"
+  CI_API_V4_URL: "${CI_API_V4_URL}"
+  CI_PROJECT_ID: "${CI_PROJECT_ID}"
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+
+stages:
+  - test
+  - build
+  - tag
+  - package
+
+sast:
+  stage: test
+
+build_image_2_scan:
+  image: docker:24.0.2
+  stage: test
+  services:
+    - docker:24.0.2-dind
+  script:
+    - docker build --tag $CI_REGISTRY_IMAGE/server:${CI_COMMIT_SHORT_SHA} --file Dockerfile --target server .
+    - docker login --username gitlab-ci-token --password $CI_JOB_TOKEN $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE/server:${CI_COMMIT_SHORT_SHA}
+
+# Scan the container we build in package stage at the end of the pipeline 
+# (will just pull the already built image):
+container_scanning:
+  stage: test
+  needs:
+    - build_image_2_scan
+  variables:
+    CS_IMAGE: $CI_REGISTRY_IMAGE/server:${CI_COMMIT_SHORT_SHA}
+    CS_DEFAULT_BRANCH_IMAGE: registry.gitlab.com/shar-workflow/shar/${REPO_DESCRIPTOR}server:latest
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+
+build_stage:
+  image: registry.gitlab.com/shar-workflow/build-go/build-go:1.0.15
+  stage: build
+  rules:
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: "$CI_PIPELINE_IID"
+  script:
+    - echo branch $CI_COMMIT_BRANCH
+    - tag=v${VER}.${CI_VERSION}
+    - echo $tag > client/version
+    - echo "package version" > common/version/version.go
+    - echo "" >> common/version/version.go
+    - echo "const Version = \"$tag\"" >> common/version/version.go
+    - make configure
+    - make
+  artifacts:
+    paths:
+      - build
+test_stage:
+  tags:
+    - saas-linux-medium-amd64
+  image: registry.gitlab.com/shar-workflow/build-go/build-go:1.0.15
+  stage: test
+  rules:
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: "$CI_PIPELINE_IID"
+  script:
+    - make ci-pipeline-test
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
+tag_stage:
+  stage: tag
+  rules:
+    - if: "$CI_COMMIT_BRANCH != 'main' && $CI_COMMIT_BRANCH != 'release'"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: "$CI_PIPELINE_IID"
+  script:
+    - git config --global url."https://gitlab-ci-token:${TAG_KEY}@gitlab.com/shar-workflow".insteadOf
+      "git@gitlab:com:shar-workflow"
+    - echo -e "machine gitlab.com\nlogin gitlab-ci-token\npassword ${TAG_KEY}" > ~/.netrc
+    - project_url=$(echo $CI_PROJECT_URL | sed 's/https:\/\///')
+    - git remote set-url origin https://oauth2:${TAG_KEY}@${project_url}
+    - git checkout ${CI_COMMIT_BRANCH}
+    - tag=v${VER}.${CI_VERSION}
+    - authName="$(git log -1 --pretty=format:"%an")"
+    - authEmail="$(git log -1 --pretty=format:"%ae")"
+    - git config --global user.email "${authEmail}"
+    - git config --global user.name "${authName}"
+    - echo Build number is v${VER}.${CI_VERSION}
+    - tag=v${VER}.${CI_VERSION}
+    - echo $tag > client/version
+    - echo "package version" > common/version/version.go
+    - echo "" >> common/version/version.go
+    - echo "const Version = \"$tag\"" >> common/version/version.go
+    - git add common/version/version.go
+    - git push -f -o ci.skip
+    - git commit --amend --no-edit
+    - git tag $tag
+    - git push -f origin $tag
+package_container_stage:
+  # Ref: https://www.docker.com/blog/multi-arch-build-what-about-gitlab-ci/
+  #  can update from this image to get later buildx version if test works;
+  image: jdrouet/docker-with-buildx:stable
+  stage: package
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  rules:
+    - if: "$CI_COMMIT_BRANCH != 'main' && $CI_COMMIT_BRANCH != 'release'"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: "$CI_PIPELINE_IID"
+  script:
+    - 'if [ $CI_COMMIT_BRANCH = "release" ]; then export REPO_DESCRIPTOR=""; else export REPO_DESCRIPTOR="dev/"; fi'
+    - docker buildx create --use
+    - docker buildx build --platform linux/amd64,linux/arm64,linux/386 -t registry.gitlab.com/shar-workflow/shar/${REPO_DESCRIPTOR}server:latest --push --target server .
+    - docker buildx build --platform linux/amd64,linux/arm64,linux/386 -t registry.gitlab.com/shar-workflow/shar/${REPO_DESCRIPTOR}telemetry:latest --push --target telemetry .
+    - docker buildx build --platform linux/amd64,linux/arm64,linux/386 -t registry.gitlab.com/shar-workflow/shar/${REPO_DESCRIPTOR}server:$VER.${CI_VERSION} --push --target server .
+    - docker buildx build --platform linux/amd64,linux/arm64,linux/386 -t registry.gitlab.com/shar-workflow/shar/${REPO_DESCRIPTOR}telemetry:$VER.${CI_VERSION} --push --target telemetry .
+package_binary_stage:
+  # Ref: https://www.docker.com/blog/multi-arch-build-what-about-gitlab-ci/
+  #  can update from this image to get later buildx version if test works;
+  image: registry.gitlab.com/shar-workflow/build-go/build-go:1.0.15
+  stage: package
+  rules:
+    - if: "$CI_COMMIT_BRANCH != 'main' && $CI_COMMIT_BRANCH != 'release'"
+      when: never
+    - if: "$CI_COMMIT_TAG"
+      when: never
+    - if: "$CI_PIPELINE_IID"
+  script:
+    - 'if [ $CI_COMMIT_BRANCH = "release" ]; then export REPO_DESCRIPTOR=""; else export REPO_DESCRIPTOR="dev/"; fi'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file build/cli/shar "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/${REPO_DESCRIPTOR}shar/${VER}.${CI_VERSION}/shar-cli-linux-amd64"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file build/zen-shar/zen-shar "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/${REPO_DESCRIPTOR}shar/${VER}.${CI_VERSION}/zen-shar-linux-amd64"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file build/server/shar "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/${REPO_DESCRIPTOR}shar/${VER}.${CI_VERSION}/shar-server-linux-amd64"'
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file build/telemetry/shar-telemetry "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/${REPO_DESCRIPTOR}shar/${VER}.${CI_VERSION}/shar-telemetry-linux-amd64"'

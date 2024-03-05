@@ -1,0 +1,14 @@
+with-expecter: True
+inpackage: True
+dir: "{{.InterfaceDir}}"
+mockname: "Mock{{.InterfaceName}}"
+outpkg: "{{.PackageName}}"
+filename: "mock_{{.InterfaceName}}.go"
+all: True
+packages:
+  gitlab.com/shar-workflow/shar/server/workflow:
+    workflow:
+      recursive: True
+  gitlab.com/shar-workflow/shar/telemetry/server:
+    Exporter:
+      recursive: True
