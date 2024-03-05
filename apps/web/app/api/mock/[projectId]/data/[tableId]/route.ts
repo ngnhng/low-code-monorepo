@@ -241,7 +241,11 @@ export async function GET(
 
     const response = {
       data: {
-        columns: requestTable.columns,
+        columns: requestTable
+          ? requestTable.columns.length > data.columns.length
+            ? requestTable.columns
+            : data.columns
+          : data.columns,
         rows:
           data.rows.length > 30
             ? data.rows.slice(Number(page) * Number(limit), Number(limit))
@@ -453,17 +457,17 @@ export async function PUT(
           (table) => table.id === params.tableId,
         );
 
-        const { id, label } = data.columns.find(
+        const { id, label, type } = data.columns.find(
           (column) =>
             column.foreignKeyId === `${params.tableId}-${referenceTable.id}`,
         );
-        console.log(id, label);
+        console.log(id, label, type);
 
         if (referenceTable) {
           referenceTable.columns.push({
             id: `${params.tableId}-${referenceTable.id}`,
             label: `${params.tableId}-${referenceTable.id}`,
-            type: 'text',
+            type: type,
             isActive: true,
             isPrimaryKey: false,
             isForeignKey: true,
@@ -473,7 +477,7 @@ export async function PUT(
           requestTable.columns.push({
             id: `${id}`,
             label: `${label}`,
-            type: 'text',
+            type: type,
             isActive: true,
             isPrimaryKey: false,
             isForeignKey: true,
@@ -494,6 +498,31 @@ export async function PUT(
         }
       });
     }
+    // else {
+    //   console.log(typeof data.columns, data.columns)
+    //   const requestTable = projectTables.find(table => table.id === params.tableId);
+    //   data.columns.forEach(col => {
+    //     const existColumn = projectTables.columns.find(coll => coll.id === col.id);
+    //     console.log('OBAMA', existColumn)
+
+    //     if (!existColumn) {
+    //       console.log('OBAMA 1', col)
+    //       requestTable.columns.push(col);
+    //     }
+    //   })
+
+    //   const dataToUpdate = JSON.stringify(projectTables);
+
+    //   console.log("OKY");
+
+    //   fs.writeFile(tablesPath, dataToUpdate, (err) => {
+    //     if (err) {
+    //         console.log('Error writing file:', err);
+    //     } else {
+    //         console.log('Successfully wrote file');
+    //     }
+    //   });
+    // }
 
     // console.log(_.isEqual(requestTable.columns, data.columns))
 
