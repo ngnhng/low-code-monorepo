@@ -10,6 +10,7 @@ export interface IProjectStore {
   // eslint-disable-next-line no-unused-vars
   fetchProject: (a0: GetProjectParams) => Promise<GetProjectResponse>;
   getCurrentProjectId: () => string;
+  // eslint-disable-next-line no-unused-vars
   setCurrentProjectId: (projectId: string) => void;
 }
 

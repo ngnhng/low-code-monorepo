@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
-import { Field, QueryBuilder, RuleGroupType, RuleType, defaultOperators } from 'react-querybuilder';
+import { Field, QueryBuilder, RuleGroupType } from 'react-querybuilder';
 import 'react-querybuilder/dist/query-builder.css';
-import { ColumnDef } from 'types/table-data';
+// import { ColumnDef } from 'types/table-data';
 
 import {
   Button,
@@ -11,13 +11,13 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
+  // DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Input,
 } from "@repo/ui"
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 
 
 
@@ -33,23 +33,23 @@ const QueryBuilderList = ({
   : QueryBuilderListProps) => {
 
   const [query, setQuery] = useState(initialQuery);
-  const router = useRouter();
+  // const router = useRouter();
 
   const queryFields: Field[] = columns.map((col) => ({
     name: col.id,
     label: col.label,
   }))
 
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   const onSelect = (event: Event) => {
     event.preventDefault();
   }
 
-  const onQuery = (e: React.MouseEvent<HTMLElement>) => {
-
+  const onQuery = () => {
     toast.success("Column has been created.", {
       description: (
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(query, null, 2)}</code>
+          <code className="text-white">{JSON.stringify(query, undefined, 2)}</code>
         </pre>
       ),
     })

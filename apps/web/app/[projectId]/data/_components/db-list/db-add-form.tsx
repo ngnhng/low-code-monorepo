@@ -5,20 +5,19 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { toast } from 'sonner'
  
-import { Button, Textarea, Input, Switch, Label } from "@repo/ui"
+import { Button, Textarea, Input, Switch } from "@repo/ui"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@repo/ui"
 
-interface DbConnectionFormProps {
-  requiredFields: string[];
-}
+// interface DbConnectionFormProps {
+//   requiredFields: string[];
+// }
 
 // TODO: Toast messages
 // TODO: Maybe need to update Regex
@@ -38,12 +37,10 @@ const formSchema = z.object({
     message: "Input must be an url `www.example.com`",
   }),
 })
-export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
+export function DBAddForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      
-    },
+    defaultValues: {},
   })
  
   const { isSubmitting, isValid } = form.formState;
@@ -51,8 +48,14 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
   function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       // TODO: axios data
-      toast.success("Event has been created.")
-    } catch (error) {
+      toast.success("Event has been created.", {
+        description: (
+          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+            <code className="text-white">{JSON.stringify(values, undefined, 2)}</code>
+          </pre>
+        ),
+      })
+    } catch {
       toast.error('Something went wrong')
     }
   }
@@ -149,7 +152,7 @@ export function DBAddForm({ requiredFields }: DbConnectionFormProps) {
         <FormField
           control={form.control}
           name='ssl'
-          render={({ field }) => (
+          render={() => (
             <FormItem>
               <div className="flex items-center space-x-2">
                 <FormLabel htmlFor="ssl-mode" >Ssl</FormLabel>

@@ -9,7 +9,6 @@ import {
 } from '@tanstack/react-table';
 import {
   Badge,
-  Button,
   DataTablePagination,
   Table,
   TableBody,
@@ -21,7 +20,7 @@ import {
 } from '@repo/ui';
 import { TableTextWithIcon } from '../../../../../components/text/text-with-icon';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+// import { useEffect } from 'react';
 
 import { TableItem } from 'types/table-data';
 
@@ -94,7 +93,7 @@ export function DataTable<TableItem, TValue>({
                   return (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
-                        ? null
+                        ? undefined
                         : flexRender(
                             header.column.columnDef.header,
                             header.getContext(),

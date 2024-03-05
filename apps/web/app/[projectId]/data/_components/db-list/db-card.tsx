@@ -1,13 +1,13 @@
 import React from 'react'
 import Image from 'next/image';
 
-import { Database } from 'lucide-react'
+// import { Database } from 'lucide-react'
 import { Button } from '@repo/ui';
 
 import { OptionDialog } from '../table-list/options-cards';
 import { DBAddForm } from './db-add-form';
 
-import Icon from "./db-icon/mongodb.svg"
+// import Icon from "./db-icon/mongodb.svg"
 
 
 interface DBCardProps {

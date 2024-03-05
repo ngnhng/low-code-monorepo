@@ -33,10 +33,14 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/ui"
+import RelationRecords from '../_components/relation-record/relation-records';
+
+// const handleQuery = async () => {
+//   console.log("ABC")
+// };
 
 export default function Page({ params: { tableId, projectId } }) {
   const {
@@ -46,7 +50,7 @@ export default function Page({ params: { tableId, projectId } }) {
 
   const router = useRouter();
 
-  const { data, isLoading, error, mutate } = useSWR<DataTable>(
+  const { data, isLoading, mutate } = useSWR<DataTable>(
     `TABLE_DATA-${currentProjectId}-${tableId}`,
     () =>
       fetchTableData({
@@ -58,7 +62,7 @@ export default function Page({ params: { tableId, projectId } }) {
   // console.log("Data loaded:", data);
 
   const handleCommit = async (localColumns: ColumnDef[], localData: RowDef[], deletedRowIds: Set<number>, newReferenceTable) => {
-    if (deletedRowIds.size !== 0) {
+    if (deletedRowIds.size > 0) {
       localData = localData.filter(row => !deletedRowIds.has(row.id));
     }
 
@@ -70,10 +74,10 @@ export default function Page({ params: { tableId, projectId } }) {
         },
         newReferenceTableId: newReferenceTable,
       });
-      toast.success("Table has been created.", {
+      toast.success("Table has been updated.", {
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">{JSON.stringify(newReferenceTable, null, 2)}</code>
+            <code className="text-white">{JSON.stringify(newReferenceTable, undefined, 2)}</code>
           </pre>
         ),
       })
@@ -85,9 +89,7 @@ export default function Page({ params: { tableId, projectId } }) {
     }
   };
 
-  const handleQuery = (query: any, data: any) => {
-    // TODO: query
-  };
+  
 
   if (!data || isLoading) {
     return <div>Loading...</div>;
@@ -99,7 +101,7 @@ export default function Page({ params: { tableId, projectId } }) {
         tableId={tableId}
         data={data}
         onCommit={handleCommit}
-        onQuery={handleQuery}
+        // onQuery={handleQuery}
       />
     </>
   );
@@ -109,12 +111,12 @@ const TableEditor = ({
   tableId,
   data,
   onCommit,
-  onQuery,
+  // onQuery,
 }: {
   tableId: string;
   data: DataTable;
   onCommit: any;
-  onQuery: any;
+  // onQuery: any;
 }) => {
   const [localData, setLocalData] = useState<RowDef[]>(data.rows);
   const [localColumns, setLocalColumns] = useState(data.columns);
@@ -185,13 +187,12 @@ const TableEditor = ({
               <TitleDataSheet column={column} handleSortClickAsc={handleSortClickAsc} handleSortClickDesc={handleSortClickDesc} />
             ),
             disabled: true,
-          }
-        : {
+          }:{
             ...keyColumn<RowDef>(column.id, colTypeMapper(column.type)),
             title: (
               <TitleDataSheet column={column} handleSortClickAsc={handleSortClickAsc} handleSortClickDesc={handleSortClickDesc} />
             ),
-          },
+          }
     );
 
     setFields(columns);
@@ -282,8 +283,8 @@ const TableEditor = ({
       <ViewMenubar
         onCommit={onCommit}
         discardData={discardData}
-        onAddNewColumn={() => {}}
-        onQuery={onQuery}
+        // onAddNewColumn={() => {}}
+        // onQuery={onQuery}
         setSearch={setSearch}
         localColumns={localColumns}
         localData={localData}
@@ -324,7 +325,8 @@ const TableEditor = ({
             return 'row-updated';
           }
         }}
-        cellClassName={({ rowData, rowIndex, columnId }) => {
+        // rowData, rowIndex,
+        cellClassName={({  columnId }) => {
           if (createdColumn.has(columnId || '')) {
             return 'cell-created';
           }
@@ -342,14 +344,47 @@ const TableEditor = ({
 
 function AddRows({
   addRows,
-  table,
+  // table,
 }: AddRowsComponentProps & { table: DataTable }) {
   return (
     <div>
-      <button onClick={() => addRows(1)}>Add 1 row</button>
+      <Button onClick={() => addRows(1)} className='ml-4 mt-4'>Add 1 row</Button>
     </div>
   );
 }
+
+const LinkCell = (props) => {
+  console.log("rowData:", props);  
+
+  return (
+    <>
+      <RelationRecords referenceTableId=''/>
+      {/* <Button variant={"secondary"} size={'sm'}>
+        <Plus size={24} /> Records
+      </Button> */}
+      {/* <Dialog>
+        <DialogTrigger>
+          ABC
+        </DialogTrigger>
+      </Dialog> */}
+    </>
+  );
+}
+
+const LinkColumnNofunc = {
+  component: LinkCell,
+  deleteValue: () => '',
+  copyValue: ({ rowData }) => rowData,
+  pasteValue: ({ value }) => value,
+  columnData: 1,
+}
+
+// const LinkColumn = (columnData) => ({
+//   component: LinkCell,
+//   deleteValue: () => '',
+//   copyValue: ({ rowData }) => rowData,
+//   pasteValue: ({ value }) => value,
+// }) as Partial<Column<any, any, string>>;
 
 const colTypeMapper = (type: ColumnType) => {
   switch (type) {
@@ -362,9 +397,15 @@ const colTypeMapper = (type: ColumnType) => {
     case 'boolean': {
       return checkboxColumn;
     }
+    case 'link': {
+      return LinkColumnNofunc;
+    }
     case 'date': {
       return dateColumn;
     }
+    // case 'link': {
+    //   return LinkCell;
+    // }
     default: {
       return textColumn;
     }
@@ -374,8 +415,8 @@ const colTypeMapper = (type: ColumnType) => {
 const ViewMenubar = ({
   onCommit,
   discardData,
-  onAddNewColumn,
-  onQuery,
+  // onAddNewColumn,
+  // onQuery,
   setSearch,
   localColumns,
   localData,
@@ -388,8 +429,8 @@ const ViewMenubar = ({
 }: {
   onCommit: any;
   discardData: any;
-  onAddNewColumn: any;
-  onQuery: any;
+  // onAddNewColumn: any;
+  // onQuery: any;
   setSearch: any;
   localColumns: ColumnDef[];
   localData: RowDef[];
@@ -404,7 +445,7 @@ const ViewMenubar = ({
   return (
     <div className="flex items-center justify-between w-full px-4">
       <div className="flex flex-start space-x-4">
-        <Button onClick={() => onCommit(localColumns, localData, deletedRowIds, newReferenceTableId)}>Commit</Button>
+        <Button disabled onClick={() => onCommit(localColumns, localData, deletedRowIds, newReferenceTableId)}>Commit</Button>
         <Button onClick={discardData}>Discard</Button>
         <QueryBuilderList columns={localColumns}/>
       </div>
@@ -437,9 +478,9 @@ const TitleDataSheet = ({
   handleSortClickDesc: any,
 }) => {
   // const [position, setPosition] = useState("bottom")
-  const onSelect = (event: Event) => {
-    event.preventDefault();
-  }
+  // const onSelect = (event: Event) => {
+  //   event.preventDefault();
+  // }
 
   return (
     <div className='flex items-center justify-between'>

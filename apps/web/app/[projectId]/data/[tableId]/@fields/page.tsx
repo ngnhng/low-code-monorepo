@@ -2,11 +2,10 @@
 
 import useSWR from 'swr';
 import { useMobxStore } from 'lib/mobx/store-provider';
-import { ColumnDef, DataTable } from 'types/table-data';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+// import { ColumnDef, DataTable } from 'types/table-data';
+import { useEffect  } from 'react';
 
 import ReactFlow, {
-  addEdge,
   useEdgesState,
   useNodesState,
   Background,
@@ -16,7 +15,7 @@ import ReactFlow, {
 } from 'reactflow';
 
 import 'reactflow/dist/style.css';
-import { table } from 'console';
+// import { table } from 'console';
 
 const nodeTypes = {
   entity: EntityNode,
@@ -24,7 +23,7 @@ const nodeTypes = {
 
 export default function Page({ params: { tableId } }) {
   const {
-    tableData: { fetchTableData, fetchAppliedQueries, fetchTableRelations },
+    tableData: { fetchTableRelations },
     projectData: { currentProjectId },
   } = useMobxStore();
 
@@ -37,13 +36,13 @@ export default function Page({ params: { tableId } }) {
   //     }),
   // );
 
-  const { data, isLoading, error, mutate } = useSWR(
+  const { data, isLoading, } = useSWR(
     `TABLE_DATA-${currentProjectId}-${tableId}-relations`,
     () => fetchTableRelations(tableId),
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [edges, setEdges ] = useEdgesState([]);
 
   useEffect(() => {
     

@@ -1,10 +1,10 @@
 // POST /api/mock/[project-id]/data/[table-id]/rows
 
-import path from 'path';
-import fs from 'fs/promises'
+import path from 'node:path';
+import fs from 'node:fs/promises'
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function POST() {
    return new Response(
       JSON.stringify({
          success: true,
@@ -42,7 +42,7 @@ export async function GET(
    )
 
    try {
-      const tableData = JSON.parse(await fs.readFile(tableDataPath, 'utf-8'));
+      const tableData = JSON.parse(await fs.readFile(tableDataPath, 'utf8'));
 
       const records = tableData.rows;
 
@@ -50,7 +50,7 @@ export async function GET(
          status: 200,
       })
       
-   } catch (error) {
+   } catch  {
       return new NextResponse(
          "Internal Server Error",
          {

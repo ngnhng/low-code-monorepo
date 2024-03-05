@@ -35,8 +35,8 @@ import { ApiConfigService } from './shared/services/api-config.service';
   controllers: [
     AppController,
     UserController,
-    AuthenticationController,
-    OAuthController,
+    //AuthenticationController,
+    //OAuthController,
   ],
   providers: [
     AppService,

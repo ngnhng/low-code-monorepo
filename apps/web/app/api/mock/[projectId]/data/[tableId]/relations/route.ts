@@ -1,5 +1,5 @@
-import path from "path";
-import fs from 'fs/promises';
+import path from "node:path";
+import fs from 'node:fs/promises';
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -12,7 +12,7 @@ export async function GET(
   );
 
   try {
-    const projectTables = JSON.parse(await fs.readFile(databasePath, 'utf-8'));
+    const projectTables = JSON.parse(await fs.readFile(databasePath, 'utf8'));
 
     const requestTable = projectTables.find(table => table.id === params.tableId);
 
@@ -28,7 +28,7 @@ export async function GET(
 
     return NextResponse.json(referenceTables, {status: 200});
 
-  } catch (error) {
+  } catch {
     return new NextResponse(
       'INTERNAL ERROR',
       {

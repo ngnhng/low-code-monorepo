@@ -40,3 +40,14 @@ yarn-error.log*
 #vs-code
 .vscode
 .vscode/*
+
+# PostgREST config
+postgrest.conf
+
+# user api config
+config_prod.json
+
+
+# ec2 compose
+*prod.yaml
+deployment/ec2/certificates/acme.json

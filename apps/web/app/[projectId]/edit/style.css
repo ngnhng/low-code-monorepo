@@ -23,9 +23,8 @@
     gap: 20px;
 }
 
-.puckContainer {
-    position: relative;
-    width: 100%;
+.puckContainer > div {
+    display: flex;
     flex: 1;
 }
 

@@ -1,51 +1,20 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { Gabarito } from 'next/font/google';
-
-import NavBar from 'components/navigation/nav-bar';
 import { UserAuthWrapper } from 'lib/wrappers/user-auth-wrapper';
-import Icon from 'components/icons/icon';
-import Sidebar from 'components/menus/sidebar/sidebar';
-
-const font = Gabarito({ subsets: ['latin'] });
+import { NavBar } from 'components/navigation/nav-bar';
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }): JSX.Element {
-  const path = usePathname();
 
   return (
     <UserAuthWrapper>
-      <div className="main">
+      <div className="w-full min-h-full flex flex-col">
         <NavBar />
-        <div className="content">
-          <div className="side">
-            <button className={`createButton ${font.className}`}>
-              <Icon
-                src="/plus.png"
-                width={24}
-                height={24}
-                color="rgb(141, 98, 134)"
-              />
-              New project
-            </button>
-            <Sidebar
-              selectedPage={path}
-              navigation={{
-                items: [
-                  {
-                    href: '/projects',
-                    label: 'Projects',
-                    image: 'project.png',
-                  },
-                ],
-              }}
-            />
-          </div>
-          <div className="pageWrapper">{children}</div>
+        <div className="flex-1 px-52 w-full h-full pt-12 flex flex-col gap-8">
+          {children}
         </div>
       </div>
     </UserAuthWrapper>

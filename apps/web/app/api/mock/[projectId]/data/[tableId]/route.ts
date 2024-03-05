@@ -1,11 +1,11 @@
-import fs from 'fs';
-import fsa  from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs';
+import fsa  from 'node:fs/promises';
+import path from 'node:path';
 import { faker } from '@faker-js/faker';
 import { NextRequest } from 'next/server';
 import { ColumnDef, TableItem } from 'types/table-data';
 import { NextResponse } from "next/server";
-import * as _ from 'lodash';
+// import * as _ from 'lodash';
 
 // * User Column
 export const columns: ColumnDef[] = [
@@ -194,7 +194,7 @@ export async function GET(
         `app/api/mock/[projectId]/data/all/${params.projectId}.json`,
       );
 
-      const data: TableItem[] = JSON.parse(await fsa.readFile(dbPath, 'utf-8'));
+      const data: TableItem[] = JSON.parse(await fsa.readFile(dbPath, 'utf8'));
 
       const tableData = data.find(table => table.id === params.tableId);
 
@@ -226,20 +226,20 @@ export async function GET(
   }
 
   try {
-    const data = JSON.parse(await fsa.readFile(databasePath, 'utf-8'));
+    const data = JSON.parse(await fsa.readFile(databasePath, 'utf8'));
 
     const dbPath = path.join(
       process.cwd(),
       `app/api/mock/[projectId]/data/all/${params.projectId}.json`,
     );
 
-    const projectTables = JSON.parse(await fsa.readFile(dbPath, 'utf-8'));
+    const projectTables = JSON.parse(await fsa.readFile(dbPath, 'utf8'));
 
     const requestTable = projectTables.find(table => table.id === params.tableId)
 
     const response = {
       data: {
-        columns: requestTable ? requestTable.columns.length > data.columns.length ? requestTable.columns : data.columns : data.columns,
+        columns: requestTable ? (requestTable.columns.length > data.columns.length ? requestTable.columns : data.columns) : data.columns,
         rows: data.rows.length > 30 ? data.rows.slice(Number(page) * Number(limit), Number(limit)) : data.rows,
         maxIndex: data.rows.length,
       },
@@ -306,17 +306,17 @@ export async function GET(
 }
 
 const translateData = (data): TableItem => {
-  const tableId = data.tablename.replace(/\s/g, '').toLowerCase();
+  const tableId = data.tablename.replaceAll(/\s/g, '').toLowerCase();
   const referenceTables: string[] = [];
   const columns =  data.requiredFields.map(item => {
     
-    const isForeignKey = item.referenceTable !== "" ? true : false;
-    const foreignKeyId = item.referenceTable !== "" ? `${tableId}-${item.referenceTable}` : "";
+    const isForeignKey = item.referenceTable !== "";
+    const foreignKeyId = item.referenceTable ? `${tableId}-${item.referenceTable}` : "";
 
     if (item.referenceTable) referenceTables.push(item.referenceTable as string)
     
     return {
-      id: item.id.replace(/\s/g, '').toLowerCase(),
+      id: item.id.replaceAll(/\s/g, '').toLowerCase(),
       label: item.id,
       type: item.type,
       isActive: true,
@@ -353,11 +353,11 @@ export async function POST(
   const realData = translateData(data);
 
   try {
-    const initData = await fsa.readFile(databasePath, 'utf-8');
+    const initData = await fsa.readFile(databasePath, 'utf8');
 
     const projectTables = JSON.parse(initData);
 
-    data.requiredFields.forEach((column) => {
+    for (const column of data.requiredFields) {
       if (column.referenceTable) {
         const referenceTable = projectTables.find(table => table.id === column.referenceTable)
 
@@ -375,7 +375,27 @@ export async function POST(
           referenceTable.referenceTables.push(realData.id);
         }
       }
-    })
+    }
+
+    // data.requiredFields.forEach((column) => {
+    //   if (column.referenceTable) {
+    //     const referenceTable = projectTables.find(table => table.id === column.referenceTable)
+
+    //     if (referenceTable) {
+    //       referenceTable.columns.push({
+    //         id: `${realData.id}-${referenceTable.id}`,
+    //         label: `${realData.id}-${referenceTable.id}`,
+    //         type: 'text',
+    //         isActive: true,
+    //         isPrimaryKey: false,
+    //         isForeignKey: true,
+    //         foreignKeyId: `${realData.id}-${referenceTable.id}`,
+    //       })
+
+    //       referenceTable.referenceTables.push(realData.id);
+    //     }
+    //   }
+    // })
 
     projectTables.push(realData);
 
@@ -437,10 +457,10 @@ export async function PUT(
   try {
     const dataToWrite = JSON.stringify(data);
 
-    const projectTables = JSON.parse(await fsa.readFile(tablesPath, 'utf-8'));
+    const projectTables = JSON.parse(await fsa.readFile(tablesPath, 'utf8'));
 
     if (newReferenceTableId.length > 0) {
-      newReferenceTableId.forEach((tableId) => {
+      for (const tableId of newReferenceTableId) {
         const referenceTable = projectTables.find(table => table.id === tableId)
         const requestTable = projectTables.find(table => table.id === params.tableId);
 
@@ -471,7 +491,40 @@ export async function PUT(
           requestTable.referenceTables.push(tableId);
           referenceTable.referenceTables.push(params.tableId);
         }
-      }) 
+      }
+
+      // newReferenceTableId.forEach((tableId) => {
+      //   const referenceTable = projectTables.find(table => table.id === tableId)
+      //   const requestTable = projectTables.find(table => table.id === params.tableId);
+
+      //   const { id, label, type } = data.columns.find(column => column.foreignKeyId === `${params.tableId}-${referenceTable.id}`);
+      //   console.log(id, label, type);
+
+      //   if (referenceTable) {
+      //     referenceTable.columns.push({
+      //       id: `${params.tableId}-${referenceTable.id}`,
+      //       label: `${params.tableId}-${referenceTable.id}`,
+      //       type: type,
+      //       isActive: true,
+      //       isPrimaryKey: false,
+      //       isForeignKey: true,
+      //       foreignKeyId: `${params.tableId}-${referenceTable.id}`,
+      //     })
+
+      //     requestTable.columns.push({
+      //       id: `${id}`,
+      //       label: `${label}`,
+      //       type: type,
+      //       isActive: true,
+      //       isPrimaryKey: false,
+      //       isForeignKey: true,
+      //       foreignKeyId: `${params.tableId}-${referenceTable.id}`,
+      //     })
+
+      //     requestTable.referenceTables.push(tableId);
+      //     referenceTable.referenceTables.push(params.tableId);
+      //   }
+      // }) 
       const dataToUpdate = JSON.stringify(projectTables);
 
       fs.writeFile(tablesPath, dataToUpdate, (err) => {
@@ -520,7 +573,7 @@ export async function PUT(
 
     return NextResponse.json(dataToWrite);
 
-  } catch (err) {
+  } catch {
     return new NextResponse("Something went wrong!", {
       status: 500,
     });

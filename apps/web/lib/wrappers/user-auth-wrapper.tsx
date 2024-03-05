@@ -17,7 +17,7 @@ export const UserAuthWrapper: FC<IUserAuthWrapper> = observer((properties) => {
 
   //store
   const {
-    user: { fetchCurrentUser },
+    user: { fetchCurrentUser, signOut },
   } = useMobxStore();
 
   const {
@@ -32,6 +32,7 @@ export const UserAuthWrapper: FC<IUserAuthWrapper> = observer((properties) => {
 
   useEffect(() => {
     if (error !== undefined || (!user && !isLoading)) {
+      signOut();
       router.push('/auth/login?error=unauthorized');
     }
   }, [error, user]);

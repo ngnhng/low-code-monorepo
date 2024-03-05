@@ -85,18 +85,21 @@ export class UserStore {
       this.currentUser = {
         email: 'abc@gmail.com',
         display_name: 'John Doe',
+        profile_image: 'https://via.placeholder.com/150',
       };
 
       this.isLoggedIn = true;
     });
   };
 
+  // remove user from local storage and set user to undefined
   signOut = async (): Promise<void> => {
     try {
       await this.authService.signOut();
       runInAction(() => {
         this.currentUser = undefined;
         this.isLoggedIn = false;
+		this.currentUserError = undefined;
       });
     } catch (error) {
       throw new Error('Error signing out:' + error);

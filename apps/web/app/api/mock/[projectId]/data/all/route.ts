@@ -3,10 +3,10 @@
 
 // GET /api/mock/{projectId}/data/all: Get all data for a project
 
-import { NextResponse, type NextRequest } from 'next/server';
-import fs from 'fs';
-import fsa  from 'fs/promises';
-import path from 'path';
+import { NextResponse } from 'next/server';
+// import fs from 'fs';
+import fsa  from 'node:fs/promises';
+import path from 'node:path';
 import { 
    columns, 
    addresses, 
@@ -49,28 +49,28 @@ const TABLES: TableItem[] = [
 ];
 
 export async function GET(
-   request: Request,
-   { params }:  { params: {projectId: string}}
+   // { params }:  { params: {projectId: string}}
 ) {
+   // const id = params.projectId ? params.projectId : 'trollface';
+
    const databasePath = path.join(
       process.cwd(),
-      `app/api/mock/[projectId]/data/all/${params.projectId}.json`,
-   );
-
+      `app/api/mock/[projectId]/data/all/trollface.json`,
+      );
    let previosData;
 
    try {
-      const data = await fsa.readFile(databasePath, 'utf-8')
+      const data = await fsa.readFile(databasePath, 'utf8')
 
       previosData = JSON.parse(data);
 
       // console.log("data: " + JSON.stringify(data));
    } catch (error) {
       console.log(error);
-      return new NextResponse("", { status: 500 });
+      return new NextResponse("error", { status: 500 });
    }
 
-   const tables = TABLES.concat(previosData);
+   const tables = [...TABLES, ...previosData]
 
    return new Response(JSON.stringify(tables), {
       headers: { "content-type": "application/json" },

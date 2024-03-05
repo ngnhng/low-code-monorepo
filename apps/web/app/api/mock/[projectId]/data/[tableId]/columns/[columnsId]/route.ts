@@ -1,6 +1,6 @@
-import fs from "fs/promises";
+import fs from "node:fs/promises";
 import { NextResponse } from "next/server";
-import path from "path";
+import path from "node:path";
 
 // [GET:] https://localhost:8080/
 export async function GET (
@@ -12,9 +12,9 @@ export async function GET (
     `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`,
   );
 
-  const database = JSON.parse(await fs.readFile(databasePath, "utf-8"));
+  const database = JSON.parse(await fs.readFile(databasePath, "utf8"));
   
-  console.log("Database: ", database);
+  console.log("Database:", database);
 
   return NextResponse.json(database.columns); 
 }

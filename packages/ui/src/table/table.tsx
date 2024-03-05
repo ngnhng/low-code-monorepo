@@ -1,5 +1,6 @@
-import * as React from "react";
+"use client";
 
+import React from "react";
 import { cn } from "../lib/utils";
 
 const Table = React.forwardRef<
@@ -66,22 +67,6 @@ const TableRow = React.forwardRef<
 ));
 TableRow.displayName = "TableRow";
 
-const TableRowButton = React.forwardRef<
-    HTMLTableRowElement,
-    React.HTMLAttributes<HTMLTableRowElement> & { onClick: () => void }
->(({ className, onClick, ...props }, ref) => (
-    <tr
-        ref={ref}
-        className={cn(
-            "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted cursor-pointer",
-            className
-        )}
-        onClick={onClick}
-        {...props}
-    />
-));
-TableRowButton.displayName = "TableRowButton";
-
 const TableHead = React.forwardRef<
     HTMLTableCellElement,
     React.ThHTMLAttributes<HTMLTableCellElement>
@@ -89,7 +74,7 @@ const TableHead = React.forwardRef<
     <th
         ref={ref}
         className={cn(
-            "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+            "h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
             className
         )}
         {...props}
@@ -104,7 +89,7 @@ const TableCell = React.forwardRef<
     <td
         ref={ref}
         className={cn(
-            "p-4 align-middle [&:has([role=checkbox])]:pr-0",
+            "p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
             className
         )}
         {...props}
@@ -124,6 +109,22 @@ const TableCaption = React.forwardRef<
 ));
 TableCaption.displayName = "TableCaption";
 
+const TableRowButton = React.forwardRef<
+    HTMLTableRowElement,
+    React.HTMLAttributes<HTMLTableRowElement> & { onClick: () => void }
+>(({ className, onClick, ...props }, ref) => (
+    <tr
+        ref={ref}
+        className={cn(
+            "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted cursor-pointer",
+            className
+        )}
+        onClick={onClick}
+        {...props}
+    />
+));
+TableRowButton.displayName = "TableRowButton";
+
 export {
     Table,
     TableHeader,
@@ -131,7 +132,7 @@ export {
     TableFooter,
     TableHead,
     TableRow,
-	TableRowButton,
     TableCell,
     TableCaption,
+    TableRowButton
 };

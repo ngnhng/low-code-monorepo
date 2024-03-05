@@ -9,5 +9,6 @@ module.exports = {
     ignorePatterns: ["tailwind.config.js", "postcss.config.js"],
     rules: {
         "unicorn/prevent-abbreviations": "off",
+		"no-redeclare": 0,
     },
 };

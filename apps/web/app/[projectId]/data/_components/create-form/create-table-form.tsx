@@ -1,23 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { CardButtonWithIcon } from '@repo/ui'
 import { PlusSquare, XCircle } from 'lucide-react'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useFieldArray } from "react-hook-form"
-import { uuid } from 'uuidv4';
+// import { uuid } from 'uuidv4';
 import axios from 'axios';
 
 import {
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "@repo/ui"
-import { Button, Textarea, Input, Switch, Label } from "@repo/ui"
+import { Button, Input } from "@repo/ui"
 import {
   Form,
   FormControl,
@@ -38,14 +33,13 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { useMobxStore } from 'lib/mobx/store-provider'
 import useSWR from 'swr'
-import { TableItem } from 'types/table-data'
-
+// import { TableItem } from 'types/table-data'
 
 interface CreateTableFormProps {
   projectId: string;
 }
 
-const typeValues = ["date", "text", "number", "boolean"] as const;
+// const typeValues = ["date", "text", "number", "boolean"] as const;
 
 const requiredFieldsSchema = z.object({
   id: z.string().trim().min(2, {
@@ -83,7 +77,7 @@ const CreateTableForm = ({
     projectData: { currentProjectId },
   } = useMobxStore();
 
-  const { data, isLoading, error, mutate } = useSWR(
+  const { data, isLoading, mutate } = useSWR(
     `TABLE_DATA-${currentProjectId}-all`,
     () => fetchTables(),
   );
@@ -107,7 +101,7 @@ const CreateTableForm = ({
     name: "requiredFields",
   })
 
-  const { isSubmitting, isValid } = form.formState;
+  const { isSubmitting } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -117,14 +111,14 @@ const CreateTableForm = ({
       toast.success("Table has been created.", {
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">{JSON.stringify(values, null, 2)}</code>
+            <code className="text-white">{JSON.stringify(values, undefined, 2)}</code>
           </pre>
         ),
       })
       mutate();
       router.refresh();
       // router.push(`/${projectId}/data/${values.tablename}`)
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong')
     }
   }
