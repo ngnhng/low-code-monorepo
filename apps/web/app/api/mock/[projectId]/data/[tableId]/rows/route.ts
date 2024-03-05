@@ -1,48 +1,48 @@
 // POST /api/mock/[project-id]/data/[table-id]/rows
 
-import path from 'path';
-import fs from 'fs/promises';
-import { NextRequest, NextResponse } from 'next/server';
+import path from "path";
+import fs from "fs/promises";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   return new Response(
     JSON.stringify({
       success: true,
-      message: 'Row created successfully',
+      message: "Row created successfully",
       row: {
-        id: '1',
-        created_at: '2021-05-31T11:18:03.000Z',
-        updated_at: '2021-05-31T11:18:03.000Z',
+        id: "1",
+        created_at: "2021-05-31T11:18:03.000Z",
+        updated_at: "2021-05-31T11:18:03.000Z",
         values: {
-          Name: 'John Doe',
-          Email: 'test@gmail.com',
-          Phone: '1234567890',
-          Address: 'Test Address',
-          City: 'Test City',
-          State: 'Test State',
+          Name: "John Doe",
+          Email: "test@gmail.com",
+          Phone: "1234567890",
+          Address: "Test Address",
+          City: "Test City",
+          State: "Test State",
         },
       },
     }),
     {
       headers: {
-        'content-type': 'application/json; charset=UTF-8',
+        "content-type": "application/json; charset=UTF-8",
       },
-    },
+    }
   );
 }
 
 // * [GET]: table data records
 export async function GET(
   request: NextRequest,
-  { params }: { params: { projectId: string; tableId: string } },
+  { params }: { params: { projectId: string; tableId: string } }
 ) {
   const tableDataPath = path.join(
     process.cwd(),
-    `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`,
+    `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`
   );
 
   try {
-    const tableData = JSON.parse(await fs.readFile(tableDataPath, 'utf-8'));
+    const tableData = JSON.parse(await fs.readFile(tableDataPath, "utf-8"));
 
     const records = tableData.rows;
 
@@ -50,7 +50,7 @@ export async function GET(
       status: 200,
     });
   } catch (error) {
-    return new NextResponse('Internal Server Error', {
+    return new NextResponse("Internal Server Error", {
       status: 500,
     });
   }
