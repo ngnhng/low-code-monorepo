@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
 import {
   Button,
@@ -13,14 +13,14 @@ import {
   DialogTitle,
   DialogTrigger,
   Separator,
-} from '@repo/ui';
-import { Eye, FileText } from 'lucide-react';
+} from "@repo/ui";
+import { Eye, FileText } from "lucide-react";
 // import AddRecord from './add-record';
-import { TextWithIcon } from 'components/text/text-with-icon';
-import { useMobxStore } from 'lib/mobx/store-provider';
-import useSWR from 'swr';
-import { RowDef } from 'types/table-data';
-import { ButtonRercord } from './button-record';
+import { TextWithIcon } from "components/text/text-with-icon";
+import { useMobxStore } from "lib/mobx/store-provider";
+import useSWR from "swr";
+import { RowDef } from "types/table-data";
+import { ButtonRercord } from "./button-record";
 
 // ? Progress: Using hard-data
 
@@ -58,7 +58,7 @@ const RelationRecords = ({
 
   const { data, isLoading } = useSWR(
     `TABLE_DATA-${currentProjectId}-${referenceTableId}-rows`,
-    () => fetchTableRecords(referenceTableId),
+    () => fetchTableRecords(referenceTableId)
   );
   useEffect(() => {
     if (data) {
@@ -97,12 +97,12 @@ const RelationRecords = ({
         }
 
         return { ...record };
-      }),
+      })
     );
 
     // NO IDEA WHY IN SET STATE RUN 2 TIMES
     linkedRecordIds = linkedRecordIds.filter(
-      (item, index) => linkedRecordIds.indexOf(item) === index,
+      (item, index) => linkedRecordIds.indexOf(item) === index
     );
   };
 
@@ -110,7 +110,7 @@ const RelationRecords = ({
     <Dialog>
       <DialogTrigger asChild>
         <div className="flex items-center">
-          <Button size={'sm'} variant="secondary" className="mr-4">
+          <Button size={"sm"} variant="secondary" className="mr-4">
             <Eye size={24} />
           </Button>
         </div>
