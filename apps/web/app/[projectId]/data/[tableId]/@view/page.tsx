@@ -12,20 +12,20 @@ import {
 } from "react-datasheet-grid";
 
 // Import the style only once in your app!
-import "react-datasheet-grid/dist/style.css";
-import { Operation } from "react-datasheet-grid/dist/types";
-import useSWR from "swr";
-import { useMobxStore } from "lib/mobx/store-provider";
-import { ColumnDef, ColumnType, DataTable, RowDef } from "types/table-data";
-import { useEffect, useMemo, useState } from "react";
-import { Button, Input } from "@repo/ui";
-import { FlaskConical } from "lucide-react";
+import 'react-datasheet-grid/dist/style.css';
+import { Operation } from 'react-datasheet-grid/dist/types';
+import useSWR from 'swr';
+import { useMobxStore } from 'lib/mobx/store-provider';
+import { ColumnDef, ColumnType, DataTable, RowDef } from 'types/table-data';
+import { useEffect, useMemo, useState } from 'react';
+import { Button, Input } from '@repo/ui';
+import { FlaskConical } from 'lucide-react';
 
-import { toast } from "sonner";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import CreateColumnForm from "../../_components/create-form/create-column-form";
-import QueryBuilderList from "../_components/query-builder-list";
+import { toast } from 'sonner';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import CreateColumnForm from '../../_components/create-form/create-column-form';
+import QueryBuilderList from '../_components/query-builder-list';
 
 import {
   DropdownMenu,
@@ -36,7 +36,8 @@ import {
   DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@repo/ui";
+} from '@repo/ui';
+import RelationRecords from '../_components/relation-record/relation-records';
 
 export default function Page({ params: { tableId, projectId } }) {
   const {
@@ -55,15 +56,14 @@ export default function Page({ params: { tableId, projectId } }) {
       })
   );
 
-  // console.log("Data loaded:", data);
-
   const handleCommit = async (
     localColumns: ColumnDef[],
     localData: RowDef[],
     deletedRowIds: Set<number>,
-    newReferenceTable
+    newReferenceTable,
   ) => {
     if (deletedRowIds.size !== 0) {
+      localData = localData.filter((row) => !deletedRowIds.has(row.id));
       localData = localData.filter((row) => !deletedRowIds.has(row.id));
     }
 
@@ -75,20 +75,24 @@ export default function Page({ params: { tableId, projectId } }) {
         },
         newReferenceTableId: newReferenceTable,
       });
-      toast.success("Table has been created.", {
+      toast.success('Table has been created.', {
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+            <code className="text-white">
+              {JSON.stringify(newReferenceTable, null, 2)}
+            </code>
             <code className="text-white">
               {JSON.stringify(newReferenceTable, null, 2)}
             </code>
           </pre>
         ),
       });
+      });
       mutate();
       router.refresh();
     } catch (error) {
       console.log(error);
-      toast.error("Something went wrong");
+      toast.error('Something went wrong');
     }
   };
 
@@ -136,56 +140,56 @@ const TableEditor = ({
   const createdColumn = useMemo(() => new Set<string>(), [tableId]);
   const deletedColumn = useMemo(() => new Set<string>(), [tableId]);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [sort, setSort] = useState({
-    keyToSort: "",
-    direction: "",
+    keyToSort: '',
+    direction: '',
   });
 
   const handleSortClickDesc = (header) => {
     setSort({
       keyToSort: header.id,
-      direction: "desc",
+      direction: 'desc',
     });
   };
 
   const handleSortClickAsc = (header) => {
     setSort({
       keyToSort: header.id,
-      direction: "asc",
+      direction: 'asc',
     });
   };
 
   const handleSearch = (data) => {
-    if (search === "") {
+    if (search === '') {
       return data;
     }
 
     const keys = localColumns.map((column) => column.id);
+    const keys = localColumns.map((column) => column.id);
     const result = data.filter((row) => {
       return keys.some((key) =>
-        row[key].toString().toLowerCase().includes(search.toLowerCase())
+        row[key].toString().toLowerCase().includes(search.toLowerCase()),
       );
     });
 
-    console.log("result", result);
-
     return result;
+  };
   };
 
   const getSortedData = (data) => {
-    if (search !== "") {
+    if (search !== '') {
       data = handleSearch(data);
     }
 
-    if (sort.direction === "asc") {
+    if (sort.direction === 'asc') {
       return data.sort((a, b) =>
-        a[sort.keyToSort] > b[sort.keyToSort] ? 1 : -1
+        a[sort.keyToSort] > b[sort.keyToSort] ? 1 : -1,
       );
     }
 
     return data.sort((a, b) =>
-      a[sort.keyToSort] > b[sort.keyToSort] ? -1 : 1
+      a[sort.keyToSort] > b[sort.keyToSort] ? -1 : 1,
     );
   };
 
@@ -200,12 +204,22 @@ const TableEditor = ({
                 handleSortClickAsc={handleSortClickAsc}
                 handleSortClickDesc={handleSortClickDesc}
               />
+              <TitleDataSheet
+                column={column}
+                handleSortClickAsc={handleSortClickAsc}
+                handleSortClickDesc={handleSortClickDesc}
+              />
             ),
             disabled: true,
           }
         : {
             ...keyColumn<RowDef>(column.id, colTypeMapper(column.type)),
             title: (
+              <TitleDataSheet
+                column={column}
+                handleSortClickAsc={handleSortClickAsc}
+                handleSortClickDesc={handleSortClickDesc}
+              />
               <TitleDataSheet
                 column={column}
                 handleSortClickAsc={handleSortClickAsc}
@@ -303,8 +317,6 @@ const TableEditor = ({
       <ViewMenubar
         onCommit={onCommit}
         discardData={discardData}
-        onAddNewColumn={() => {}}
-        onQuery={onQuery}
         setSearch={setSearch}
         localColumns={localColumns}
         localData={localData}
@@ -354,7 +366,6 @@ const TableEditor = ({
           }
         }}
         gutterColumn={{ component: ({ rowData }) => <div>{rowData.id}</div> }}
-        // gutterColumn={false}
         addRowsComponent={(props) => <AddRows {...props} table={data} />}
       />
     </>
@@ -371,6 +382,30 @@ function AddRows({
     </div>
   );
 }
+
+// eslint-disable-next-line no-unused-vars
+const LinkCell = (props) => {
+  return (
+    <>
+      <RelationRecords />
+    </>
+  );
+};
+
+const LinkColumnNofunc = {
+  component: LinkCell,
+  deleteValue: () => '',
+  copyValue: ({ rowData }) => rowData,
+  pasteValue: ({ value }) => value,
+  columnData: 1,
+};
+
+// const LinkColumn = (columnData) => ({
+//   component: LinkCell,
+//   deleteValue: () => '',
+//   copyValue: ({ rowData }) => rowData,
+//   pasteValue: ({ value }) => value,
+// }) as Partial<Column<any, any, string>>;
 
 const colTypeMapper = (type: ColumnType) => {
   switch (type) {
@@ -406,6 +441,7 @@ const ViewMenubar = ({
   tableId,
   setNewReferenceTableId,
   newReferenceTableId,
+  newReferenceTableId,
 }: {
   onCommit: any;
   discardData: any;
@@ -430,7 +466,7 @@ const ViewMenubar = ({
               localColumns,
               localData,
               deletedRowIds,
-              newReferenceTableId
+              newReferenceTableId,
             )
           }
         >
@@ -438,7 +474,9 @@ const ViewMenubar = ({
         </Button>
         <Button onClick={discardData}>Discard</Button>
         <QueryBuilderList columns={localColumns} />
+        <QueryBuilderList columns={localColumns} />
       </div>
+
 
       <div className="flex flex-end space-x-4 pb-2">
         <div className="flex w-full max-w-sm items-center space-x-2">
@@ -447,9 +485,15 @@ const ViewMenubar = ({
             placeholder="Find Present ..."
             onChange={(e) => setSearch(e.target.value)}
           />
+          <Input
+            type="email"
+            placeholder="Find Present ..."
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
 
         <div className="flex w-full max-w-sm items-center space-x-2">
+          <CreateColumnForm
           <CreateColumnForm
             setLocalColumns={setLocalColumns}
             setLocalData={setLocalData}
@@ -461,6 +505,7 @@ const ViewMenubar = ({
     </div>
   );
 };
+};
 
 const TitleDataSheet = ({
   column,
@@ -470,18 +515,23 @@ const TitleDataSheet = ({
   column: any;
   handleSortClickAsc: any;
   handleSortClickDesc: any;
+  handleSortClickAsc: any;
+  handleSortClickDesc: any;
 }) => {
   // const [position, setPosition] = useState("bottom")
   const onSelect = (event: Event) => {
     event.preventDefault();
   };
+  };
 
   return (
+    <div className="flex items-center justify-between">
     <div className="flex items-center justify-between">
       <div>{column.label}</div>
 
       <DropdownMenu>
         <DropdownMenuTrigger>
+          <FlaskConical size={24} />
           <FlaskConical size={24} />
         </DropdownMenuTrigger>
 
@@ -500,6 +550,9 @@ const TitleDataSheet = ({
           <DropdownMenuSeparator />
         </DropdownMenuContent>
       </DropdownMenu>
+    </div>
+  );
+};
     </div>
   );
 };

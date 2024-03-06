@@ -6,16 +6,16 @@ import useSWR from 'swr';
 import { useMobxStore } from 'lib/mobx/store-provider';
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, useFieldArray } from "react-hook-form"
+import { useForm } from "react-hook-form"
 
 import {
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
+  // SheetClose,
+  // SheetDescription,
+  // SheetFooter,
+  // SheetHeader,
+  // SheetTitle,
   SheetTrigger,
 } from "@repo/ui"
 import { Button, Input } from "@repo/ui"
@@ -36,6 +36,7 @@ import {
 } from "@repo/ui"
 import { ColumnDef } from 'types/table-data'
 import { toast } from 'sonner'
+// import { Type } from 'lucide-react';
 
 interface CreateColumnFormProps {
   // localTable: any;
@@ -45,7 +46,7 @@ interface CreateColumnFormProps {
   setNewReferenceTableId: any;
 }
 
-const typeValues = ["date", "text", "number", "boolean"] as const;
+const typeValues = ["date", "text", "number", "boolean", "link"] as const;
 
 const formSchema = z.object({
   columnname: z.string().min(2, {
@@ -66,6 +67,7 @@ const CreateColumnForm = ({
 }: CreateColumnFormProps ) => {
   const [open, setOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<any>( );
+  // eslint-disable-next-line no-unused-vars
   const [columnOfTable, setColumnOfTable] = useState<any[]>();
 
   // const []
@@ -74,7 +76,7 @@ const CreateColumnForm = ({
     projectData: { currentProjectId },
   } = useMobxStore();
 
-  const { data, isLoading, error, mutate } = useSWR(
+  const { data, isLoading } = useSWR(
     `TABLE_DATA-${currentProjectId}-all`,
     () => fetchTables(),
   );
@@ -83,11 +85,11 @@ const CreateColumnForm = ({
     resolver: zodResolver(formSchema),
   });
 
-  const { isSubmitting, isValid } = form.formState;
+  const { isSubmitting } = form.formState;
 
   useEffect(() => {
     if (selectedTable) {
-      console.log("Selected Table: ", selectedTable);
+      console.log("Selected Table:", selectedTable);
       const columns = selectedTable.columns.map(col => ({
         id: col.id,
         label: col.label,
@@ -99,26 +101,52 @@ const CreateColumnForm = ({
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     
     const data: ColumnDef = {
-      id: values.columnname,
+      id: values.columnname.replaceAll(/\s/g, '').toLowerCase(),
       label: values.columnname,
       type: values.type,
       defaultValue: values.defaultValue,
       isActive: true,
       isPrimaryKey: false,
       isForeignKey: false,
-      foreignKeyId: `${tableId}-${values.referenceTable}`,
+      foreignKeyId: values.referenceTable ? `${tableId}-${values.referenceTable}` : '',
     }
 
-    setLocalData(previous => {
-      const newData = previous.map((data) => {
-        data[values.columnname] = values.defaultValue;
-        return data
-      })
+    let flag = false;
 
-      return newData;
-    })
-    setLocalColumns(previous => [ ...previous, data]);
-    setNewReferenceTableId(previous => [...previous, values.referenceTable]);
+    setLocalColumns(previous => {
+      const existingColumns = previous.find(col => col.id.toLowerCase() === data.id.toLowerCase());
+
+      if (existingColumns) {
+        flag = true;
+        return [ ...previous]
+      }
+
+      return [...previous, data]
+    });
+
+    if (flag) {
+      return;
+    }
+
+    if (values.type === 'link') {
+      setLocalData(previous => {
+        const newData = previous.map((row) => {
+
+          row[data.id] = (
+            <Button>Link Button</Button>
+          );
+
+          console.log('New Created', row[values.columnname])
+          return row
+        })
+  
+        return newData;
+      })
+    }
+
+    if (values.referenceTable) {
+      setNewReferenceTableId(previous => [...previous, values.referenceTable]);
+    }
 
     form.reset();
     setOpen(false);
@@ -126,7 +154,7 @@ const CreateColumnForm = ({
     toast.success("Column has been created.", {
       description: (
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+          <code className="text-white">{JSON.stringify(data, undefined, 2)}</code>
         </pre>
       ),
     })
@@ -179,10 +207,11 @@ const CreateColumnForm = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="text">text</SelectItem>
-                      <SelectItem value="number">number</SelectItem>
-                      <SelectItem value="boolean">boolean</SelectItem>
-                      <SelectItem value="date">date</SelectItem>
+                      <SelectItem value="text" className='flex items-center'>Text</SelectItem>
+                      <SelectItem value="number">Number</SelectItem>
+                      <SelectItem value="boolean">Boolean</SelectItem>
+                      <SelectItem value="date">Date</SelectItem>
+                      <SelectItem value="link">Link</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -222,55 +251,6 @@ const CreateColumnForm = ({
                 </FormItem>
               )}
             />
-
-            {/* {selectedTable === undefined ? null : (
-              <FormField
-                control={form.control}
-                name="referenceColumn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Reference Column</FormLabel>
-                    <Select
-                      onValueChange={(value) => {
-                        // setSelectedTable(value)
-                        return field.onChange(value)
-                      }}
-                      // defaultValue={field.value}
-                      // value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {columnOfTable && columnOfTable.map((ref, index) => (
-                          <SelectItem key={index} value={ref.id}>
-                            {ref.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )} */}
-
-            <FormField
-              control={form.control}
-              name="defaultValue"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Default Value</FormLabel>
-                  <FormControl>
-                    <Input placeholder="DEFAULT" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <Button 
               type="submit"
               disabled={isSubmitting}  
