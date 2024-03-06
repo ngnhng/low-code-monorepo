@@ -38,10 +38,6 @@ import {
 } from "@repo/ui"
 import RelationRecords from '../_components/relation-record/relation-records';
 
-// const handleQuery = async () => {
-//   console.log("ABC")
-// };
-
 export default function Page({ params: { tableId, projectId } }) {
   const {
     tableData: { fetchTableData, fetchAppliedQueries },
@@ -58,8 +54,6 @@ export default function Page({ params: { tableId, projectId } }) {
         ...fetchAppliedQueries(tableId),
       }),
   );
-
-  // console.log("Data loaded:", data);
 
   const handleCommit = async (localColumns: ColumnDef[], localData: RowDef[], deletedRowIds: Set<number>, newReferenceTable) => {
     if (deletedRowIds.size > 0) {
@@ -160,8 +154,6 @@ const TableEditor = ({
     const result = data.filter((row) => {
       return keys.some((key) => row[key].toString().toLowerCase().includes(search.toLowerCase()))
     })
-
-    console.log("result", result);
 
     return result;
   }
@@ -283,8 +275,6 @@ const TableEditor = ({
       <ViewMenubar
         onCommit={onCommit}
         discardData={discardData}
-        // onAddNewColumn={() => {}}
-        // onQuery={onQuery}
         setSearch={setSearch}
         localColumns={localColumns}
         localData={localData}
@@ -335,7 +325,6 @@ const TableEditor = ({
           }
         }}
         gutterColumn={{ component: ({ rowData }) => <div>{rowData.id}</div> }}
-        // gutterColumn={false}
         addRowsComponent={(props) => <AddRows {...props} table={data} />}
       />
     </>
@@ -353,20 +342,11 @@ function AddRows({
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 const LinkCell = (props) => {
-  console.log("rowData:", props);  
-
   return (
     <>
-      <RelationRecords referenceTableId=''/>
-      {/* <Button variant={"secondary"} size={'sm'}>
-        <Plus size={24} /> Records
-      </Button> */}
-      {/* <Dialog>
-        <DialogTrigger>
-          ABC
-        </DialogTrigger>
-      </Dialog> */}
+      <RelationRecords/>
     </>
   );
 }
@@ -403,9 +383,6 @@ const colTypeMapper = (type: ColumnType) => {
     case 'date': {
       return dateColumn;
     }
-    // case 'link': {
-    //   return LinkCell;
-    // }
     default: {
       return textColumn;
     }
