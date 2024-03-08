@@ -2,13 +2,15 @@
 
 import './style.css';
 
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import Sidebar from 'components/menus/sidebar/sidebar';
 import Header from 'components/header/header';
 import { NavigationMenuProps as NavigationMenuProperties } from '../../types/navigation';
+  // eslint-disable-next-line no-unused-vars
 import { UserAuthWrapper } from '../../lib/wrappers/user-auth-wrapper';
 import { usePathname } from 'next/navigation';
 import { Brush, Database, Workflow, Settings2 } from 'lucide-react';
+import { useMobxStore } from 'lib/mobx/store-provider';
 
 function useNavigation(params: { projectId: string }) {
   return useMemo(
@@ -56,9 +58,9 @@ export default function Layout({
     setCurrentProjectId(projectId);
   }
   return (
-    <UserAuthWrapper>
+    <>
       {renderContent(useNavigation(params), children)}
-    </UserAuthWrapper>
+    </>
   );
 }
 
@@ -67,13 +69,16 @@ function renderContent(
   children: React.ReactNode,
 ) {
   const pathName = usePathname();
+
+  console.log("Pathname:", pathName);
+
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden">
+    <div className="w-full h-full flex flex-col justify-start items-center overflow-hidden">
       <Header headerTitle="Project Name" />
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 flex w-full overflow-hidden">
         <div className="w-full h-full flex px-[50px] py-[20px] gap-2.5">
           <Sidebar navigation={navigations} selectedPage={pathName ?? ''} />
-          <div className="flex-1 flex">{children}</div>
+          <div className="flex-1">{children}</div>
         </div>
       </div>
     </div>

@@ -14,8 +14,8 @@ export default function Sidebar({
         <Link
           href={item.href}
           className={`w-[200px] py-2.5 px-5 flex gap-2.5 items-center hover:bg-slate-50 rounded-md box-content ${
-            selectedPage === item.href
-              ? 'bg-slate-50 ring-2 ring-slate-300'
+            selectedPage.includes(item.href) 
+              ? 'bg-slate-50 ring-2 ring-slate-300 border'
               : ''
           }`}
           key={item.href}
