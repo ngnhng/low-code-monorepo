@@ -3,21 +3,28 @@
 
 import React, { useState, useEffect } from 'react';
 import { ElementProperties } from './element-properties';
+import { useMobxStore } from 'lib/mobx/store-provider';
 
 const PropertiesView = ({ modeler }) => {
   const [selectedElements, setSelectedElements] = useState([]);
-  const [element, setElement] = useState(null);
+ const {
+	workflow: { activeElement, setActiveElement}
+ } = useMobxStore()
+//  const [element, setElement] = useState(null);
 
   useEffect(() => {
     const selectionChangedHandler = (e) => {
+		console.log("selectionChangedHandler", e)
       setSelectedElements(e.newSelection);
-      setElement(e.newSelection[0]);
+      setActiveElement(e.newSelection[0]);
     };
 
     const elementChangedHandler = (e) => {
+
+		console.log("elementChangedHandler", e)
       const { element } = e;
       if (!element || element.id !== element.id) return;
-      setElement(element);
+      setActiveElement(element);
     };
 
     modeler.on('selection.changed', selectionChangedHandler);
@@ -33,7 +40,7 @@ const PropertiesView = ({ modeler }) => {
   return (
     <>
       {selectedElements.length === 1 && (
-        <ElementProperties modeler={modeler} element={element} />
+        <ElementProperties modeler={modeler} element={activeElement} />
       )}
       {selectedElements.length === 0 && <span>Please select an element.</span>}
       {selectedElements.length > 1 && (

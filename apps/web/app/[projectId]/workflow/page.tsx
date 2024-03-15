@@ -44,14 +44,14 @@ export default function Page() {
 
 const Modeler = observer(() => {
   const {
-    workflow: { currentWorkflow, newRenderer },
+    workflow: { currentWorkflow, newRenderer, modeler, setModeler },
   } = useMobxStore();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   // eslint-disable-next-line unicorn/no-null
-  const [modeler, setModeler] = useState(null);
+//  const [modeler, setModeler] = useState(null);
 
   useEffect(() => {
     const initializeModeler = async () => {

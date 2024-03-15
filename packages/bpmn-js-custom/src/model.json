@@ -33,10 +33,15 @@
             "superClass": ["Element"],
             "properties": [
                 {
-                    "name": "ioMapping",
+                    "name": "input",
                     "isMany": true,
                     "type": "input"
-                }
+                },
+				{
+					"name": "output",
+					"isMany": true,
+					"type": "output"
+				}
             ]
         },
         {
@@ -54,7 +59,23 @@
                     "type": "String"
                 }
             ]
-        }
+        },
+		{
+			"name": "output",
+			"superClass": ["Element"],
+			"properties": [
+				{
+					"name": "source",
+					"isAttr": true,
+					"type": "String"
+				},
+				{
+					"name": "target",
+					"isAttr": true,
+					"type": "String"
+				}
+			]
+		}
     ],
     "emumerations": [],
     "associations": []
