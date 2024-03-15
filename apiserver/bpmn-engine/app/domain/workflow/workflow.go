@@ -10,8 +10,8 @@ import (
 type (
 	WorkflowLaunchRequest struct {
 		WorkflowID        string `json:"workflow_id"`
-		ProcessDefinition []byte `json:"process_definition"`
-		VariableMapping   []byte `json:"variable_mapping"` // mutiple start event? how to
+		ProcessDefinition string `json:"process_definition"` // base64 encoded bpmn file
+		VariableMapping   string `json:"variable_mapping"`   // TODO: mutiple start event? how to
 	}
 
 	WorkflowStatusResponse struct {
@@ -19,6 +19,11 @@ type (
 		CurrentNode string                 `json:"current_node"`
 		Health      string                 `json:"health"`
 		Logs        map[time.Time][]string `json:"logs"`
+	}
+
+	LaunchStatus struct {
+		ProcessInstanceID string `json:"process_instance_id"`
+		WorkflowID        string `json:"workflow_id"`
 	}
 )
 

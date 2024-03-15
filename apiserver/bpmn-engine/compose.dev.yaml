@@ -5,6 +5,23 @@ networks:
     driver: bridge
 
 services:
+  #yalc-server:
+  #  build:
+  #    context: .
+  #    dockerfile: ./app/Dockerfile.dev
+  #  networks:
+  #    - mynetwork
+  #  ports:
+  #    - '3000:3000'
+  #  volumes:
+  #    - ./app/.env.local:/app/.env.local
+  #    - ./app/service-tasks/:/app/service-tasks
+  #  depends_on:
+  #    nats:
+  #      condition: service_started
+  #    server:
+  #      condition: service_started
+
   nats:
     image: nats:2.10-alpine3.19
     networks:

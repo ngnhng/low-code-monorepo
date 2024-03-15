@@ -15,7 +15,6 @@ type Logger interface {
 	Debug(args ...interface{})
 	Debugf(template string, args ...interface{})
 	Debugw(msg string, fields Fields)
-	//Debugj()
 	Info(args ...interface{})
 	Infof(template string, args ...interface{})
 	Infow(msg string, fields Fields)

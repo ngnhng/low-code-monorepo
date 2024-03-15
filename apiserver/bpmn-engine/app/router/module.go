@@ -2,9 +2,5 @@ package router
 
 import "go.uber.org/fx"
 
-var Module = fx.Module(
-	"router",
-	fx.Provide(
-		InitWorkflowRouter,
-	),
-)
+var Module = fx.Invoke(InitWorkflowRouter)
+

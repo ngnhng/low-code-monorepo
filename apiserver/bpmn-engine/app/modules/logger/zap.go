@@ -57,7 +57,14 @@ func (l *zapLogger) getLoggerLevel() zapcore.Level {
 func (l *zapLogger) initLogger(env string) {
 	logLevel := l.getLoggerLevel()
 
-	logWriter := zapcore.AddSync(os.Stdout)
+	// create -- overwrite blank log file
+	logFile, err := os.OpenFile(l.logOptions.GetLogPath(), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	//logWriter := zapcore.AddSync(os.Stdout)
+	logWriter := zap.CombineWriteSyncers(zapcore.AddSync(logFile), zapcore.AddSync(os.Stdout))
 
 	var encoderCfg zapcore.EncoderConfig
 	var encoder zapcore.Encoder

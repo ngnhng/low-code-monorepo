@@ -4,6 +4,7 @@ import (
 	"yalc/bpmn-engine/controller"
 	"yalc/bpmn-engine/modules/config"
 	httpserver "yalc/bpmn-engine/modules/echo"
+	"yalc/bpmn-engine/modules/logger"
 
 	echo "github.com/labstack/echo/v4"
 
@@ -15,6 +16,7 @@ type (
 		fx.In
 
 		Config config.Config
+		Logger logger.Logger
 		Server *httpserver.EchoHTTPServer
 		*controller.LaunchWorkflowController
 		*controller.FetchWorkflowStatusController

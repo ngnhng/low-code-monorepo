@@ -1,13 +1,18 @@
 package echo
 
 import (
+	"encoding/json"
+	"os"
 	"strconv"
 	"yalc/bpmn-engine/modules/config"
 	"yalc/bpmn-engine/modules/logger"
 
 	"yalc/bpmn-engine/domain"
 
+	"github.com/golang-jwt/jwt/v5"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/fx"
 )
 
@@ -48,6 +53,35 @@ func (cv *CustomValidator) Validate(i any) error {
 func New(p Params) *EchoHTTPServer {
 	e := echo.New()
 	e.Validator = &CustomValidator{}
+	e.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte(p.Config.GetJwtSecret()),
+		ContextKey: "user",
+	}),
+	)
+
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogStatus: true,
+		LogURI:    true,
+		LogError:  true,
+		//BeforeNextFunc: func(c echo.Context) {
+		//	c.Set("customValueFromContext", 42)
+		//},
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			value, _ := c.Get(string(domain.UserKey)).(*jwt.Token)
+			p.Logger.Debug(
+				"REQUEST: uri: ",
+				v.URI,
+				", status: ",
+				v.Status,
+				", error: ",
+				v.Error,
+				", user: ",
+				value.Claims,
+			)
+			return nil
+		},
+	}))
+
 	return &EchoHTTPServer{
 		Address: p.Config.GetAddress(),
 		Port:    p.Config.GetPort(),
@@ -58,6 +92,11 @@ func New(p Params) *EchoHTTPServer {
 
 // Start starts the server
 func (s *EchoHTTPServer) Start() error {
+	data, err := json.MarshalIndent(s.Echo.Routes(), "", "  ")
+	if err != nil {
+		return err
+	}
+	os.WriteFile("routes.json", data, 0o644)
 	return s.Echo.Start(s.Address + ":" + strconv.Itoa(s.Port))
 }
 

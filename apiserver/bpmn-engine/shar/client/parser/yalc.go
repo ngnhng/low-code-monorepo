@@ -73,6 +73,8 @@ func parseYalcExtensions(root *xmlquery.Node, modelElement any, node *xmlquery.N
 					for _, j := range o {
 						element.InputTransform[j.SelectAttr("target")] = j.SelectAttr("source")
 					}
+					// parse special global input with the prefix _globalContext_
+					//element.InputTransform["_localContext_user"] = "=_globalContext_user"
 				}
 			}
 			//<yalc:loopCharacteristics inputCollection="=a" inputElement="b" outputCollection="c" outputElement="=d" />

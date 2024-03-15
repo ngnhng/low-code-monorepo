@@ -12,6 +12,14 @@ type (
 		GetAddress() string
 		// Get Port
 		GetPort() int
+		// GetLogPath returns the log file path
+		GetLogPath() string
+		// GetJwtSecret return the jwt secret
+		GetJwtSecret() string
+		// GetRedisDatabase returns the redis database configuration
+		GetRedisDatabase() RedisEnvConfig
+		// GetApiConfig returns the api configuration
+		GetApiConfig() ApiConfig
 	}
 )
 
