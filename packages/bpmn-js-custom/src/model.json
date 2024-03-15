@@ -1,7 +1,7 @@
 {
     "name": "GoogleSheet",
 	"uri": "http://some-company/schema/bpmn/gs",
-    "prefix": "gs",
+    "prefix": "yalc",
     "xml": {
         "tagAlias": "lowerCase"
     },
@@ -11,34 +11,46 @@
             "extends": ["bpmn:FlowNode"],
             "properties": [
                 {
-                    "name": "accessToken",
+                    "name": "isGoogleSheet",
+                    "isAttr": true,
+                    "type": "Boolean"
+                }
+            ]
+        },
+        {
+            "name": "taskDefinition",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "type",
                     "isAttr": true,
                     "type": "String"
                 }
             ]
         },
         {
-            "name": "AnalysisDetails",
+            "name": "ioMapping",
             "superClass": ["Element"],
             "properties": [
                 {
-                    "name": "comments",
+                    "name": "ioMapping",
                     "isMany": true,
-                    "type": "Comment"
+                    "type": "input"
                 }
             ]
         },
         {
-            "name": "Comment",
+            "name": "input",
+            "superClass": ["Element"],
             "properties": [
                 {
-                    "name": "author",
+                    "name": "source",
                     "isAttr": true,
                     "type": "String"
                 },
                 {
-                    "name": "text",
-                    "isBody": true,
+                    "name": "target",
+                    "isAttr": true,
                     "type": "String"
                 }
             ]

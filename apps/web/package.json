@@ -9,7 +9,6 @@
     "lint": "eslint . --max-warnings 0",
     "start": "next start"
   },
-  "prettier": "@vercel/style-guide/prettier",
   "dependencies": {
     "@bpmn-io/properties-panel": "^3.17.0",
     "@hookform/resolvers": "^3.3.4",

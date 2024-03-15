@@ -1,6 +1,6 @@
 import BaseRenderer from "diagram-js/lib/draw/BaseRenderer";
 
-import { append as svgAppend, attr as svgAttr, classes as svgClasses, create as svgCreate } from "tiny-svg";
+import { append as svgAppend, attr as svgAttr, classes as svgClasses, create as svgCreate, remove as svgRemove } from "tiny-svg";
 
 import { getRoundRectPath } from "bpmn-js/lib/draw/BpmnRenderUtil";
 
@@ -30,79 +30,32 @@ export default class CustomRenderer extends BaseRenderer {
     drawShape(parentNode, element) {
         const shape = this.bpmnRenderer.drawShape(parentNode, element);
 
-        const suitabilityScore = this.getSuitabilityScore(element);
-        const accessToken = this.getAccessToken(element);
+        const isGoogleSheet = this.getAccessToken(element);
 
-        if (accessToken) {
+        if (isGoogleSheet) {
             this.drawGoogleSheet(parentNode);
-        }
-
-        if (!isNil(suitabilityScore)) {
-            //const color = this.getColor(suitabilityScore);
-
-            //const rect = drawRect(
-            //    parentNode,
-            //    50,
-            //    20,
-            //    TASK_BORDER_RADIUS,
-            //    color
-            //);
-
-            //svgAttr(rect, {
-            //    transform: "translate(-20, -10)",
-            //});
-
-            //var text = svgCreate("text");
-
-            //svgAttr(text, {
-            //    fill: "#fff",
-            //    transform: "translate(-15, 5)",
-            //});
-
-            //svgClasses(text).add("djs-label");
-
-            //svgAppend(text, document.createTextNode(suitabilityScore));
-
-            //svgAppend(parentNode, text);
-
-            this.drawCustomQA(parentNode);
+            svgRemove(shape);
         }
 
         return shape;
     }
 
     drawGoogleSheet(parentNode) {
-        const background = drawRect(parentNode, 50, 20, TASK_BORDER_RADIUS, COLOR_GREEN);
+        const rect = drawRect(parentNode, 100, 80, 10, COLOR_BLACK, "transparent");
+
+        const background = drawRect(parentNode, 80, 20, TASK_BORDER_RADIUS, COLOR_GREEN);
         svgAttr(background, {
-            fill: "#000",
             transform: "translate(8, 52)",
         });
 
         const text = svgCreate("text");
         svgAttr(text, {
             fill: "#fff",
-            transform: "translate(15, 69)",
+            transform: "translate(15, 65)",
+            fontSize: "10"
         });
 
-        svgAppend(text, document.createTextNode("GS"));
-        svgAppend(parentNode, text);
-    }
-
-    drawCustomQA(parentNode) {
-        const background = drawRect(parentNode, 50, 20, TASK_BORDER_RADIUS, COLOR_BLACK);
-        svgAttr(background, {
-            fill: "#000",
-            transform: "translate(8, 52)",
-        });
-
-        const text = svgCreate("text");
-        svgAttr(text, {
-            fill: "#fff",
-            transform: "translate(15, 69)",
-        });
-
-        svgAppend(text, document.createTextNode("QA"));
-
+        svgAppend(text, document.createTextNode("Google Sheet"));
         svgAppend(parentNode, text);
     }
 
@@ -114,28 +67,10 @@ export default class CustomRenderer extends BaseRenderer {
         return this.bpmnRenderer.getShapePath(shape);
     }
 
-    getSuitabilityScore(element) {
-        const businessObject = getBusinessObject(element);
-
-        const { suitable } = businessObject;
-
-        return Number.isFinite(suitable) ? suitable : null;
-    }
-
     getAccessToken(element) {
         const businessObject = getBusinessObject(element);
-        const { accessToken } = businessObject;
-        return accessToken ?? null;
-    }
-
-    getColor(suitabilityScore) {
-        if (suitabilityScore > 75) {
-            return COLOR_GREEN;
-        } else if (suitabilityScore > 25) {
-            return COLOR_YELLOW;
-        }
-
-        return COLOR_RED;
+        const { isGoogleSheet } = businessObject;
+        return isGoogleSheet ?? false;
     }
 }
 
@@ -144,7 +79,7 @@ CustomRenderer.$inject = ["eventBus", "bpmnRenderer"];
 // helpers //////////
 
 // copied from https://github.com/bpmn-io/bpmn-js/blob/master/lib/draw/BpmnRenderer.js
-function drawRect(parentNode, width, height, borderRadius, color) {
+function drawRect(parentNode, width, height, borderRadius, color, fill) {
     const rect = svgCreate("rect");
 
     svgAttr(rect, {
@@ -154,7 +89,7 @@ function drawRect(parentNode, width, height, borderRadius, color) {
         ry: borderRadius,
         stroke: color,
         strokeWidth: 2,
-        fill: color,
+        fill: fill ?? color,
     });
 
     svgAppend(parentNode, rect);

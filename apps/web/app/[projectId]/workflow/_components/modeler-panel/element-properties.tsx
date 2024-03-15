@@ -3,6 +3,7 @@ import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 import { useEffect, useReducer } from 'react';
 import { hasDefinition } from 'helpers/bpmn.helper';
 import { QAElementProperties } from './qa-element-form';
+import GoogleSheetProps from './google-sheet-props';
 import {
   Accordion,
   AccordionContent,
@@ -16,11 +17,13 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Input,
 } from '@repo/ui';
 
 const initialState = {
   businessObject: null,
   isQA: false,
+  isGS: false,
 };
 
 function reducer(state, action) {
@@ -32,7 +35,10 @@ function reducer(state, action) {
       return { ...state, isQA: action.payload };
     }
     case 'disableAll': {
-      return { ...state, isQA: false };
+      return { ...state, isQA: false, isGS: false };
+    }
+    case 'setIsGS': {
+      return { ...state, isGS: action.payload };
     }
     default: {
       throw new Error(`Unsupported action type: ${action.type}`);
@@ -51,17 +57,52 @@ export function ElementProperties({ element, modeler }) {
     element = element.labelTarget;
   }
 
-//   console.log(element, modeler, state);
+  //   console.log(element, modeler, state);
 
   useEffect(() => {
     const bObject = getBusinessObject(element);
     //console.log(bObject);
     dispatch({ type: 'setBusinessObject', payload: bObject });
 
-    const { suitable } = bObject;
+    const { suitable, isGoogleSheet } = bObject;
+
     if (suitable) {
       disableAll();
       dispatch({ type: 'setIsQA', payload: true });
+    }
+
+    if (isGoogleSheet) {
+      disableAll();
+      dispatch({ type: 'setIsGS', payload: true });
+
+      if (bObject.extensionElements) return;
+
+      const moddle = modeler.get('moddle');
+      const modeling = modeler.get('modeling');
+      const extensionElements =
+        bObject.extensionElements || moddle.create('bpmn:ExtensionElements');
+
+      // Name of the handle function
+      const taskDefinition = moddle.create('yalc:taskDefinition', {
+        type: 'test3',
+      });
+
+      const ioMapping = moddle.create('yalc:ioMapping');
+      const defaultInput = moddle.create('yalc:input', {
+        source: '=_globalContext_user',
+        target: '_localContext_user',
+      });
+      const input = moddle.create('yalc:input', {
+        source: '',
+        target: '',
+      });
+      ioMapping.get('ioMapping').push(defaultInput, input);
+
+      extensionElements.get('values').push(taskDefinition, ioMapping);
+
+      modeling.updateProperties(element, {
+        extensionElements,
+      });
     }
   }, [element]);
 
@@ -153,6 +194,11 @@ export function ElementProperties({ element, modeler }) {
               <QAElementProperties element={element} modeler={modeler} />
             </AccordionContent>
           </AccordionItem>
+        )}
+        {state.isGS ? (
+          <GoogleSheetProps element={element} modeler={modeler} />
+        ) : (
+          ''
         )}
         <AccordionItem value="actions">
           <AccordionTrigger>Actions</AccordionTrigger>

@@ -8,7 +8,7 @@ import {
   BpmnPropertiesProviderModule,
 } from 'bpmn-js-properties-panel';
 import CustomModule from 'bpmn-js-custom';
-import { customModdle, gsModel } from 'bpmn-js-custom';
+import { gsModel } from 'bpmn-js-custom';
 
 export class BpmnWorkflowService extends APIService {
   constructor() {
@@ -37,7 +37,7 @@ export class BpmnWorkflowService extends APIService {
     ];
 
     const moddleExtensions = {
-      custom: customModdle[1],
+      // custom: customModdle[1],
       gs: gsModel[1]
     };
 

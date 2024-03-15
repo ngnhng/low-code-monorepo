@@ -17,26 +17,26 @@ export default class CustomPalette {
     getPaletteEntries(element) {
         const { bpmnFactory, create, elementFactory, translate } = this;
 
-        function createTask(type) {
-            return function (event) {
-                const businessObject = bpmnFactory.create(type);
+        // function createTask(type) {
+        //     return function (event) {
+        //         const businessObject = bpmnFactory.create(type);
 
-                businessObject.suitable = 50;
+        //         businessObject.suitable = 50;
 
-                const shape = elementFactory.createShape({
-                    type: type,
-                    businessObject: businessObject,
-                });
+        //         const shape = elementFactory.createShape({
+        //             type: type,
+        //             businessObject: businessObject,
+        //         });
 
-                create.start(event, shape);
-            };
-        }
+        //         create.start(event, shape);
+        //     };
+        // }
 
         function createGSTask(type) {
             return function (event) {
                 const businessObject = bpmnFactory.create(type);
 
-                businessObject.accessToken = "trole";
+                businessObject.isGoogleSheet = true;
 
                 const shape = elementFactory.createShape({
                     type: type,
@@ -48,15 +48,15 @@ export default class CustomPalette {
         }
 
         return {
-            "create.qa-task": {
-                group: "activity",
-                title: translate("Create QA Task"),
-                imageUrl: QAIcon.dataUrl,
-                action: {
-                    dragstart: createTask("bpmn:ServiceTask"),
-                    click: createTask("bpmn:ServiceTask"),
-                },
-            },
+            // "create.qa-task": {
+            //     group: "activity",
+            //     title: translate("Create QA Task"),
+            //     imageUrl: QAIcon.dataUrl,
+            //     action: {
+            //         dragstart: createTask("bpmn:ServiceTask"),
+            //         click: createTask("bpmn:ServiceTask"),
+            //     },
+            // },
             "create.gs-task": {
                 group: "activity",
                 title: translate("Create Google Sheet Task"),
