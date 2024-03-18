@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Button, Input } from '@repo/ui';
-import CreateColumnForm from 'app/[projectId]/data/_components/create-form/create-column-form';
-import React from 'react';
-import { ColumnDef, RowDef } from 'types/table-data';
-import QueryBuilderList from '../query-builder-list';
+import { Button, Input } from "@repo/ui";
+import CreateColumnForm from "app/[projectId]/data/_components/create-form/create-column-form";
+import React from "react";
+import { ColumnDef, RowDef } from "types/table-data";
+import QueryBuilderList from "../query-builder-list";
 
 interface ViewMenuBarProps {
   onCommit: any;
@@ -44,7 +44,7 @@ export const ViewMenuBar = ({
               localColumns,
               localData,
               deletedRowIds,
-              newReferenceTableId,
+              newReferenceTableId
             )
           }
         >

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 
 import {
   checkboxColumn,
@@ -9,14 +9,14 @@ import {
   dateColumn,
   DynamicDataSheetGrid,
   AddRowsComponentProps,
-} from 'react-datasheet-grid';
-import 'react-datasheet-grid/dist/style.css';
-import { Operation } from 'react-datasheet-grid/dist/types';
-import { ColumnType, DataTable, RowDef, ColumnDef } from 'types/table-data';
+} from "react-datasheet-grid";
+import "react-datasheet-grid/dist/style.css";
+import { Operation } from "react-datasheet-grid/dist/types";
+import { ColumnType, DataTable, RowDef, ColumnDef } from "types/table-data";
 
-import { ViewMenuBar } from './view-menu-bar';
-import RelationRecords from '../relation-record/relation-records';
-import { Button } from '@repo/ui';
+import { ViewMenuBar } from "./view-menu-bar";
+import RelationRecords from "../relation-record/relation-records";
+import { Button } from "@repo/ui";
 
 type CommitFunc = (
   // eslint-disable-next-line no-unused-vars
@@ -26,7 +26,7 @@ type CommitFunc = (
   // eslint-disable-next-line no-unused-vars
   deletedRowIds: Set<number>,
   // eslint-disable-next-line no-unused-vars
-  newReferenceTableId: any,
+  newReferenceTableId: any
 ) => void;
 
 type TableEditorProps = {
@@ -49,7 +49,7 @@ export const TableEditor = ({
 }: TableEditorProps) => {
   const [localData, setLocalData] = useState<RowDef[]>(tableData.rows);
   const [localColumns, setLocalColumns] = useState<ColumnDef[]>(
-    tableData.columns,
+    tableData.columns
   );
   const [fields, setFields] = useState<Column[]>([]);
   const [maxIndex, setMaxIndex] = useState(tableData.maxIndex);
@@ -65,8 +65,8 @@ export const TableEditor = ({
 
   useEffect(() => {
     const createColumn = (column) => {
-      const isLinkType = column.type === 'link';
-      const isId = column.id === 'id';
+      const isLinkType = column.type === "link";
+      const isId = column.id === "id";
       const colType = isLinkType
         ? colTypeMapper(column.type, column, tableId)
         : colTypeMapper(column.type);
@@ -94,13 +94,13 @@ export const TableEditor = ({
   const handleChange = (value: RowDef[], ops: Operation[]) => {
     for (const op of ops) {
       switch (op.type) {
-        case 'CREATE': {
+        case "CREATE": {
           for (const row of value.slice(op.fromRowIndex, op.toRowIndex)) {
             createdRowIds.add(row.id);
           }
           break;
         }
-        case 'UPDATE': {
+        case "UPDATE": {
           for (const row of value.slice(op.fromRowIndex, op.toRowIndex)) {
             if (!createdRowIds.has(row.id) && !deletedRowIds.has(row.id)) {
               updatedRowIds.add(row.id);
@@ -108,7 +108,7 @@ export const TableEditor = ({
           }
           break;
         }
-        case 'DELETE': {
+        case "DELETE": {
           for (const [, { id }] of localData
             .slice(op.fromRowIndex, op.toRowIndex)
             .entries()) {
@@ -124,7 +124,7 @@ export const TableEditor = ({
           value.splice(
             op.fromRowIndex,
             op.toRowIndex - op.fromRowIndex,
-            ...localData.slice(op.fromRowIndex, op.toRowIndex + 1),
+            ...localData.slice(op.fromRowIndex, op.toRowIndex + 1)
           );
 
           break;
@@ -165,7 +165,7 @@ export const TableEditor = ({
         <DynamicDataSheetGrid
           value={localData}
           columns={fields}
-          rowKey={'id'}
+          rowKey={"id"}
           height={700}
           headerRowHeight={50}
           rowHeight={100}
@@ -177,7 +177,7 @@ export const TableEditor = ({
                 localColumns.map((col) => [
                   col.id,
                   returnDefaultValue(col.type, col.referenceTable),
-                ]),
+                ])
               ),
             };
 
@@ -196,21 +196,21 @@ export const TableEditor = ({
           }}
           rowClassName={({ rowData }) => {
             if (deletedRowIds.has(rowData.id)) {
-              return 'row-deleted';
+              return "row-deleted";
             }
             if (createdRowIds.has(rowData.id)) {
-              return 'row-created';
+              return "row-created";
             }
             if (updatedRowIds.has(rowData.id)) {
-              return 'row-updated';
+              return "row-updated";
             }
           }}
           cellClassName={({ columnId }) => {
-            if (createdColumn.has(columnId || '')) {
-              return 'cell-created';
+            if (createdColumn.has(columnId || "")) {
+              return "cell-created";
             }
-            if (deletedColumn.has(columnId || '')) {
-              return 'cell-deleted';
+            if (deletedColumn.has(columnId || "")) {
+              return "cell-deleted";
             }
           }}
           addRowsComponent={(props) => <AddRows {...props} table={tableData} />}
@@ -280,7 +280,7 @@ const LinkCell = ({ rowData, columnData }) => {
         columnData={columnData}
       />
       <span>
-        {numberOfRecords} records -{' '}
+        {numberOfRecords} records -{" "}
         <span className="text-emerald-500">{columnData.referenceTable}</span>
       </span>
     </div>
@@ -292,7 +292,7 @@ const LinkColumnCell = (columnData, tableId) => {
 
   return {
     component: LinkCell,
-    deleteValue: () => '',
+    deleteValue: () => "",
     copyValue: ({ rowData }) => rowData,
     pasteValue: ({ value }) => value,
     columnData: { ...columnData, tableId: tableId },
@@ -302,22 +302,22 @@ const LinkColumnCell = (columnData, tableId) => {
 const colTypeMapper = (
   type: ColumnType,
   columnData?: any,
-  tableId?: string,
+  tableId?: string
 ) => {
   switch (type) {
-    case 'text': {
+    case "text": {
       return textColumn;
     }
-    case 'number': {
+    case "number": {
       return intColumn;
     }
-    case 'boolean': {
+    case "boolean": {
       return checkboxColumn;
     }
-    case 'link': {
+    case "link": {
       return LinkColumnCell(columnData, tableId);
     }
-    case 'date': {
+    case "date": {
       return dateColumn;
     }
     default: {
@@ -341,37 +341,37 @@ function recreateNestedObjects(obj) {
     Object.entries(obj).map(([key, value]) => {
       if (Array.isArray(value)) {
         return [key, value.map((item) => recreateNestedObjects(item))];
-      } else if (typeof value === 'object' && value !== null) {
+      } else if (typeof value === "object" && value !== null) {
         return [key, recreateNestedObjects(value)];
       } else {
         return [key, value];
       }
-    }),
+    })
   );
 }
 
 function returnDefaultValue(type: ColumnType, referenceTable?: string) {
   switch (type) {
-    case 'text': {
-      return '';
+    case "text": {
+      return "";
     }
-    case 'number': {
+    case "number": {
       return;
     }
-    case 'boolean': {
+    case "boolean": {
       return false;
     }
-    case 'link': {
+    case "link": {
       return {
         referenceTableId: referenceTable,
         referenceRecords: [],
       };
     }
-    case 'date': {
+    case "date": {
       return;
     }
     default: {
-      return '';
+      return "";
     }
   }
 }
