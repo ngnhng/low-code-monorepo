@@ -116,15 +116,12 @@ export class TableDataStore implements ITableDataStore {
   }
 
   fetchTables = async () => {
-    console.log("ProjectID:" + this.rootStore.projectData.currentProjectId)
-
     try {
       const response = await this.tableDataService.getTables({
         projectId: this.rootStore.projectData.currentProjectId,
       })
 
       if (response) {
-        // validate
         return response;
       } else {
         throw new Error('Table data not found');
@@ -133,6 +130,5 @@ export class TableDataStore implements ITableDataStore {
       console.log(error);
       throw error;
     }
-
   };
 }

@@ -30,12 +30,12 @@ interface TableItem {
   referenceTables?: string[];
 }
 
-interface TableOperation {
-  type: 'update' | 'insert' | 'delete';
-  row: number;
-  column: number;
-  value: any;
-}
+// interface TableOperation {
+//   type: 'update' | 'insert' | 'delete';
+//   row: number;
+//   column: number;
+//   value: any;
+// }
 
 interface DataTable {
   columns: ColumnDef[] | [];
@@ -48,7 +48,7 @@ interface DataTable {
   maxIndex: number;
 }
 
-type ColumnType = 'date' | 'text' | 'number' | 'boolean';
+type ColumnType = 'date' | 'text' | 'number' | 'boolean' | LinkColumn | 'link';
 
 interface ColumnDef {
   id: string;
@@ -57,6 +57,7 @@ interface ColumnDef {
   isActive: boolean;
   isPrimaryKey: boolean;
   isForeignKey: boolean;
+  referenceTable?: string;
   foreignKeyId?: string;
   defaultValue?: string;
 }
@@ -65,3 +66,8 @@ interface RowDef {
   id: number;
   [key: string]: any;
 }
+
+type LinkColumn = {
+  referenceTableId: string;
+  referenceRecords: string[]; // recordId:
+};

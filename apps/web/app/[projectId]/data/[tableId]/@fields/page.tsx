@@ -2,8 +2,7 @@
 
 import useSWR from 'swr';
 import { useMobxStore } from 'lib/mobx/store-provider';
-// import { ColumnDef, DataTable } from 'types/table-data';
-import { useEffect  } from 'react';
+import { useEffect } from 'react';
 
 import ReactFlow, {
   useEdgesState,
@@ -11,11 +10,10 @@ import ReactFlow, {
   Background,
   Controls,
   Handle,
-  Position
+  Position,
 } from 'reactflow';
 
 import 'reactflow/dist/style.css';
-// import { table } from 'console';
 
 const nodeTypes = {
   entity: EntityNode,
@@ -27,27 +25,17 @@ export default function Page({ params: { tableId } }) {
     projectData: { currentProjectId },
   } = useMobxStore();
 
-  // const { data, isLoading, error, mutate } = useSWR<DataTable>(
-  //   `TABLE_DATA-${currentProjectId}-${tableId}`,
-  //   () =>
-  //     fetchTableData({
-  //       tableId,
-  //       ...fetchAppliedQueries(tableId),
-  //     }),
-  // );
-
-  const { data, isLoading, } = useSWR(
+  const { data, isLoading } = useSWR(
     `TABLE_DATA-${currentProjectId}-${tableId}-relations`,
     () => fetchTableRelations(tableId),
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges ] = useEdgesState([]);
+  const [edges, setEdges] = useEdgesState([]);
 
   useEffect(() => {
-    
-    const displayNodes: any[] = []
-    const displayEdges: any[] = []
+    const displayNodes: any[] = [];
+    const displayEdges: any[] = [];
 
     for (const d in data) {
       const newNodes = [
@@ -70,7 +58,7 @@ export default function Page({ params: { tableId } }) {
               id: `${data[i]?.id}-${data[j]?.id}`,
               source: data[i]?.id,
               target: data[j]?.id,
-            }
+            };
 
             displayEdges.push(edge);
           }
@@ -81,11 +69,6 @@ export default function Page({ params: { tableId } }) {
     setNodes(displayNodes);
     setEdges(displayEdges);
   }, [data, isLoading]);
-
-  // const onConnect = useCallback(
-  //   (params) => setEdges((eds) => addEdge(params, eds)),
-  //   [setEdges],
-  // );
 
   if (!data || isLoading) {
     return <div>Loading...</div>;
@@ -98,8 +81,6 @@ export default function Page({ params: { tableId } }) {
         nodeTypes={nodeTypes}
         edges={edges}
         onNodesChange={onNodesChange}
-        // onEdgesChange={onEdgesChange}
-        // onConnect={onConnect}
       >
         <Background />
         <Controls />
@@ -109,29 +90,27 @@ export default function Page({ params: { tableId } }) {
 }
 
 function EntityNode({ data }: { data }) {
-
   return (
     <div>
-      {/* {data.isSource ? 
-        <Handle type="source" position={Position.Right} className="!bg-teal-500" /> :
-        <Handle type="target" position={Position.Left} className="!bg-teal-500" />
-      } */}
-      <Handle type="source" position={Position.Right}   className="!bg-teal-500" /> :
+      <Handle
+        type="source"
+        position={Position.Right}
+        className="!bg-teal-500"
+      />{' '}
+      :
       <Handle type="target" position={Position.Left} className="!bg-teal-500" />
-      <table className='bg-accent rounded-custom'>
-        <thead className='bg-primary text-white border border-solid border-blue-700'>
+      <table className="bg-accent rounded-custom">
+        <thead className="bg-primary text-white border border-solid border-blue-700">
           <tr>
-            <th className='p-4'>{data.fields.name}</th>
+            <th className="p-4">{data.fields.name}</th>
           </tr>
         </thead>
         <tbody>
-          {
-            data.fields.columns.map((field, index) => (
-              <tr key={index} className='border border-solid border-blue-700'>
-                <td className='p-2'>{field.label}</td>
-              </tr>
-            ))
-          }
+          {data.fields.columns.map((field, index) => (
+            <tr key={index} className="border border-solid border-blue-700">
+              <td className="p-2">{field.label}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
