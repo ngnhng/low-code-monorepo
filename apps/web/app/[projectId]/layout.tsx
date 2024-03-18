@@ -10,7 +10,6 @@ import { NavigationMenuProps as NavigationMenuProperties } from "../../types/nav
 import { UserAuthWrapper } from "../../lib/wrappers/user-auth-wrapper";
 import { usePathname } from "next/navigation";
 import { Brush, Database, Workflow, Settings2 } from "lucide-react";
-// eslint-disable-next-line no-unused-vars
 import { useMobxStore } from "lib/mobx/store-provider";
 
 function useNavigation(params: { projectId: string }) {
@@ -50,6 +49,14 @@ export default function Layout({
   children: React.ReactNode;
   params: { projectId: string };
 }>): JSX.Element {
+  const { projectId } = params;
+  const {
+    projectData: { setCurrentProjectId },
+  } = useMobxStore();
+
+  if (projectId) {
+    setCurrentProjectId(projectId);
+  }
   return <>{renderContent(useNavigation(params), children)}</>;
 }
 
@@ -59,15 +66,13 @@ function renderContent(
 ) {
   const pathName = usePathname();
 
-  console.log("Pathname:", pathName);
-
   return (
     <div className="w-full h-full flex flex-col justify-start items-center overflow-hidden">
       <Header headerTitle="Project Name" />
       <div className="flex-1 flex w-full overflow-hidden">
         <div className="w-full h-full flex px-[50px] py-[20px] gap-2.5">
           <Sidebar navigation={navigations} selectedPage={pathName ?? ""} />
-          <div className="flex-1">{children}</div>
+          <div className="flex-1 overflow-auto">{children}</div>
         </div>
       </div>
     </div>

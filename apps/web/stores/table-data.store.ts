@@ -120,7 +120,6 @@ export class TableDataStore implements ITableDataStore {
       })
 
       if (response) {
-        // validate
         return response;
       } else {
         throw new Error('Table data not found');
@@ -129,6 +128,5 @@ export class TableDataStore implements ITableDataStore {
       console.log(error);
       throw error;
     }
-
   };
 }

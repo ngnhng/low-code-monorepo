@@ -17,36 +17,30 @@ import {
   Separator,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   CardButtonWithIcon,
 } from '@repo/ui';
 
 import useSWR from 'swr';
 
-import { Database, Download, PlusSquare, Table, User } from 'react-feather';
-import {
-  DataTable,
-  columns,
-} from './_components/table-list/table-list';
+import { Database, Download, Table, User } from 'react-feather';
+import { DataTable, columns } from './_components/table-list/table-list';
 
 import DBList from './_components/db-list/db-list';
+import React from 'react';
 
 import { TextWithIcon } from 'components/text/text-with-icon';
 import { OptionDialog } from './_components/table-list/options-cards';
 import { useMobxStore } from '../../../lib/mobx/store-provider';
-import React, { ReactComponentElement, useEffect, useRef } from 'react';
-import { table } from 'console';
 import CreateTableForm from './_components/create-form/create-table-form';
 
 export default function Page() {
   const {
     projectData: { currentProjectId },
-    tableData: { fetchTables }
+    tableData: { fetchTables },
   } = useMobxStore();
 
-  const { data, isLoading, error, mutate } = useSWR(
-    `TABLE_DATA-${currentProjectId}-all`,
-    () => fetchTables(),
+  const { data, isLoading } = useSWR(`TABLE_DATA-${currentProjectId}-all`, () =>
+    fetchTables(),
   );
 
   if (!data || isLoading) {
@@ -55,36 +49,14 @@ export default function Page() {
 
   return (
     <>
-      <DatabaseTabs data={data} columns={columns} projectId={currentProjectId}/>
+      <DatabaseTabs
+        data={data}
+        columns={columns}
+        projectId={currentProjectId}
+      />
     </>
   );
 }
-
-const ButtonWithIcon = ({ children, icon, ...props }) => (
-  <Button className="flex items-center space-x-2" {...props}>
-    {icon}
-    {children}
-  </Button>
-);
-
-//const CardButtonWithIcon = React.forwardRef<
-//HTMLDivElement,
-//React.HTMLAttributes<HTMLDivElement>>({ children, icon, onClick, ...props }, ref) => (
-//  <button
-//    onClick={onClick}
-//    className="rounded-custom transition-colors duration-200"
-//  >
-//    <Card
-//      className="flex items-start space-x-2 w-64 h-32 hover:bg-gray-200"
-//      {...props}
-//    >
-//      <CardHeader className="flex flex-col space-y-4">
-//        <>{icon}</>
-//        <CardDescription>{children}</CardDescription>
-//      </CardHeader>
-//    </Card>
-//  </button>
-//);
 
 const HorizontalList = ({ children, ...props }) => (
   <ul className="flex space-x-4" {...props}>
@@ -92,8 +64,7 @@ const HorizontalList = ({ children, ...props }) => (
   </ul>
 );
 
-export function DatabaseTabs({data, columns, projectId}) {
-
+export function DatabaseTabs({ data, columns, projectId }) {
   // const tableRef = useRef<ReactComponentElement>(null);
 
   return (
@@ -115,7 +86,7 @@ export function DatabaseTabs({data, columns, projectId}) {
       <TabsContent value="tables">
         <div className="container mx-auto">
           <HorizontalList>
-            <CreateTableForm projectId={projectId}/>
+            <CreateTableForm projectId={projectId} />
 
             <CardButtonWithIcon
               className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
@@ -125,13 +96,15 @@ export function DatabaseTabs({data, columns, projectId}) {
               <span className="text-xl font-light">Import</span>
             </CardButtonWithIcon>
             <OptionDialog
-              trigger={(<CardButtonWithIcon
-                className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
-                icon={<Database size={40} />}
-                onClick={() => console.log('Card')}
-              >
-                <span className="text-xl font-light">Add Data Source</span>
-              </CardButtonWithIcon>)}
+              trigger={
+                <CardButtonWithIcon
+                  className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
+                  icon={<Database size={40} />}
+                  onClick={() => console.log('Card')}
+                >
+                  <span className="text-xl font-light">Add Data Source</span>
+                </CardButtonWithIcon>
+              }
             >
               <DialogHeader>
                 <DialogTitle>Databases</DialogTitle>
@@ -141,7 +114,7 @@ export function DatabaseTabs({data, columns, projectId}) {
           </HorizontalList>
 
           <Separator className="my-4" />
-          
+
           <DataTable columns={columns} data={data} />
         </div>
       </TabsContent>
