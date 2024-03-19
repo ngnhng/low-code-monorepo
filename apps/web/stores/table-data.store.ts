@@ -95,12 +95,12 @@ export class TableDataStore implements ITableDataStore {
     };
   };
 
-  fetchTableRelations = async(tableId) => {
+  fetchTableRelations = async (tableId: string) => {
     try {
       const response = await this.tableDataService.getTableRelations({
         projectId: this.rootStore.projectData.currentProjectId,
         tableId: tableId,
-      })
+      });
 
       if (response) {
         // validate
@@ -108,18 +108,17 @@ export class TableDataStore implements ITableDataStore {
       } else {
         throw new Error('Table data not found');
       }
-
     } catch (error) {
       console.log(error);
       throw error;
     }
-  }
+  };
 
   fetchTables = async () => {
     try {
       const response = await this.tableDataService.getTables({
         projectId: this.rootStore.projectData.currentProjectId,
-      })
+      });
 
       if (response) {
         return response;
@@ -129,6 +128,19 @@ export class TableDataStore implements ITableDataStore {
     } catch (error) {
       console.log(error);
       throw error;
+    }
+  };
+
+  fetchTableRecords = async (tableId: string) => {
+    try {
+      const response = await this.tableDataService.getTableRecords(
+        this.rootStore.projectData.currentProjectId,
+        tableId,
+      );
+
+      return response;
+    } catch {
+      console.log('error fetching table records');
     }
   };
 }

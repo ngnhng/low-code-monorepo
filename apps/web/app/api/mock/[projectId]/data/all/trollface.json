@@ -35,22 +35,40 @@
         "foreignKeyId": ""
       },
       {
-        "id": "post-users",
-        "label": "post-users",
+        "id": "number",
+        "label": "Number",
+        "type": "number",
+        "isActive": true,
+        "isPrimaryKey": false,
+        "isForeignKey": false,
+        "foreignKeyId": ""
+      },
+      {
+        "id": "users-posts",
+        "label": "Linked Posts",
+        "type": "link",
+        "isActive": true,
+        "isPrimaryKey": false,
+        "isForeignKey": false,
+        "referenceTable": "posts",
+        "foreignKeyId": "users-posts"
+      },
+      {
+        "id": "website2-users",
+        "label": "website2-users",
         "type": "link",
         "isActive": true,
         "isPrimaryKey": false,
         "isForeignKey": true,
-        "foreignKeyId": "post-users"
+        "foreignKeyId": "website2-users",
+        "referenceTable": "website2"
       }
     ],
-    "referenceTables": [
-      "post"
-    ]
+    "referenceTables": ["posts"]
   },
   {
-    "id": "post",
-    "name": "Post",
+    "id": "posts",
+    "name": "Posts",
     "source": "Source 1",
     "created": "2021-08-01",
     "updated": "2021-08-01",
@@ -75,84 +93,16 @@
         "foreignKeyId": ""
       },
       {
-        "id": "userid",
-        "label": "UserId",
-        "type": "text",
+        "id": "users-posts",
+        "label": "users-posts",
+        "type": "link",
         "isActive": true,
         "isPrimaryKey": false,
-        "isForeignKey": true,
-        "foreignKeyId": "post-users"
+        "referenceTable": "users",
+        "isForeignKey": false,
+        "foreignKeyId": "users-posts"
       }
     ],
-    "referenceTables": [
-      "users"
-    ]
-  },
-  {
-    "id": "site",
-    "name": "Site",
-    "source": "Source 1",
-    "created": "2021-08-01",
-    "updated": "2021-08-01",
-    "status": "Active",
-    "columns": [
-      {
-        "id": "district",
-        "label": "District",
-        "type": "text",
-        "isActive": true,
-        "isPrimaryKey": false,
-        "isForeignKey": false,
-        "foreignKeyId": ""
-      },
-      {
-        "id": "city",
-        "label": "City",
-        "type": "text",
-        "isActive": true,
-        "isPrimaryKey": false,
-        "isForeignKey": false,
-        "foreignKeyId": ""
-      },
-      {
-        "id": "country",
-        "label": "Country",
-        "type": "text",
-        "isActive": true,
-        "isPrimaryKey": false,
-        "isForeignKey": false,
-        "foreignKeyId": ""
-      }
-    ],
-    "referenceTables": []
-  },
-  {
-    "id": "demo",
-    "name": "Demo",
-    "source": "Source 1",
-    "created": "2021-08-01",
-    "updated": "2021-08-01",
-    "status": "Active",
-    "columns": [
-      {
-        "id": "username",
-        "label": "Username",
-        "type": "text",
-        "isActive": true,
-        "isPrimaryKey": false,
-        "isForeignKey": false,
-        "foreignKeyId": ""
-      },
-      {
-        "id": "email",
-        "label": "Email",
-        "type": "text",
-        "isActive": true,
-        "isPrimaryKey": false,
-        "isForeignKey": false,
-        "foreignKeyId": ""
-      }
-    ],
-    "referenceTables": []
+    "referenceTables": ["users"]
   }
 ]

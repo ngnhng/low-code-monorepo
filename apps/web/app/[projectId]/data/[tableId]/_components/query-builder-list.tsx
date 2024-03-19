@@ -24,9 +24,11 @@ const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
 
 interface QueryBuilderListProps {
   columns: any;
+  tableId: string;
 }
 
-const QueryBuilderList = ({ columns }: QueryBuilderListProps) => {
+// eslint-disable-next-line no-unused-vars
+const QueryBuilderList = ({ tableId }: QueryBuilderListProps) => {
   const [query, setQuery] = useState(initialQuery);
 
   const {
@@ -42,10 +44,14 @@ const QueryBuilderList = ({ columns }: QueryBuilderListProps) => {
     return <div>Loading...</div>;
   }
 
-  const queryFields: Field[] = columns.map((col) => ({
-    name: col.id,
-    label: col.label,
-  }));
+  const transformData = data.map((table) => {
+    return table.columns.map((column) => ({
+      name: `${table.id}.${column.id}`,
+      label: `${table.id} - ${column.id}`,
+    }));
+  });
+
+  const queryFields: Field[] = transformData.flat();
 
   // eslint-disable-next-line unicorn/consistent-function-scoping
   const onSelect = (event: Event) => {

@@ -56,6 +56,7 @@ const CreateColumnForm = ({
   const [selectedTable, setSelectedTable] = useState<any>();
   // eslint-disable-next-line no-unused-vars
   const [columnOfTable, setColumnOfTable] = useState<any[]>();
+  const [type, setType] = useState<string>('');
 
   const {
     tableData: { fetchTables },
@@ -84,6 +85,8 @@ const CreateColumnForm = ({
   }, [selectedTable]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    setType('');
+
     const data: ColumnDef = {
       id: values.columnname.replaceAll(/\s/g, '').toLowerCase(),
       label: values.columnname,
@@ -194,7 +197,10 @@ const CreateColumnForm = ({
                 <FormItem>
                   <FormLabel>Type</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
+                    onValueChange={(e) => {
+                      field.onChange(e);
+                      setType(e);
+                    }}
                     defaultValue={field.value}
                   >
                     <FormControl>
@@ -229,6 +235,7 @@ const CreateColumnForm = ({
                       setSelectedTable(table);
                       return field.onChange(value);
                     }}
+                    disabled={type !== 'link'}
                   >
                     <FormControl>
                       <SelectTrigger>

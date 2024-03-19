@@ -24,7 +24,7 @@ interface ViewMenuBarProps {
 export const ViewMenuBar = ({
   onCommit,
   discardData,
-  setSearch,
+  // setSearch,
   setLocalColumns,
   setLocalData,
   deletedRowIds,
@@ -32,7 +32,7 @@ export const ViewMenuBar = ({
   localData,
   tableId,
   setNewReferenceTableId,
-  // newReferenceTableId,
+  newReferenceTableId,
 }: ViewMenuBarProps) => {
   return (
     <div className="flex items-center justify-between w-full px-4">
@@ -44,14 +44,14 @@ export const ViewMenuBar = ({
               localColumns,
               localData,
               deletedRowIds,
-              // newReferenceTableId,
+              newReferenceTableId,
             )
           }
         >
           Commit
         </Button>
         <Button onClick={discardData}>Discard</Button>
-        <QueryBuilderList columns={localColumns} />
+        <QueryBuilderList columns={localColumns} tableId={tableId} />
       </div>
 
       <div className="flex flex-end space-x-4 pb-2">
@@ -59,7 +59,7 @@ export const ViewMenuBar = ({
           <Input
             type="email"
             placeholder="Find Present ..."
-            onChange={(e) => setSearch!(e.target.value)}
+            // onChange={(e) => setSearch!(e.target.value)}
           />
         </div>
 

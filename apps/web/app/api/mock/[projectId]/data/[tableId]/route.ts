@@ -1,10 +1,10 @@
 import fs from 'node:fs';
-import fsa  from 'node:fs/promises';
+import fsa from 'node:fs/promises';
 import path from 'node:path';
 import { faker } from '@faker-js/faker';
 import { NextRequest } from 'next/server';
 import { ColumnDef, TableItem } from 'types/table-data';
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 // import * as _ from 'lodash';
 
 // * User Column
@@ -93,7 +93,7 @@ export const addresses: ColumnDef[] = [
     isForeignKey: true,
     foreignKeyId: 'id',
   },
-]
+];
 
 export const posts: ColumnDef[] = [
   {
@@ -114,19 +114,19 @@ export const posts: ColumnDef[] = [
     isForeignKey: false,
     foreignKeyId: '',
   },
-]
+];
 
 export function createRandomAddresses() {
   return {
     city: faker.location.city(),
     country: faker.location.country(),
-  }
+  };
 }
 
 export function createRandomPosts() {
   return {
     title: faker.lorem.sentence(),
-  }
+  };
 }
 
 export function createRandomUser() {
@@ -143,7 +143,7 @@ export function generateMockAddresses(size: number) {
   for (let i = 1; i < size; i++) {
     data.push({
       id: i,
-    ...createRandomAddresses(),
+      ...createRandomAddresses(),
     });
   }
 
@@ -155,7 +155,7 @@ export function generateMockPosts(size: number) {
   for (let i = 1; i < size; i++) {
     data.push({
       id: i,
-  ...createRandomPosts(),
+      ...createRandomPosts(),
     });
   }
 
@@ -176,7 +176,7 @@ export function generateMockData(size: number): any[] {
 
 export async function GET(
   request: NextRequest,
-  { params }:  { params: {projectId: string, tableId: string}}
+  { params }: { params: { projectId: string; tableId: string } },
 ) {
   const searchParams = request.nextUrl.searchParams;
   const page = searchParams.get('page') || 0;
@@ -196,14 +196,14 @@ export async function GET(
 
       const data: TableItem[] = JSON.parse(await fsa.readFile(dbPath, 'utf8'));
 
-      const tableData = data.find(table => table.id === params.tableId);
+      const tableData = data.find((table) => table.id === params.tableId);
 
       if (!tableData) {
-        return new NextResponse("NO TABLE FOUND", {
+        return new NextResponse('NO TABLE FOUND', {
           status: 404,
         });
       }
-      
+
       const response = {
         data: {
           columns: tableData.columns,
@@ -221,7 +221,7 @@ export async function GET(
       });
     } catch (error) {
       console.log(error);
-      return new NextResponse("", { status: 500 });
+      return new NextResponse('', { status: 500 });
     }
   }
 
@@ -235,12 +235,22 @@ export async function GET(
 
     const projectTables = JSON.parse(await fsa.readFile(dbPath, 'utf8'));
 
-    const requestTable = projectTables.find(table => table.id === params.tableId)
+    const requestTable = projectTables.find(
+      (table) => table.id === params.tableId,
+    );
 
     const response = {
       data: {
-        columns: requestTable ? (requestTable.columns.length > data.columns.length ? requestTable.columns : data.columns) : data.columns,
-        rows: data.rows.length > 30 ? data.rows.slice(Number(page) * Number(limit), Number(limit)) : data.rows,
+        columns: requestTable
+          ? // eslint-disable-next-line unicorn/no-nested-ternary
+            requestTable.columns.length > data.columns.length
+            ? requestTable.columns
+            : data.columns
+          : data.columns,
+        rows:
+          data.rows.length > 30
+            ? data.rows.slice(Number(page) * Number(limit), Number(limit))
+            : data.rows,
         maxIndex: data.rows.length,
       },
       meta: {
@@ -252,10 +262,9 @@ export async function GET(
     return new Response(JSON.stringify(response), {
       headers: { 'content-type': 'application/json' },
     });
-
   } catch (error) {
     console.log(error);
-    return new NextResponse("", { status: 500 });
+    return new NextResponse('', { status: 500 });
   }
   // --------------------------------- CURRENT VERSIONS --------------------------------
   // const searchParams = request.nextUrl.searchParams;
@@ -276,7 +285,7 @@ export async function GET(
   //   cols = columns
   // }
 
-  // if (params.tableId === "1") { 
+  // if (params.tableId === "1") {
   //   data = generateMockAddresses(100);
   //   cols = addresses;
   // }
@@ -285,8 +294,6 @@ export async function GET(
   //   data = generateMockPosts(100);
   //   cols = posts;
   // }
-
-  
 
   // const response = {
   //   data: {
@@ -308,13 +315,27 @@ export async function GET(
 const translateData = (data): TableItem => {
   const tableId = data.tablename.replaceAll(/\s/g, '').toLowerCase();
   const referenceTables: string[] = [];
-  const columns =  data.requiredFields.map(item => {
-    
-    const isForeignKey = item.referenceTable !== "";
-    const foreignKeyId = item.referenceTable ? `${tableId}-${item.referenceTable}` : "";
+  const columns = data.requiredFields.map((item) => {
+    const isForeignKey = item.referenceTable !== '';
+    const foreignKeyId = item.referenceTable
+      ? `${tableId}-${item.referenceTable}`
+      : '';
 
-    if (item.referenceTable) referenceTables.push(item.referenceTable as string)
-    
+    if (item.referenceTable) {
+      referenceTables.push(item.referenceTable as string);
+
+      return {
+        id: item.id.replaceAll(/\s/g, '').toLowerCase(),
+        label: item.id,
+        type: item.type,
+        isActive: true,
+        isPrimaryKey: false,
+        isForeignKey: isForeignKey,
+        foreignKeyId: foreignKeyId,
+        referenceTable: item.referenceTable,
+      };
+    }
+
     return {
       id: item.id.replaceAll(/\s/g, '').toLowerCase(),
       label: item.id,
@@ -323,8 +344,8 @@ const translateData = (data): TableItem => {
       isPrimaryKey: false,
       isForeignKey: isForeignKey,
       foreignKeyId: foreignKeyId,
-    }
-  })
+    };
+  });
 
   return {
     id: tableId as string,
@@ -335,12 +356,12 @@ const translateData = (data): TableItem => {
     status: 'Active',
     columns: columns,
     referenceTables: referenceTables,
-  }
-}
+  };
+};
 
 export async function POST(
   request: Request,
-  { params }:  { params: {projectId: string, tableId: string}}
+  { params }: { params: { projectId: string; tableId: string } },
 ) {
   const databasePath = path.join(
     process.cwd(),
@@ -359,18 +380,21 @@ export async function POST(
 
     for (const column of data.requiredFields) {
       if (column.referenceTable) {
-        const referenceTable = projectTables.find(table => table.id === column.referenceTable)
+        const referenceTable = projectTables.find(
+          (table) => table.id === column.referenceTable,
+        );
 
         if (referenceTable) {
           referenceTable.columns.push({
             id: `${realData.id}-${referenceTable.id}`,
             label: `${realData.id}-${referenceTable.id}`,
-            type: 'text',
+            type: column.type,
             isActive: true,
             isPrimaryKey: false,
             isForeignKey: true,
             foreignKeyId: `${realData.id}-${referenceTable.id}`,
-          })
+            referenceTable: params.tableId,
+          });
 
           referenceTable.referenceTables.push(realData.id);
         }
@@ -403,16 +427,16 @@ export async function POST(
 
     fs.writeFile(databasePath, dataToWrite, (err) => {
       if (err) {
-          console.log('Error writing file:', err);
+        console.log('Error writing file:', err);
       } else {
-          console.log('Successfully wrote file');
+        console.log('Successfully wrote file');
       }
     });
 
-    return NextResponse.json(dataToWrite, {status: 200});
+    return NextResponse.json(dataToWrite, { status: 200 });
   } catch (error) {
     console.log(error);
-    return new NextResponse("", { status: 500 });
+    return new NextResponse('', { status: 500 });
   }
 
   // try {
@@ -436,7 +460,7 @@ export async function POST(
 
 export async function PUT(
   request: Request,
-  { params }:  { params: {projectId: string, tableId: string}}
+  { params }: { params: { projectId: string; tableId: string } },
 ) {
   const databasePath = path.join(
     process.cwd(),
@@ -452,7 +476,7 @@ export async function PUT(
 
   const { data, newReferenceTableId } = await request.json();
 
-  console.log("DATA POSTED", data);
+  console.log('DATA POSTED', data);
 
   try {
     const dataToWrite = JSON.stringify(data);
@@ -461,10 +485,17 @@ export async function PUT(
 
     if (newReferenceTableId.length > 0) {
       for (const tableId of newReferenceTableId) {
-        const referenceTable = projectTables.find(table => table.id === tableId)
-        const requestTable = projectTables.find(table => table.id === params.tableId);
+        const referenceTable = projectTables.find(
+          (table) => table.id === tableId,
+        );
+        const requestTable = projectTables.find(
+          (table) => table.id === params.tableId,
+        );
 
-        const { id, label, type } = data.columns.find(column => column.foreignKeyId === `${params.tableId}-${referenceTable.id}`);
+        const { id, label, type } = data.columns.find(
+          (column) =>
+            column.foreignKeyId === `${params.tableId}-${referenceTable.id}`,
+        );
         console.log(id, label, type);
 
         if (referenceTable) {
@@ -476,7 +507,7 @@ export async function PUT(
             isPrimaryKey: false,
             isForeignKey: true,
             foreignKeyId: `${params.tableId}-${referenceTable.id}`,
-          })
+          });
 
           requestTable.columns.push({
             id: `${id}`,
@@ -486,7 +517,7 @@ export async function PUT(
             isPrimaryKey: false,
             isForeignKey: true,
             foreignKeyId: `${params.tableId}-${referenceTable.id}`,
-          })
+          });
 
           requestTable.referenceTables.push(tableId);
           referenceTable.referenceTables.push(params.tableId);
@@ -524,17 +555,17 @@ export async function PUT(
       //     requestTable.referenceTables.push(tableId);
       //     referenceTable.referenceTables.push(params.tableId);
       //   }
-      // }) 
+      // })
       const dataToUpdate = JSON.stringify(projectTables);
 
       fs.writeFile(tablesPath, dataToUpdate, (err) => {
         if (err) {
-            console.log('Error writing file:', err);
+          console.log('Error writing file:', err);
         } else {
-            console.log('Successfully wrote file');
+          console.log('Successfully wrote file');
         }
       });
-    } 
+    }
     // else {
     //   console.log(typeof data.columns, data.columns)
     //   const requestTable = projectTables.find(table => table.id === params.tableId);
@@ -561,20 +592,19 @@ export async function PUT(
     //   });
     // }
 
-    // console.log(_.isEqual(requestTable.columns, data.columns))    
+    // console.log(_.isEqual(requestTable.columns, data.columns))
 
     fs.writeFile(databasePath, dataToWrite, (err) => {
       if (err) {
-          console.log('Error writing file:', err);
+        console.log('Error writing file:', err);
       } else {
-          console.log('Successfully wrote file');
+        console.log('Successfully wrote file');
       }
     });
 
     return NextResponse.json(dataToWrite);
-
   } catch {
-    return new NextResponse("Something went wrong!", {
+    return new NextResponse('Something went wrong!', {
       status: 500,
     });
   }

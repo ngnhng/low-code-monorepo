@@ -37,6 +37,7 @@ interface TableEditorProps {
     localColumns: ColumnDef[],
     localData: RowDef[],
     deletedRowIds: Set<number>,
+    newReferenceTableId: any,
   ) => void;
 }
 
@@ -87,7 +88,7 @@ export const TableEditor = ({
           ? {
               ...keyColumn<RowDef>(
                 column.id,
-                colTypeMapper(column.type, column),
+                colTypeMapper(column.type, column, tableId),
               ),
               title: (
                 <TitleDataSheet
@@ -191,14 +192,25 @@ export const TableEditor = ({
         gutterColumn={{ component: ({ rowData }) => <div>{rowData.id}</div> }}
         onChange={handleChange}
         createRow={() => {
+          const rowReturn = {
+            ...Object.fromEntries(
+              localColumns.map((col) => [
+                col.id,
+                returnDefaultValue(col.type, col.referenceTable),
+              ]),
+            ),
+          };
+
+          console.log(rowReturn);
+
           return {
-            ...Object.fromEntries(localColumns.map((col) => [col.id, ''])),
+            ...rowReturn,
             id: genId(),
           };
         }}
         duplicateRow={({ rowData }) => {
           return {
-            ...rowData,
+            ...recreateNestedObjects(rowData),
             id: genId(),
           };
         }}
@@ -267,10 +279,13 @@ const LinkCell = ({ rowData, columnData }) => {
 
   if (!rowData) {
     rowData = {
+      referenceTableId: columnData.referenceTable,
       referenceRecords: [],
-      referenceTablId: '',
     };
   }
+
+  // console.log(rowData);
+  // console.log(columnData);
 
   return (
     <div className="flex items-center">
@@ -278,6 +293,8 @@ const LinkCell = ({ rowData, columnData }) => {
         referenceTableId={rowData.referenceTableId}
         linkedRecordIds={rowData.referenceRecords}
         setNumberOfRecords={setNumberOfRecords}
+        rowData={rowData}
+        columnData={columnData}
       />
       <span>
         {numberOfRecords} records from -{columnData.referenceTable}
@@ -286,17 +303,23 @@ const LinkCell = ({ rowData, columnData }) => {
   );
 };
 
-const LinkColumnCell = (columnData) => {
+const LinkColumnCell = (columnData, tableId) => {
+  columnData = { ...columnData, tableId: tableId };
+
   return {
     component: LinkCell,
     deleteValue: () => '',
     copyValue: ({ rowData }) => rowData,
     pasteValue: ({ value }) => value,
-    columnData,
+    columnData: { ...columnData, tableId: tableId },
   };
 };
 
-const colTypeMapper = (type: ColumnType, columnData?: any) => {
+const colTypeMapper = (
+  type: ColumnType,
+  columnData?: any,
+  tableId?: string,
+) => {
   switch (type) {
     case 'text': {
       return textColumn;
@@ -308,7 +331,7 @@ const colTypeMapper = (type: ColumnType, columnData?: any) => {
       return checkboxColumn;
     }
     case 'link': {
-      return LinkColumnCell(columnData);
+      return LinkColumnCell(columnData, tableId);
     }
     case 'date': {
       return dateColumn;
@@ -327,4 +350,44 @@ function AddRows({ addRows }: AddRowsComponentProps & { table: DataTable }) {
       </Button>
     </div>
   );
+}
+
+function recreateNestedObjects(obj) {
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => {
+      if (Array.isArray(value)) {
+        return [key, value.map((item) => recreateNestedObjects(item))];
+      } else if (typeof value === 'object' && value !== null) {
+        return [key, recreateNestedObjects(value)];
+      } else {
+        return [key, value];
+      }
+    }),
+  );
+}
+
+function returnDefaultValue(type: ColumnType, refernceTable?: string) {
+  switch (type) {
+    case 'text': {
+      return '';
+    }
+    case 'number': {
+      return;
+    }
+    case 'boolean': {
+      return false;
+    }
+    case 'link': {
+      return {
+        referenceTableId: refernceTable,
+        referenceRecords: [],
+      };
+    }
+    case 'date': {
+      return;
+    }
+    default: {
+      return '';
+    }
+  }
 }

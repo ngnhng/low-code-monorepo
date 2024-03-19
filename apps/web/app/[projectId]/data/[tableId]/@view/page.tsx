@@ -41,7 +41,7 @@ export default function Page({
     localColumns: ColumnDef[],
     localData: RowDef[],
     deletedRowIds: Set<number>,
-    // newReferenceTable,
+    newReferenceTable,
     // eslint-disable-next-line unicorn/consistent-function-scoping
   ) => {
     if (deletedRowIds.size > 0) {
