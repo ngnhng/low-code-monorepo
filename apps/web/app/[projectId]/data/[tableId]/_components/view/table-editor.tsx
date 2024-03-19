@@ -70,48 +70,29 @@ export const TableEditor = ({
   const deletedColumn = useMemo(() => new Set<string>(), [tableId]);
 
   useEffect(() => {
-    const columns = localColumns.map((column) => {
-      return column.id === 'id'
-        ? {
-            ...keyColumn<RowDef>(column.id, colTypeMapper(column.type)),
-            title: (
-              <TitleDataSheet
-                column={column}
-                // handleSortClickAsc={handleSortClickAsc}
-                // handleSortClickDesc={handleSortClickDesc}
-              />
-            ),
-            disabled: true,
-          }
-        : // eslint-disable-next-line unicorn/no-nested-ternary
-          column.type === 'link'
-          ? {
-              ...keyColumn<RowDef>(
-                column.id,
-                colTypeMapper(column.type, column, tableId),
-              ),
-              title: (
-                <TitleDataSheet
-                  column={column}
-                  // handleSortClickAsc={handleSortClickAsc}
-                  // handleSortClickDesc={handleSortClickDesc}
-                />
-              ),
-            }
-          : {
-              ...keyColumn<RowDef>(column.id, colTypeMapper(column.type)),
-              title: (
-                <TitleDataSheet
-                  column={column}
-                  // handleSortClickAsc={handleSortClickAsc}
-                  // handleSortClickDesc={handleSortClickDesc}
-                />
-              ),
-            };
-    });
-
-    setFields(columns);
-  }, [localColumns]);
+	const createColumn = (column) => {
+	  const isLinkType = column.type === 'link';
+	  const isId = column.id === 'id';
+	  const colType = isLinkType ? colTypeMapper(column.type, column, tableId) : colTypeMapper(column.type);
+	  const disabled = isId;
+  
+	  return {
+		...keyColumn<RowDef>(column.id, colType),
+		title: (
+		  <TitleDataSheet
+			column={column}
+			// handleSortClickAsc={handleSortClickAsc}
+			// handleSortClickDesc={handleSortClickDesc}
+		  />
+		),
+		disabled,
+	  };
+	};
+  
+	const columns = localColumns.map((element) => createColumn(element));
+  
+	setFields(columns);
+  }, [localColumns, tableId]);
 
   // eslint-disable-next-line unicorn/consistent-function-scoping
   const handleChange = (value: RowDef[], ops: Operation[]) => {
@@ -366,7 +347,7 @@ function recreateNestedObjects(obj) {
   );
 }
 
-function returnDefaultValue(type: ColumnType, refernceTable?: string) {
+function returnDefaultValue(type: ColumnType, referenceTable?: string) {
   switch (type) {
     case 'text': {
       return '';
@@ -379,7 +360,7 @@ function returnDefaultValue(type: ColumnType, refernceTable?: string) {
     }
     case 'link': {
       return {
-        referenceTableId: refernceTable,
+        referenceTableId: referenceTable,
         referenceRecords: [],
       };
     }
