@@ -1,0 +1,44 @@
+{
+  "columns": [
+    {
+      "id": "title",
+      "label": "Title",
+      "type": "text",
+      "isActive": true,
+      "isPrimaryKey": false,
+      "isForeignKey": false,
+      "foreignKeyId": ""
+    },
+    {
+      "id": "likes",
+      "label": "Likes",
+      "type": "text",
+      "isActive": true,
+      "isPrimaryKey": false,
+      "isForeignKey": false,
+      "foreignKeyId": ""
+    },
+    {
+      "id": "users-posts",
+      "label": "users-posts",
+      "type": "link",
+      "referenceTable": "posts",
+      "isActive": true,
+      "isPrimaryKey": false,
+      "isForeignKey": false,
+      "foreignKeyId": "users-posts"
+    }
+  ],
+  "rows": [
+    {
+      "title": "See Not Beneath After I By Through Make",
+      "likes": "29619",
+      "id": 1
+    },
+    {
+      "title": "Mystery Adventure On Like Be Before Ten",
+      "likes": "17992",
+      "id": 2
+    }
+  ]
+}

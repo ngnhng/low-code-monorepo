@@ -1,4 +1,9 @@
-import { GetTableDataResponse, DataTable, GetTablesResponse } from 'types/table-data';
+import {
+  GetTableDataResponse,
+  DataTable,
+  GetTablesResponse,
+  RowDef,
+} from 'types/table-data';
 import { RouteHandlerAPIService } from './route-handler.service';
 import { TableItem } from 'types/table-data';
 export class TableDataService extends RouteHandlerAPIService {
@@ -48,8 +53,8 @@ export class TableDataService extends RouteHandlerAPIService {
         totalPage: 0,
       },
       maxIndex: 0,
-    }
-    
+    };
+
     return result;
   }
 
@@ -63,12 +68,22 @@ export class TableDataService extends RouteHandlerAPIService {
     return result;
   }
 
-  async getTableRelations({projectId, tableId}) {
+  async getTableRelations({ projectId, tableId }) {
     const response = await this.getServerSide(
       `/api/mock/${projectId}/data/${tableId}/relations`,
     );
 
     const result: TableItem[] = response.data;
+
+    return result;
+  }
+
+  async getTableRecords(projectId: string, tableId: string) {
+    const response = await this.getServerSide(
+      `/api/mock/${projectId}/data/${tableId}/rows`,
+    );
+
+    const result: RowDef[] = response.data;
 
     return result;
   }

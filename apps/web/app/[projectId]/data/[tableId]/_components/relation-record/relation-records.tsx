@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 
 import {
@@ -14,6 +16,9 @@ import {
 import { Eye, FileText, Link } from 'lucide-react';
 // import AddRecord from './add-record';
 import { TextWithIcon } from 'components/text/text-with-icon';
+import { useMobxStore } from 'lib/mobx/store-provider';
+import useSWR from 'swr';
+// import { RowDef } from 'types/table-data';
 
 // interface RelationRecordsProps {
 //   referenceTableId: string;
@@ -21,39 +26,39 @@ import { TextWithIcon } from 'components/text/text-with-icon';
 
 // ? Progress: Using hard-data
 
-export interface DemoDataType {
-  id: string;
-  content: string;
+export interface RelationRecordsType {
+  id: number;
+  content?: string;
   linkedState: boolean;
 }
 
-export const HardData: DemoDataType[] = [
-  {
-    id: '1',
-    content: 'Linked Record 1 from Table A',
-    linkedState: true,
-  },
-  {
-    id: '2',
-    content: 'Linked Record 2 from Table A',
-    linkedState: true,
-  },
-  {
-    id: '3',
-    content: 'Linked Record 3 from Table A',
-    linkedState: true,
-  },
-  {
-    id: '4',
-    content: 'Linked Record 4 from Table A',
-    linkedState: true,
-  },
-  {
-    id: '5',
-    content: 'Linked Record 5 from Table A',
-    linkedState: true,
-  },
-];
+// export const HardData: RelationRecordsType[] = [
+//   {
+//     id: '1',
+//     content: 'Linked Record 1 from Table A',
+//     linkedState: true,
+//   },
+//   {
+//     id: '2',
+//     content: 'Linked Record 2 from Table A',
+//     linkedState: true,
+//   },
+//   {
+//     id: '3',
+//     content: 'Linked Record 3 from Table A',
+//     linkedState: true,
+//   },
+//   {
+//     id: '4',
+//     content: 'Linked Record 4 from Table A',
+//     linkedState: true,
+//   },
+//   {
+//     id: '5',
+//     content: 'Linked Record 5 from Table A',
+//     linkedState: true,
+//   },
+// ];
 
 /*
  * For now, let the referenceId !
@@ -62,6 +67,8 @@ interface RelationRecordsProps {
   referenceTableId: string;
   linkedRecordIds: any;
   setNumberOfRecords: any;
+  rowData: any;
+  columnData: any;
 }
 
 function countTrueState(objects) {
@@ -69,26 +76,69 @@ function countTrueState(objects) {
 }
 
 const RelationRecords = ({
+  referenceTableId,
   setNumberOfRecords,
   linkedRecordIds,
+  rowData,
 }: RelationRecordsProps) => {
-  const [linkedData, setLinkedData] = useState(HardData);
+  const [linkedData, setLinkedData] = useState<RelationRecordsType[]>([]);
+
+  const {
+    projectData: { currentProjectId },
+    tableData: { fetchTableRecords },
+  } = useMobxStore();
+
+  const { data, isLoading } = useSWR(
+    `TABLE_DATA-${currentProjectId}-${referenceTableId}-rows`,
+    () => fetchTableRecords(referenceTableId),
+  );
+  useEffect(() => {
+    if (data) {
+      const mappingData: RelationRecordsType[] = data.map((record) => ({
+        id: record.id,
+        linkedState: rowData.referenceRecords.includes(record.id.toString()),
+      }));
+
+      setLinkedData(mappingData);
+    }
+  }, [data]);
 
   useEffect(() => {
     setNumberOfRecords(countTrueState(linkedData));
   }, [linkedData]);
 
-  // TODO: SWR to get records data
-  const handleItemClick = (id: string) => {
+  if (!data || isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  const handleItemClick = (id: number) => {
+    console.log('click');
     setLinkedData((previousData) =>
-      previousData.map((data) => {
-        return data.id === id
-          ? { ...data, linkedState: !data.linkedState }
-          : { ...data };
+      previousData.map((record) => {
+        if (record.id === id) {
+          if (record.linkedState === true) {
+            const indexToRemove = linkedRecordIds.indexOf(id.toString());
+
+            if (indexToRemove !== -1) {
+              linkedRecordIds.splice(indexToRemove, 1);
+            }
+
+            console.log(linkedRecordIds);
+          } else {
+            linkedRecordIds.push(id.toString());
+          }
+
+          return { ...record, linkedState: !record.linkedState };
+        }
+
+        return { ...record };
       }),
     );
 
-    linkedRecordIds.push(id); //
+    // NO IDEA WHY IN SET STATE RUN 2 TIMES
+    linkedRecordIds = linkedRecordIds.filter(
+      (item, index) => linkedRecordIds.indexOf(item) === index,
+    );
   };
 
   return (
@@ -103,40 +153,38 @@ const RelationRecords = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex align-middle justify-between">
-            {/* <p className=''>Linked Records</p>
-            <FileText className='flex-1'></FileText> */}
             <TextWithIcon icon={<FileText />}>Linked Records</TextWithIcon>
           </DialogTitle>
           <Separator></Separator>
         </DialogHeader>
 
-        <ul>
-          {linkedData.map((data, index) => {
-            // ? When come to real ? data.linkedState &&
-            return (
-              <Button
-                key={index}
-                variant={'ghost'}
-                className="w-full justify-between flex"
-                data-id={data.id}
-                onClick={() => handleItemClick(data.id)}
-              >
-                {data.content}
-                {data.linkedState && (
-                  <span>
-                    <Link className="text-ring" size={16}></Link>
-                  </span>
-                )}
-              </Button>
-            );
-          })}
-        </ul>
+        {linkedData.length > 0 ? (
+          <ul>
+            {linkedData.map((data, index) => {
+              // ? When come to real ? data.linkedState &&
+              return (
+                <Button
+                  key={index}
+                  variant={'ghost'}
+                  className="w-full justify-between flex"
+                  data-id={data.id}
+                  onClick={() => handleItemClick(data.id)}
+                >
+                  Record ID: {data.id}
+                  {data.linkedState && (
+                    <span>
+                      <Link className="text-ring" size={16}></Link>
+                    </span>
+                  )}
+                </Button>
+              );
+            })}
+          </ul>
+        ) : undefined}
         <Separator></Separator>
         <DialogFooter>
-          {/* <Separator></Separator> */}
-          {/* <AddRecord  linkedData={linkedData} setLinkedData={setLinkedData}/> */}
           <Button type="submit" disabled>
-            Save changes
+            Close
           </Button>
         </DialogFooter>
       </DialogContent>

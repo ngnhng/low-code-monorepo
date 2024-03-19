@@ -41,8 +41,8 @@ export default function Page({
   const handleCommit = (
     localColumns: ColumnDef[],
     localData: RowDef[],
-    deletedRowIds: Set<number>
-    // newReferenceTable,
+    deletedRowIds: Set<number>,
+    newReferenceTable
     // eslint-disable-next-line unicorn/consistent-function-scoping
   ) => {
     if (deletedRowIds.size > 0) {
