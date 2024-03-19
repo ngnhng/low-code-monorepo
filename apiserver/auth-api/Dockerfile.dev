@@ -1,4 +1,4 @@
-FROM golang:1.22.0-bullseye AS builder
+FROM golang:1.22-bullseye AS builder
 
 ENV ENVIRONMENT=development
 
@@ -31,6 +31,7 @@ COPY --from=builder /app/server /app/server
 WORKDIR /app
 
 ENV ENVIRONMENT=development
+ENV CONFIG_FILE_NAME=config_dev
 
 EXPOSE 3000
 

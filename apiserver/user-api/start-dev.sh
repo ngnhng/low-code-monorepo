@@ -1,7 +1,14 @@
 #!/bin/sh
 
 # Run the migrations
-yarn run db:migrate
 
-# Start the application
-yarn run start:dev
+# apply all pending migrations
+yarn prisma migrate deploy
+# generate the prisma client
+yarn prisma generate
+
+# create the initial migration
+yarn prisma migrate dev --name init
+
+# exec
+exec "$@"

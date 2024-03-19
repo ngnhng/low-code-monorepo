@@ -51,7 +51,7 @@ func NewGoogleProvider(p Params) (Result, error) {
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile",
 			// sheet
-			//"https://www.googleapis.com/auth/spreadsheets",
+			"https://www.googleapis.com/auth/spreadsheets",
 		},
 		Endpoint: google.Endpoint,
 	}

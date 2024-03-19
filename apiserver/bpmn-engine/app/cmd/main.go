@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"yalc/bpmn-engine/controller"
@@ -45,19 +46,14 @@ func main() {
 			lc.Append(fx.Hook{
 				OnStart: func(ctx context.Context) error {
 					rootDir, err := os.Getwd()
+					if err != nil {
+						logger.Fatal("Error: ", err)
+					}
 
 					go func() {
-						if err := client.Connect(); err != nil {
-							logger.Fatal("Error while connecting to SHAR: ", err)
+						if err := connectAndLoadSpec(client, logger, rootDir); err != nil {
+							logger.Fatal("Error: ", err)
 						}
-						if err == nil {
-							err = client.LoadServiceTaskSpec(
-								client.GetConnCtx(),
-								filepath.Join(rootDir, "service-tasks/google-sheet.task.yaml"),
-								usecase.GoogleSheetFn,
-							)
-						}
-						// TODO: error handling
 					}()
 
 					return nil
@@ -70,4 +66,30 @@ func main() {
 	)
 
 	app.Run()
+}
+
+func connectAndLoadSpec(client *bpmn.SharClient, logger logger.Logger, rootDir string) error {
+	if err := client.Connect(); err != nil {
+		return fmt.Errorf("error connecting to SHAR: %w", err)
+	}
+
+	err := client.LoadServiceTaskSpec(
+		client.GetConnCtx(),
+		filepath.Join(rootDir, "service-tasks/google-sheet.task.yaml"),
+		usecase.GoogleSheetFn,
+	)
+	if err != nil {
+		return fmt.Errorf("error loading service task spec: %w", err)
+	}
+
+	err = client.LoadServiceTaskSpec(
+		client.GetConnCtx(),
+		filepath.Join(rootDir, "service-tasks/test-log.task.yaml"),
+		bpmn.TestLogServiceFn,
+	)
+	if err != nil {
+		return fmt.Errorf("error loading service task spec: %w", err)
+	}
+
+	return nil
 }

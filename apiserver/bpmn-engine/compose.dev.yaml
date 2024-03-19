@@ -37,7 +37,7 @@ services:
       - '-m'
       - '8222'
 
-  server:
+  shar-server:
     image: registry.gitlab.com/shar-workflow/shar/dev/server:latest
     networks:
       - mynetwork

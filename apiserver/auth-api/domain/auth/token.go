@@ -1,11 +1,10 @@
 package auth
 
-import "errors"
+import (
+	"errors"
+)
 
 const (
-	AccessToken  TokenType = "access_token"
-	RefreshToken TokenType = "refresh_token"
-
 	ProviderGoogle OAuthProvider = "google"
 )
 
@@ -14,29 +13,24 @@ var (
 )
 
 type (
+
+	// OAuthToken is customer's 3rd party OAuth token
+	// We only store the refresh token
+	// The access token is short-lived and can be obtained using the refresh token
 	OAuthToken struct {
 		OwnerID  string        `json:"owner_id"`
 		Provider OAuthProvider `json:"provider"`
-		Type     TokenType     `json:"type"`
 
-		Value string `json:"value"`
+		RefreshToken string `json:"refresh_token"`
 	}
 
 	OAuthProvider string
-	TokenType     string
 
 	ErrTokenNotFound struct {
 		OwnerID  string
 		Provider string
 	}
 )
-
-func (t TokenType) Validate() error {
-	if t != AccessToken && t != RefreshToken {
-		return ErrInvalidTokenType
-	}
-	return nil
-}
 
 func (t OAuthProvider) Validate() error {
 	if t != ProviderGoogle {

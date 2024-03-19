@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"yalc/auth-service/module/database/redis"
 	"yalc/auth-service/repository/token"
 
 	"go.uber.org/fx"
@@ -9,18 +8,9 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(
-		NewTokenRepository,
+		fx.Annotate(
+			token.NewRedisTokenRepository,
+			fx.As(new(TokenRepository)),
+		),
 	),
 )
-
-type (
-	Param struct {
-		fx.In
-
-		RedisClient *redis.RedisClient
-	}
-)
-
-func NewTokenRepository(p Param) TokenRepository {
-	return token.NewRedisTokenRepository(p.RedisClient.Client)
-}

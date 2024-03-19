@@ -1,10 +1,28 @@
 package config
 
-import "go.uber.org/fx"
+import (
+	"os"
+
+	"go.uber.org/fx"
+)
 
 var Module = fx.Module(
 	"config",
 	fx.Options(
-		fx.Provide(New),
+		fx.Provide(NewConfig),
 	),
 )
+
+func NewConfig() (Config, error) {
+	env := os.Getenv("ENVIRONMENT")
+	switch env {
+	case "local":
+		return NewLocalConfig()
+	case "development":
+		return NewDevConfig()
+	case "production":
+		return NewProdConfig()
+	default:
+		panic("Invalid environment: " + env)
+	}
+}

@@ -2,7 +2,9 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -40,16 +42,38 @@ func NewGoogleSheetFn(uc *GoogleSheetUseCase) func(
 	vars model.Vars,
 ) (model.Vars, error) {
 	return func(ctx context.Context, cl client.JobClient, vars model.Vars) (model.Vars, error) {
-		//data, err := uc.GetSheetData(ctx, vars["sheetId"].(string), vars["range"].(string), vars["token"].(string))
-		//if err != nil {
-		//	return nil, err
-		//}
-		uc.Logger.Debug("Context: ", ctx)
-		vars["localVar"] = "LocalVar"
-		uc.Logger.Debug("Vars: ", vars)
+		// get the sheet id and range from the vars
+		uc.Logger.Debug("Getting sheet data", "vars", vars)
+		sheetId, ok := vars["sheetId"].(string)
+		if !ok {
+			return nil, errors.New("sheetId not found in vars")
+		}
+		range_, ok := vars["range"].(string)
+		if !ok {
+			return nil, errors.New("range not found in vars")
+		}
+		email, ok := vars["_localContext_user"].(string)
+		if !ok {
+			return nil, errors.New("user not found in vars")
+		}
 
-		// mock the output mapping
-		vars["myCounter"] = 5
+		// set the context
+		ctx = context.WithValue(ctx, domain.UserKey, email)
+
+		// call the use case
+		rawData, err := uc.GetSheetData(ctx, sheetId, range_)
+		if err != nil {
+			uc.Logger.Error("Error getting sheet data", "err", err)
+			return nil, err
+		}
+
+		// Convert rawData to string
+		data := fmt.Sprintf("%v", rawData)
+
+		uc.Logger.Debug("Got sheet data", "data", data)
+
+		// map the data to the vars
+		vars["sheetData"] = data
 
 		return vars, nil
 	}
@@ -86,21 +110,11 @@ func NewGoogleSheetUseCase(p GoogleSheetParams) *GoogleSheetUseCase {
 }
 
 // GetSheetData fetches the data from the given Google Sheet
-func (uc *GoogleSheetUseCase) GetSheetData(ctx context.Context, sheetId string, range_ string, token string) ([][]interface{}, error) {
+func (uc *GoogleSheetUseCase) GetSheetData(ctx context.Context, sheetId string, range_ string) ([][]interface{}, error) {
 	// get the email from context user and generate a token to request to internal api
-	user, ok := ctx.Value(domain.UserKey).(*jwt.Token)
+	email, ok := ctx.Value(domain.UserKey).(string)
 	if !ok {
 		return nil, errors.New("user not found in context")
-	}
-
-	claims, ok := user.Claims.(jwt.MapClaims)
-	if !ok {
-		return nil, errors.New("user claims not found in context")
-	}
-
-	email, ok := claims["email"].(string)
-	if !ok {
-		return nil, errors.New("user email not found in context")
 	}
 
 	// get the access token from the internal api
@@ -119,7 +133,7 @@ func (uc *GoogleSheetUseCase) GetSheetData(ctx context.Context, sheetId string, 
 	uc.ApiService.SetBearerToken(at)
 
 	// get the access token from the internal api
-	resp, err := uc.ApiService.Get("/api/v1/oauth/google/token")
+	resp, err := uc.ApiService.Get("/api/v1/access_token/google")
 	if err != nil {
 		return nil, err
 	}
@@ -135,8 +149,17 @@ func (uc *GoogleSheetUseCase) GetSheetData(ctx context.Context, sheetId string, 
 		return nil, err
 	}
 
+	// extract the token from the response, "access_token": "..."
+	var atResp struct {
+		AccessToken string `json:"access_token"`
+	}
+	err = json.Unmarshal(body, &atResp)
+	if err != nil {
+		return nil, err
+	}
+
 	// get the data from the google sheet
-	gs, err := googlesheet.NewGoogleSheetServiceWithToken(string(body))
+	gs, err := googlesheet.NewGoogleSheetServiceWithToken(atResp.AccessToken)
 	if err != nil {
 		return nil, err
 	}

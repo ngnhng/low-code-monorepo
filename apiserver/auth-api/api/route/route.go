@@ -1,7 +1,8 @@
 package route
 
 import (
-	oauthLogin "yalc/auth-service/api/controller/oauth-login"
+	oauthLogin "yalc/auth-service/api/controller/oauth"
+	"yalc/auth-service/api/controller/token"
 	"yalc/auth-service/module/config"
 	"yalc/auth-service/module/httpserver"
 
@@ -13,9 +14,10 @@ type (
 	Params struct {
 		fx.In
 
-		Configs         *config.Config
-		Server          httpserver.EchoHTTPServer
-		OAuthController *oauthLogin.GoogleOAuthLoginController
+		Configs              *config.Config
+		Server               httpserver.EchoHTTPServer
+		OAuthController      *oauthLogin.GoogleOAuthLoginController
+		TokenStoreController *token.TokenStoreAccessController
 	}
 )
 
@@ -26,12 +28,6 @@ func NewRouter(p Params) {
 		AddGroup("/api", func(g *echo.Group) {
 			// g is sub-group from builder
 			NewAuthenticationRouterV1(p.Configs, &httpserver.EchoRouteBuilder{Builder: g}, p.OAuthController)
+			NewTokenStoreAccessRouterV1(p.Configs, &httpserver.EchoRouteBuilder{Builder: g}, p.TokenStoreController)
 		})
-
-	//// Public API for authentication
-	//NewAuthenticationRouter(p.Configs, s, p.LoginController)
-	//NewPublicUserRouter(p.Configs, s, p.RegisterController)
-
-	//// Private API for user
-	//NewPrivateUserRouter(p.Configs, s)
 }

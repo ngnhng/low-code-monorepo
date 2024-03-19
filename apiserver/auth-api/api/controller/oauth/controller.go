@@ -18,7 +18,7 @@ import (
 
 type (
 	GoogleOAuthLoginController struct {
-		Usecase usecase.GoogleOAuthLoginUsecase
+		Usecase *usecase.GoogleOAuthLoginUsecase
 		Config  *config.Config
 		Logger  logger.Logger
 
@@ -27,7 +27,7 @@ type (
 )
 
 func NewGoogleOAuthLoginController(
-	uc usecase.GoogleOAuthLoginUsecase,
+	uc *usecase.GoogleOAuthLoginUsecase,
 	config *config.Config,
 	logger logger.Logger,
 ) *GoogleOAuthLoginController {
@@ -61,7 +61,7 @@ func (ctrl *GoogleOAuthLoginController) Callback(c echo.Context) error {
 	// exchange code for token
 	token, err := ctrl.Provider.Exchange(c.Request().Context(), code)
 
-	if err != nil || token == nil {
+	if err != nil || token == nil || token.RefreshToken == "" {
 		//return c.String(500, "Failed to exchange code for token: "+err.Error())
 		return error_response.InternalServerError(c, "error", "failed to exchange code for token: "+err.Error())
 	}
@@ -116,6 +116,8 @@ func (ctrl *GoogleOAuthLoginController) Callback(c echo.Context) error {
 }
 
 // ValidateToken validates the token
+// TODO: use middleware to process and store user to context
+// here we validate the token claims and other stuff (expired, revoked, etc)
 func (ctrl *GoogleOAuthLoginController) ValidateToken(c echo.Context) error {
 	token, err := util.ExtractToken(c.Request().Header.Get("Authorization"))
 	if err != nil {
