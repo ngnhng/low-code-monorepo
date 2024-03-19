@@ -22,6 +22,7 @@ export default function GoogleSheetProps({ element, modeler }) {
     // eslint-disable-next-line no-unused-vars
     const [type, setType] = useState<any>();
     const [inputs, setInputs] = useState<any>([]);
+    const [output, setOutput] = useState<any>();
 
     useEffect(() => {
         const bObject = getBusinessObject(element);
@@ -30,7 +31,10 @@ export default function GoogleSheetProps({ element, modeler }) {
         const extensionElements = bObject.extensionElements;
         setExtensionElements(extensionElements);
 
-        // console.log(extensionElements.get('values'));
+        const { input: ioMapping, output } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:ioMapping");
+
+        setInputs(ioMapping.filter((input: any) => input.source !== "=_globalContext_user"));
+        setOutput(output);
     }, []);
 
     const setInputSource = (value: string) => {
@@ -56,14 +60,14 @@ export default function GoogleSheetProps({ element, modeler }) {
         });
     };
 
-    const setInputTarget = (value: string) => {
+    const setInputTarget = (value: string, source: string) => {
         const modeling = modeler.get("modeling");
-        const { ioMapping } = extensionElements.get("values").find((extension: any) => extension.ioMapping);
+        const { input: ioMapping } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:ioMapping");
 
         console.log(ioMapping);
         if (!ioMapping) return;
 
-        const input = ioMapping.find((input: any) => input.source !== "=_globalContext_user");
+        const input = ioMapping.find((input: any) => input.source === source);
 
         console.log(input);
         if (!input) return;
@@ -75,8 +79,23 @@ export default function GoogleSheetProps({ element, modeler }) {
         });
     };
 
+    const setOutputTarget = (value: string) => {
+        const modeling = modeler.get("modeling");
+        const { output: outputArray } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:ioMapping");
+
+        console.log(output);
+        if (!output) return;
+
+        outputArray[0].target = value;
+
+        modeling.updateProperties(element, {
+            extensionElements,
+        });
+    };
+
     const setFunctionType = (value: string) => {
         const fnEnum = {
+            getData: "googleSheetGetData",
             add: "googleSheetAddRow",
             remove: "googleSheetRemoveRow",
         };
@@ -127,12 +146,14 @@ export default function GoogleSheetProps({ element, modeler }) {
                     onValueChange={(value) => {
                         setFunctionType(value);
                     }}
+                    defaultValue="getData"
                 >
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select an action" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
+                            <SelectItem value="getData">Get Data Range</SelectItem>
                             <SelectItem value="add">Add Row</SelectItem>
                             <SelectItem value="remove">Remove Row</SelectItem>
                         </SelectGroup>
@@ -140,25 +161,36 @@ export default function GoogleSheetProps({ element, modeler }) {
                 </Select>
                 <div className="flex justify-between">
                     <Label>Inputs</Label>
-                    <button onClick={() => addInput()}>
+                    {/* <button onClick={() => addInput()}>
                         <Plus />
-                    </button>
+                    </button> */}
                 </div>
-                <div className="w-full flex flex-col gap-5">
-                    <div className="flex gap-2.5">
-                        <Input
-                            onBlur={(event) => {
-                                setInputSource(event.target.value);
-                            }}
-                            placeholder="Source"
-                        />
-                        <Input
-                            onBlur={(event) => {
-                                setInputTarget(event.target.value);
-                            }}
-                            placeholder="Target"
-                        />
-                    </div>
+                <div className="w-full flex flex-col gap-5 p-5 bg-slate-100 rounded-md">
+                    {inputs.map((input: any) => {
+                        return (
+                            <div className="flex gap-2.5 items-center" key={input.source}>
+                                <Label className="w-32">{input.source}</Label>
+                                <Input
+                                    onBlur={(event) => {
+                                        setInputTarget(event.target.value, input.source);
+                                    }}
+                                    placeholder="Expression"
+                                    defaultValue={input.target}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+                <Label>Output</Label>
+                <div className="flex gap-2.5 items-center p-5 bg-slate-100 rounded-md">
+                    <Label className="w-32">sheetData</Label>
+                    <Input
+                        onBlur={(event) => {
+                            setOutputTarget(event.target.value);
+                        }}
+                        placeholder="Expression"
+                        defaultValue=""
+                    />
                 </div>
             </AccordionContent>
         </AccordionItem>
