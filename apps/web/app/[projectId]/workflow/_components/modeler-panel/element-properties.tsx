@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/no-null */
 import { getBusinessObject, is } from "bpmn-js/lib/util/ModelUtil";
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { getExtensionElement, hasDefinition } from "helpers/bpmn.helper";
 import { QAElementProperties } from "./qa-element-form";
 import GoogleSheetProps from "./google-sheet-props";
@@ -29,6 +29,7 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MoveRight, Trash } from "lucide-react";
 
 const initialState = {
     businessObject: null,
@@ -109,7 +110,9 @@ export function ElementProperties({ element, modeler }) {
 
         const moddle = modeler.get("moddle");
         const modeling = modeler.get("modeling");
-        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
+        const extensionElements =
+            bObject.extensionElements ||
+            moddle.create("bpmn:ExtensionElements");
 
         // Name of the handle function
         const taskDefinition = moddle.create("yalc:taskDefinition", {
@@ -135,9 +138,11 @@ export function ElementProperties({ element, modeler }) {
         });
         const output = moddle.create("yalc:output", {
             source: "sheetData",
-            target: ""
-        })
-        ioMapping.get("input").push(defaultInput, sheetIdInput, sheetDataInput, rangeInput);
+            target: "",
+        });
+        ioMapping
+            .get("input")
+            .push(defaultInput, sheetIdInput, sheetDataInput, rangeInput);
         ioMapping.get("output").push(output);
 
         extensionElements.get("values").push(taskDefinition, ioMapping);
@@ -201,7 +206,9 @@ export function ElementProperties({ element, modeler }) {
 
     const isTimeoutConfigured = (element) => {
         const attachers = element.attachers || [];
-        return attachers.some((e) => hasDefinition(e, "bpmn:TimerEventDefinition"));
+        return attachers.some((e) =>
+            hasDefinition(e, "bpmn:TimerEventDefinition")
+        );
     };
 
     const append = (element, attrs) => {
@@ -219,9 +226,15 @@ export function ElementProperties({ element, modeler }) {
                     <AccordionContent>
                         <div className="flex flex-row justify-between">
                             <div>
-                                <h2 className="text-xl font-bold">{getElementType(element)}</h2>
-                                <p className="text-sm text-gray-500">{getElementName(element)}</p>
-                                <p className="text-sm text-gray-500">{element.id}</p>
+                                <h2 className="text-xl font-bold">
+                                    {getElementType(element)}
+                                </h2>
+                                <p className="text-sm text-gray-500">
+                                    {getElementName(element)}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                    {element.id}
+                                </p>
                             </div>
                         </div>
                     </AccordionContent>
@@ -230,16 +243,26 @@ export function ElementProperties({ element, modeler }) {
                     <AccordionItem value="qa">
                         <AccordionTrigger>QA</AccordionTrigger>
                         <AccordionContent>
-                            <QAElementProperties element={element} modeler={modeler} />
+                            <QAElementProperties
+                                element={element}
+                                modeler={modeler}
+                            />
                         </AccordionContent>
                     </AccordionItem>
                 )}
-                {state.isGS ? <GoogleSheetProps element={element} modeler={modeler} /> : ""}
+                {state.isGS ? (
+                    <GoogleSheetProps element={element} modeler={modeler} />
+                ) : (
+                    ""
+                )}
                 {state.isStartEvent && (
                     <AccordionItem value="startEvent">
                         <AccordionTrigger>I/O</AccordionTrigger>
                         <AccordionContent>
-                            <OutputProperties element={element} modeler={modeler} />
+                            <OutputProperties
+                                element={element}
+                                modeler={modeler}
+                            />
                         </AccordionContent>
                     </AccordionItem>
                 )}
@@ -247,20 +270,36 @@ export function ElementProperties({ element, modeler }) {
                     <AccordionTrigger>Actions</AccordionTrigger>
                     <AccordionContent>
                         <div className="flex flex-col gap-1">
-                            {is(element, "bpmn:Task") && !is(element, "bpmn:ServiceTask") && (
-                                <Button onClick={makeServiceTask}>Make Service Task</Button>
-                            )}
-                            {is(element, "bpmn:Event") && !hasDefinition(element, "bpmn:MessageEventDefinition") && (
-                                <Button onClick={makeMessageEvent}>Make Message Event</Button>
-                            )}
+                            {is(element, "bpmn:Task") &&
+                                !is(element, "bpmn:ServiceTask") && (
+                                    <Button onClick={makeServiceTask}>
+                                        Make Service Task
+                                    </Button>
+                                )}
+                            {is(element, "bpmn:Event") &&
+                                !hasDefinition(
+                                    element,
+                                    "bpmn:MessageEventDefinition"
+                                ) && (
+                                    <Button onClick={makeMessageEvent}>
+                                        Make Message Event
+                                    </Button>
+                                )}
 
-                            {is(element, "bpmn:Task") && !isTimeoutConfigured(element) && <Button onClick={attachTimeout}>Attach Timeout</Button>}
+                            {is(element, "bpmn:Task") &&
+                                !isTimeoutConfigured(element) && (
+                                    <Button onClick={attachTimeout}>
+                                        Attach Timeout
+                                    </Button>
+                                )}
                         </div>
                     </AccordionContent>
                 </AccordionItem>
                 {is(element, "bpmn:Event") ? (
                     <AccordionItem value="link">
-                        <AccordionTrigger>Behaviour Definition</AccordionTrigger>
+                        <AccordionTrigger>
+                            Behaviour Definition
+                        </AccordionTrigger>
                         <AccordionContent>
                             <div className="flex flex-col gap-5 p-5">
                                 <Label>Choose a UI element to listen to:</Label>
@@ -270,8 +309,12 @@ export function ElementProperties({ element, modeler }) {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectItem value="one">ID #1</SelectItem>
-                                            <SelectItem value="two">ID #2</SelectItem>
+                                            <SelectItem value="one">
+                                                ID #1
+                                            </SelectItem>
+                                            <SelectItem value="two">
+                                                ID #2
+                                            </SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
@@ -296,6 +339,9 @@ const getElementType = (element) => {
 
 // TODO: move to separate file
 const OutputProperties = ({ element, modeler }) => {
+    // entered outputs
+    const [outputs, setOutputs] = useState<any>([]);
+
     const businessObject = getBusinessObject(element);
     const moddle = modeler.get("moddle");
     const modeling = modeler.get("modeling");
@@ -303,7 +349,9 @@ const OutputProperties = ({ element, modeler }) => {
     const onSubmit = (data) => {
         const { source, target } = data;
 
-        const extensionElements = businessObject.get("extensionElements") || moddle.create("bpmn:ExtensionElements");
+        const extensionElements =
+            businessObject.get("extensionElements") ||
+            moddle.create("bpmn:ExtensionElements");
 
         const values = moddle.create("yalc:output", { source, target });
 
@@ -314,7 +362,11 @@ const OutputProperties = ({ element, modeler }) => {
 
         ioMapping.get("output").push(values);
         // if ioMapping already pushed, then it will be updated
-        if (extensionElements.get("values").some((e) => e.$type === "yalc:ioMapping")) {
+        if (
+            extensionElements
+                .get("values")
+                .some((e) => e.$type === "yalc:ioMapping")
+        ) {
             extensionElements.get("values").map((e) => {
                 if (e.$type === "yalc:ioMapping") {
                     e = ioMapping;
@@ -324,15 +376,67 @@ const OutputProperties = ({ element, modeler }) => {
             extensionElements.get("values").push(ioMapping);
         }
 
+        setOutputs([...outputs, { source, target }]);
+
         //extensionElements.get('values').push(ioMapping);
         modeling.updateProperties(element, {
             extensionElements,
         });
     };
 
+    const handleRemove = (index) => {
+        const extensionElements = businessObject.get("extensionElements");
+        const ioMapping = getExtensionElement(businessObject, "yalc:ioMapping");
+        const values = ioMapping.get("output");
+        if (!values) return;
+
+        values.splice(index, 1);
+		// if all outputs are removed, remove ioMapping
+		if (values.length === 0) {
+			extensionElements.get("values").splice(
+				extensionElements.get("values").indexOf(ioMapping),
+				1
+			);
+		}
+
+        modeling.updateProperties(element, {
+            extensionElements,
+        });
+        setOutputs(outputs.filter((_, i) => i !== index));
+    };
+
     return (
         <div>
             <h2>Output Mapping</h2>
+            <div className="flex flex-col gap-5 p-5">
+                <div>
+                    <h3>Outputs</h3>
+                    <ul className="space-y-2">
+                        {outputs.map((output, index) => (
+                            <li
+                                key={index}
+                                className="flex items-center justify-between p-2 bg-gray-100 rounded shadow"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium text-gray-700">
+                                        {output.source}
+                                    </span>
+									<MoveRight />
+                                    <span className="text-gray-500">
+                                        {output.target}
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => handleRemove(index)}
+                                    className="p-1 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50"
+                                >
+                                    <Trash /> {/* Trash bin icon */}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
             <div className="flex flex-col gap-5 p-5">
                 <OutputForm onSubmit={onSubmit} />
             </div>
@@ -357,7 +461,10 @@ const OutputForm = ({ onSubmit }) => {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col gap-5"
+            >
                 <FormField
                     control={form.control}
                     name="source"
@@ -367,7 +474,9 @@ const OutputForm = ({ onSubmit }) => {
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
-                            <FormDescription>Source of the output</FormDescription>
+                            <FormDescription>
+                                Source of the output
+                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}
@@ -381,7 +490,9 @@ const OutputForm = ({ onSubmit }) => {
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
-                            <FormDescription>Target of the output</FormDescription>
+                            <FormDescription>
+                                Target of the output
+                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}
