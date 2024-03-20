@@ -70,28 +70,30 @@ export const TableEditor = ({
   const deletedColumn = useMemo(() => new Set<string>(), [tableId]);
 
   useEffect(() => {
-	const createColumn = (column) => {
-	  const isLinkType = column.type === 'link';
-	  const isId = column.id === 'id';
-	  const colType = isLinkType ? colTypeMapper(column.type, column, tableId) : colTypeMapper(column.type);
-	  const disabled = isId;
-  
-	  return {
-		...keyColumn<RowDef>(column.id, colType),
-		title: (
-		  <TitleDataSheet
-			column={column}
-			// handleSortClickAsc={handleSortClickAsc}
-			// handleSortClickDesc={handleSortClickDesc}
-		  />
-		),
-		disabled,
-	  };
-	};
-  
-	const columns = localColumns.map((element) => createColumn(element));
-  
-	setFields(columns);
+    const createColumn = (column) => {
+      const isLinkType = column.type === 'link';
+      const isId = column.id === 'id';
+      const colType = isLinkType
+        ? colTypeMapper(column.type, column, tableId)
+        : colTypeMapper(column.type);
+      const disabled = isId;
+
+      return {
+        ...keyColumn<RowDef>(column.id, colType),
+        title: (
+          <TitleDataSheet
+            column={column}
+            // handleSortClickAsc={handleSortClickAsc}
+            // handleSortClickDesc={handleSortClickDesc}
+          />
+        ),
+        disabled,
+      };
+    };
+
+    const columns = localColumns.map((element) => createColumn(element));
+
+    setFields(columns);
   }, [localColumns, tableId]);
 
   // eslint-disable-next-line unicorn/consistent-function-scoping

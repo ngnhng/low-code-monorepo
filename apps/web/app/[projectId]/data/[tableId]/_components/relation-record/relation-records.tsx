@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Button,
   Dialog,
+  DialogClose,
   DialogContent,
   // DialogDescription,
   DialogFooter,
@@ -13,52 +14,19 @@ import {
   DialogTrigger,
   Separator,
 } from '@repo/ui';
-import { Eye, FileText, Link } from 'lucide-react';
+import { Eye, FileText } from 'lucide-react';
 // import AddRecord from './add-record';
 import { TextWithIcon } from 'components/text/text-with-icon';
 import { useMobxStore } from 'lib/mobx/store-provider';
 import useSWR from 'swr';
-// import { RowDef } from 'types/table-data';
-
-// interface RelationRecordsProps {
-//   referenceTableId: string;
-// }
+import { RowDef } from 'types/table-data';
+import { ButtonRercord } from './button-record';
 
 // ? Progress: Using hard-data
 
-export interface RelationRecordsType {
-  id: number;
-  content?: string;
+export interface RelationRecordsType extends RowDef {
   linkedState: boolean;
 }
-
-// export const HardData: RelationRecordsType[] = [
-//   {
-//     id: '1',
-//     content: 'Linked Record 1 from Table A',
-//     linkedState: true,
-//   },
-//   {
-//     id: '2',
-//     content: 'Linked Record 2 from Table A',
-//     linkedState: true,
-//   },
-//   {
-//     id: '3',
-//     content: 'Linked Record 3 from Table A',
-//     linkedState: true,
-//   },
-//   {
-//     id: '4',
-//     content: 'Linked Record 4 from Table A',
-//     linkedState: true,
-//   },
-//   {
-//     id: '5',
-//     content: 'Linked Record 5 from Table A',
-//     linkedState: true,
-//   },
-// ];
 
 /*
  * For now, let the referenceId !
@@ -95,7 +63,7 @@ const RelationRecords = ({
   useEffect(() => {
     if (data) {
       const mappingData: RelationRecordsType[] = data.map((record) => ({
-        id: record.id,
+        ...record,
         linkedState: rowData.referenceRecords.includes(record.id.toString()),
       }));
 
@@ -112,7 +80,6 @@ const RelationRecords = ({
   }
 
   const handleItemClick = (id: number) => {
-    console.log('click');
     setLinkedData((previousData) =>
       previousData.map((record) => {
         if (record.id === id) {
@@ -122,8 +89,6 @@ const RelationRecords = ({
             if (indexToRemove !== -1) {
               linkedRecordIds.splice(indexToRemove, 1);
             }
-
-            console.log(linkedRecordIds);
           } else {
             linkedRecordIds.push(id.toString());
           }
@@ -150,42 +115,47 @@ const RelationRecords = ({
           </Button>
         </div>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="min-w-[300px]">
         <DialogHeader>
           <DialogTitle className="flex align-middle justify-between">
             <TextWithIcon icon={<FileText />}>Linked Records</TextWithIcon>
           </DialogTitle>
           <Separator></Separator>
         </DialogHeader>
-
-        {linkedData.length > 0 ? (
-          <ul>
-            {linkedData.map((data, index) => {
-              // ? When come to real ? data.linkedState &&
-              return (
-                <Button
-                  key={index}
-                  variant={'ghost'}
-                  className="w-full justify-between flex"
-                  data-id={data.id}
-                  onClick={() => handleItemClick(data.id)}
-                >
-                  Record ID: {data.id}
-                  {data.linkedState && (
-                    <span>
-                      <Link className="text-ring" size={16}></Link>
-                    </span>
-                  )}
-                </Button>
-              );
-            })}
-          </ul>
-        ) : undefined}
+        <div className="overflow-auto">
+          {linkedData.length > 0 ? (
+            <ul className="max-h-[400px]">
+              {linkedData.map((data, index) => {
+                return (
+                  <ButtonRercord
+                    key={index}
+                    handleItemClick={handleItemClick}
+                    record={data}
+                  />
+                  // <Button
+                  //   key={index}
+                  //   variant={'ghost'}
+                  //   className="w-full justify-between flex"
+                  //   data-id={data.id}
+                  //   onClick={() => handleItemClick(data.id)}
+                  // >
+                  //   Record ID: {data.id}
+                  // {data.linkedState && (
+                  //   <span>
+                  //     <Link className="text-ring" size={16}></Link>
+                  //   </span>
+                  // )}
+                  // </Button>
+                );
+              })}
+            </ul>
+          ) : undefined}
+        </div>
         <Separator></Separator>
         <DialogFooter>
-          <Button type="submit" disabled>
-            Close
-          </Button>
+          <DialogClose asChild>
+            <Button>Close</Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>
