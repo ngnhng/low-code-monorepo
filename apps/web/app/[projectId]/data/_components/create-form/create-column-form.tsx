@@ -42,7 +42,6 @@ const formSchema = z.object({
     message: 'columnname must be at least 2 characters.',
   }),
   type: z.enum(typeValues),
-  defaultValue: z.string().optional(),
   referenceTable: z.string().optional(),
 });
 
@@ -69,6 +68,10 @@ const CreateColumnForm = ({
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      columnname: '',
+      type: undefined,
+    },
   });
 
   const { isSubmitting } = form.formState;
@@ -85,44 +88,74 @@ const CreateColumnForm = ({
   }, [selectedTable]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    // reset condition for logic disabled reference table
     setType('');
 
-    const data: ColumnDef = {
+    // transform data from form schema
+    // check logic naming for foreign key id
+    let newColData: ColumnDef = {
       id: values.columnname.replaceAll(/\s/g, '').toLowerCase(),
       label: values.columnname,
       type: values.type,
-      defaultValue: values.defaultValue,
       isActive: true,
       isPrimaryKey: false,
-      isForeignKey: false,
+      isForeignKey: values.referenceTable ? true : false,
       foreignKeyId: values.referenceTable
         ? `${tableId}-${values.referenceTable}`
         : '',
     };
 
+    console.log('Creating Column:', newColData);
+
+    if (values.referenceTable) {
+      newColData = {
+        ...newColData,
+        referenceTable: values.referenceTable,
+      };
+    }
+
+    // Check if existing column with same function and add column to localCol
     let flag = false;
 
     setLocalColumns((previous) => {
-      const existingColumns = previous.find(
-        (col) => col.id.toLowerCase() === data.id.toLowerCase(),
-      );
+      const existingColumns = previous.find((col) => {
+        if (col.id.toLowerCase() === newColData.id.toLowerCase()) {
+          return col;
+        }
+
+        if (
+          col.referenceTable &&
+          col.referenceTable?.toLowerCase() ===
+            newColData.referenceTable?.toLowerCase()
+        ) {
+          return col;
+        }
+
+        return;
+      });
+
+      console.log('Existing:', existingColumns);
 
       if (existingColumns) {
         flag = true;
         return [...previous];
       }
 
-      return [...previous, data];
+      return [...previous, newColData];
     });
 
     if (flag) {
+      form.reset();
+      setOpen(false);
+      toast.error('Column existing');
       return;
     }
 
+    // set default value for type link and newReferencetableid
     if (values.type === 'link') {
       setLocalData((previous) => {
         const newData = previous.map((row) => {
-          row[data.id] = {
+          row[newColData.id] = {
             referenceTableId: `${values.referenceTable}`,
             referenceRecords: [],
           };
@@ -145,15 +178,15 @@ const CreateColumnForm = ({
     form.reset();
     setOpen(false);
 
-    toast.success('Column has been created.', {
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">
-            {JSON.stringify(data, undefined, 2)}
-          </code>
-        </pre>
-      ),
-    });
+    // toast.success('Column has been created.', {
+    //   description: (
+    //     <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+    //       <code className="text-white">
+    //         {JSON.stringify(data, undefined, 2)}
+    //       </code>
+    //     </pre>
+    //   ),
+    // });
   };
 
   const references = data?.map((data) => ({
