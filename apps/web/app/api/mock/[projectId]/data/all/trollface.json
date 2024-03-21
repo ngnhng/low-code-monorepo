@@ -42,19 +42,9 @@
         "isPrimaryKey": false,
         "isForeignKey": false,
         "foreignKeyId": ""
-      },
-      {
-        "id": "users-posts",
-        "label": "Linked Posts",
-        "type": "link",
-        "isActive": true,
-        "isPrimaryKey": false,
-        "isForeignKey": false,
-        "referenceTable": "posts",
-        "foreignKeyId": "users-posts"
       }
     ],
-    "referenceTables": ["posts"]
+    "referenceTables": []
   },
   {
     "id": "posts",
@@ -81,39 +71,8 @@
         "isPrimaryKey": false,
         "isForeignKey": false,
         "foreignKeyId": ""
-      },
-      {
-        "id": "users-posts",
-        "label": "users-posts",
-        "type": "link",
-        "isActive": true,
-        "isPrimaryKey": false,
-        "referenceTable": "users",
-        "isForeignKey": false,
-        "foreignKeyId": "users-posts"
       }
     ],
-    "referenceTables": ["users"]
-  },
-  {
-    "id": "website",
-    "name": "Website",
-    "source": "Source 1",
-    "created": "2021-08-01",
-    "updated": "2021-08-01",
-    "status": "Active",
-    "columns": [
-      {
-        "id": "userid",
-        "label": "UserId",
-        "type": "link",
-        "isActive": true,
-        "isPrimaryKey": false,
-        "isForeignKey": true,
-        "foreignKeyId": "website-users",
-        "referenceTable": "users"
-      }
-    ],
-    "referenceTables": ["users"]
+    "referenceTables": []
   }
 ]

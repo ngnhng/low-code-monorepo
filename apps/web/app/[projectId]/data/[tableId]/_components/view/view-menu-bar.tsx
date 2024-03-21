@@ -54,7 +54,7 @@ export const ViewMenuBar = ({
         <QueryBuilderList columns={localColumns} tableId={tableId} />
       </div>
 
-      <div className="flex flex-end space-x-4 pb-2">
+      <div className="flex flex-end space-x-4 mb-4">
         <div className="flex w-full max-w-sm items-center space-x-2">
           <Input
             type="email"
