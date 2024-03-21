@@ -171,7 +171,7 @@ export const TableEditor = ({
         value={localData}
         columns={fields}
         rowKey={'id'}
-        // height={700}
+        height={700}
         headerRowHeight={50}
         rowHeight={100}
         gutterColumn={{ component: ({ rowData }) => <div>{rowData.id}</div> }}
@@ -233,7 +233,7 @@ const TitleDataSheet = ({
     <div className="flex items-center justify-between">
       <div>{column.label}</div>
 
-      <DropdownMenu>
+      {/* <DropdownMenu>
         <DropdownMenuTrigger>
           <FlaskConical size={24} />
         </DropdownMenuTrigger>
@@ -252,7 +252,7 @@ const TitleDataSheet = ({
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu> */}
     </div>
   );
 };
