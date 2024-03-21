@@ -598,12 +598,13 @@ export async function OLD_POST(
 export async function OLD_GET(
   request: NextRequest,
   { params }: { params: { projectId: string; tableId: string } },
+  { params }: { params: { projectId: string; tableId: string } },
 ) {
   const searchParams = request.nextUrl.searchParams;
   const page = searchParams.get('page') || 0;
   const limit = searchParams.get('limit') || 10;
 
-  const databasePath = path.join(
+  const tablePath = path.join(
     process.cwd(),
     `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`,
   );
@@ -667,17 +668,12 @@ export async function OLD_GET(
 
     const response = {
       data: {
-        columns: requestTable
-          ? // eslint-disable-next-line unicorn/no-nested-ternary
-            requestTable.columns.length > data.columns.length
-            ? requestTable.columns
-            : data.columns
-          : data.columns,
+        columns: table.columns,
         rows:
-          data.rows.length > 30
-            ? data.rows.slice(Number(page) * Number(limit), Number(limit))
-            : data.rows,
-        maxIndex: data.rows.length,
+          table.rows.length > 30
+            ? table.rows.slice(Number(page) * Number(limit), Number(limit))
+            : table.rows,
+        maxIndex: table.rows.length,
       },
       meta: {
         page,
