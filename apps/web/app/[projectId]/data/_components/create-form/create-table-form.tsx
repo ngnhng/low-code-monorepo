@@ -99,9 +99,14 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.post(`/api/mock/${projectId}/data/${values.tablename}`, {
-        data: values,
-      });
+      await axios.post(
+        `/api/mock/${projectId}/data/${values.tablename
+          .replaceAll(/\s/g, '')
+          .toLowerCase()}`,
+        {
+          data: values,
+        },
+      );
       toast.success('Table has been created.', {
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">

@@ -50,14 +50,13 @@ export default function Page({
     }
 
     try {
-      // axios.put(`/api/mock/${params.projectId}/data/${params.tableId}`, {
-      //   data: {
-      //     columns: localColumns,
-      //     rows: localData,
-      //   },
-      // });
-
-      console.log(localData);
+      axios.put(`/api/mock/${params.projectId}/data/${params.tableId}`, {
+        data: {
+          columns: localColumns,
+          rows: localData,
+        },
+        newReferenceTableIds: newReferenceTable,
+      });
 
       toast.success(
         `Table has been updated at: /api/mock/${params.projectId}/data/${params.tableId} `,
@@ -65,16 +64,7 @@ export default function Page({
           description: (
             <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
               <code className="text-white">
-                {JSON.stringify(
-                  {
-                    data: {
-                      columns: localColumns,
-                      rows: localData,
-                    },
-                  },
-                  undefined,
-                  2
-                )}
+                {JSON.stringify(newReferenceTable, undefined, 2)}
               </code>
             </pre>
           ),

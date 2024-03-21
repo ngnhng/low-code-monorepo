@@ -17,16 +17,6 @@
       "isPrimaryKey": false,
       "isForeignKey": false,
       "foreignKeyId": ""
-    },
-    {
-      "id": "users-posts",
-      "label": "users-posts",
-      "type": "link",
-      "referenceTable": "posts",
-      "isActive": true,
-      "isPrimaryKey": false,
-      "isForeignKey": false,
-      "foreignKeyId": "users-posts"
     }
   ],
   "rows": [

@@ -27,7 +27,7 @@ interface TableItem {
   updated: string;
   status: string;
   columns: ColumnDef[];
-  referenceTables?: string[];
+  referenceTables: string[];
 }
 
 // interface TableOperation {

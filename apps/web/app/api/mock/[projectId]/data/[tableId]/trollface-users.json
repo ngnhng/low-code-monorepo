@@ -35,16 +35,6 @@
       "isPrimaryKey": false,
       "isForeignKey": false,
       "foreignKeyId": ""
-    },
-    {
-      "id": "users-posts",
-      "label": "Linked Posts",
-      "type": "link",
-      "referenceTable": "posts",
-      "isActive": true,
-      "isPrimaryKey": false,
-      "isForeignKey": false,
-      "foreignKeyId": "users-posts"
     }
   ],
   "rows": [
@@ -53,22 +43,14 @@
       "phone": "Stoltenberg",
       "website": "786.574.3174 x042",
       "id": 1,
-      "number": 1,
-      "users-posts": {
-        "referenceTableId": "posts",
-        "referenceRecords": ["1"]
-      }
+      "number": 1
     },
     {
       "username": "Milton Kerluke MD",
       "phone": "Rath",
       "website": "324.743.7152 x772",
       "id": 2,
-      "number": 2,
-      "users-posts": {
-        "referenceTableId": "posts",
-        "referenceRecords": []
-      }
+      "number": 2
     }
   ]
 }
