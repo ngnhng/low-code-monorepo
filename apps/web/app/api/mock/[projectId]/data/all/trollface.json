@@ -52,16 +52,6 @@
         "isForeignKey": false,
         "referenceTable": "posts",
         "foreignKeyId": "users-posts"
-      },
-      {
-        "id": "website2-users",
-        "label": "website2-users",
-        "type": "link",
-        "isActive": true,
-        "isPrimaryKey": false,
-        "isForeignKey": true,
-        "foreignKeyId": "website2-users",
-        "referenceTable": "website2"
       }
     ],
     "referenceTables": ["posts"]
@@ -101,6 +91,27 @@
         "referenceTable": "users",
         "isForeignKey": false,
         "foreignKeyId": "users-posts"
+      }
+    ],
+    "referenceTables": ["users"]
+  },
+  {
+    "id": "website",
+    "name": "Website",
+    "source": "Source 1",
+    "created": "2021-08-01",
+    "updated": "2021-08-01",
+    "status": "Active",
+    "columns": [
+      {
+        "id": "userid",
+        "label": "UserId",
+        "type": "link",
+        "isActive": true,
+        "isPrimaryKey": false,
+        "isForeignKey": true,
+        "foreignKeyId": "website-users",
+        "referenceTable": "users"
       }
     ],
     "referenceTables": ["users"]

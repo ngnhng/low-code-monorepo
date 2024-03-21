@@ -171,7 +171,9 @@ export const TableEditor = ({
         value={localData}
         columns={fields}
         rowKey={'id'}
-        height={700}
+        // height={700}
+        headerRowHeight={50}
+        rowHeight={100}
         gutterColumn={{ component: ({ rowData }) => <div>{rowData.id}</div> }}
         onChange={handleChange}
         createRow={() => {
@@ -280,7 +282,8 @@ const LinkCell = ({ rowData, columnData }) => {
         columnData={columnData}
       />
       <span>
-        {numberOfRecords} records from -{columnData.referenceTable}
+        {numberOfRecords} records -{' '}
+        <span className="text-emerald-500">{columnData.referenceTable}</span>
       </span>
     </div>
   );
