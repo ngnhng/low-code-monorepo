@@ -18,7 +18,7 @@ import { Filter, List } from "react-feather";
 
 export function Menu() {
   return (
-    <Menubar className="space-x-10 mx-2 rounded-custom">
+    <Menubar className="space-x-10 mx-2 rounded-md">
       <MenubarMenu>
         <MenubarTrigger>
           <TextWithIcon icon={<List />}>Fields</TextWithIcon>
