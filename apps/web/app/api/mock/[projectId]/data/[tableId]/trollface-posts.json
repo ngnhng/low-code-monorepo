@@ -1,5 +1,10 @@
 {
   "columns": [
+	{
+	  "id": "id",
+	  "label": "ID",
+	  "type": "number"
+	},
     {
       "id": "title",
       "label": "Title",

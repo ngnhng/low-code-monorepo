@@ -85,7 +85,7 @@ export function DataTable<TableItem, TValue>({
 
   return (
     <div>
-      <div className="rounded-custom border">
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -112,11 +112,14 @@ export function DataTable<TableItem, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   onClick={() => {
-                      console.log("Check Row:", row.original);
+                    console.log('Check Row:', row.original);
 
-                      router.push(window.location.pathname + '/' + row.original.id);
-                    }
-                  }
+                    router.push(
+                      window.location.pathname +
+                        '/' +
+                        (row.original as { id: string }).id,
+                    );
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
