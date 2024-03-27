@@ -8,7 +8,7 @@ const Card = React.forwardRef<
     <div
         ref={ref}
         className={cn(
-            "rounded-custom border bg-card text-card-foreground shadow-sm",
+            "rounded-md border bg-card text-card-foreground shadow-sm",
             className
         )}
         {...props}
@@ -82,7 +82,7 @@ const CardButtonWithIcon = React.forwardRef<
     <div
         ref={ref}
         className={cn(
-            "rounded-custom border bg-card text-card-foreground shadow-sm",
+            "rounded-md border bg-card text-card-foreground shadow-sm",
             className
         )}
         onClick={onClick}
