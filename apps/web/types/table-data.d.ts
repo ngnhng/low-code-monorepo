@@ -19,16 +19,7 @@ export interface GetTableDataResponse extends DataTable {}
 
 export interface GetTablesResponse extends TableItem {}
 
-interface TableItem {
-  id: string;
-  name: string;
-  source: string;
-  created: string;
-  updated: string;
-  status: string;
-  columns: ColumnDef[];
-  referenceTables: string[];
-}
+export type TableItem = { id: string } & TableListAttributes;
 
 // interface TableOperation {
 //   type: 'update' | 'insert' | 'delete';
@@ -50,8 +41,15 @@ interface DataTable {
 
 type ColumnType = 'date' | 'text' | 'number' | 'boolean' | LinkColumn | 'link';
 
-interface ColumnDef {
-  id: string;
+export type ColumnDef = {id: string} & ColumnAttributes;
+
+export type RowDef = {id: number} & RowAttributes;
+
+export type RowAttributes = {
+	[key: string]: any;
+}
+
+export type ColumnAttributes = {
   label: string;
   type: ColumnType;
   isActive: boolean;
@@ -62,9 +60,13 @@ interface ColumnDef {
   defaultValue?: string;
 }
 
-interface RowDef {
-  id: number;
-  [key: string]: any;
+export type TableListAttributes = {
+  name: string;
+  source: string;
+  created: string;
+  updated: string;
+  status: string;
+  referenceTables: string[];
 }
 
 type LinkColumn = {

@@ -15,17 +15,21 @@ export default function Layout({
   params: { tableId: string };
 }) {
   return (
-    <Tabs defaultValue="view">
-      <TabsList className="flex justify-between w-full px-4">
-        <TextWithIcon icon={<Table />}>{params.tableId}</TextWithIcon>
+    <div className="h-full">
+      <Tabs defaultValue="view">
+        <TabsList className="flex justify-between w-full px-4">
+          <TextWithIcon icon={<Table />}>{params.tableId}</TextWithIcon>
 
-        <div className="flex justify-center w-full">
-          <TabsTrigger value="view">View</TabsTrigger>
-          <TabsTrigger value="fields">Fields</TabsTrigger>
-        </div>
-      </TabsList>
-      <TabsContent value="view">{view}</TabsContent>
-      <TabsContent value="fields">{fields}</TabsContent>
-    </Tabs>
+          <div className="flex justify-center w-full">
+            <TabsTrigger value="view">View</TabsTrigger>
+            <TabsTrigger value="fields">Fields</TabsTrigger>
+          </div>
+        </TabsList>
+        <TabsContent value="view">
+          <div className="h-full">{view}</div>
+        </TabsContent>
+        <TabsContent value="fields">{fields}</TabsContent>
+      </Tabs>
+    </div>
   );
 }

@@ -99,7 +99,7 @@ function EntityNode({ data }: { data }) {
       />{' '}
       :
       <Handle type="target" position={Position.Left} className="!bg-teal-500" />
-      <table className="bg-accent rounded-custom">
+      <table className="bg-accent rounded-md">
         <thead className="bg-primary text-white border border-solid border-blue-700">
           <tr>
             <th className="p-4">{data.fields.name}</th>

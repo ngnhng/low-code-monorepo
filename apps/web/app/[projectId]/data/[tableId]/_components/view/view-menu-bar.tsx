@@ -8,7 +8,7 @@ import QueryBuilderList from '../query-builder-list';
 
 interface ViewMenuBarProps {
   onCommit: any;
-  discardData: () => void;
+  discardData: any;
   // eslint-disable-next-line no-unused-vars
   setSearch?: (e: string) => void;
   setLocalColumns: any;

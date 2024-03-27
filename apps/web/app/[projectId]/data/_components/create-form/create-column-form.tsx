@@ -1,14 +1,26 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 import useSWR from 'swr';
 import { useMobxStore } from 'lib/mobx/store-provider';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
-import { Sheet, SheetContent, SheetTrigger } from '@repo/ui';
+import {
+  Command,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from '@repo/ui';
 import { Button, Input } from '@repo/ui';
 import {
   Form,
@@ -27,6 +39,7 @@ import {
 } from '@repo/ui';
 import { ColumnDef } from 'types/table-data';
 import { toast } from 'sonner';
+import cn from '../../../../../lib';
 
 interface CreateColumnFormProps {
   setLocalColumns: any;
@@ -37,13 +50,38 @@ interface CreateColumnFormProps {
 
 const typeValues = ['date', 'text', 'number', 'boolean', 'link'] as const;
 
-const formSchema = z.object({
-  columnname: z.string().min(2, {
-    message: 'columnname must be at least 2 characters.',
-  }),
-  type: z.enum(typeValues),
-  referenceTable: z.string().optional(),
-});
+const formSchema = z
+  .object({
+    columnname: z.string().min(2, {
+      message: 'columnname must be at least 2 characters.',
+    }),
+    type: z.enum(typeValues),
+    referenceTable: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.type === 'link' && !data.referenceTable) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Reference Table is required for Link type.',
+      path: ['referenceTable'],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.type !== 'link' && data.referenceTable) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Reference Table is not required for non-Link type.',
+      path: ['referenceTable'],
+    },
+  );
 
 const CreateColumnForm = ({
   setLocalColumns,
@@ -53,17 +91,16 @@ const CreateColumnForm = ({
 }: CreateColumnFormProps) => {
   const [open, setOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<any>();
-  // eslint-disable-next-line no-unused-vars
-  const [columnOfTable, setColumnOfTable] = useState<any[]>();
-  const [type, setType] = useState<string>('');
+  const [, setColumnOfTable] = useState<any[]>();
 
   const {
     tableData: { fetchTables },
     projectData: { currentProjectId },
   } = useMobxStore();
 
-  const { data, isLoading } = useSWR(`TABLE_DATA-${currentProjectId}-all`, () =>
-    fetchTables(),
+  const { data: allTables, isLoading } = useSWR(
+    `TABLE_DATA-${currentProjectId}-all`,
+    () => fetchTables(),
   );
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -74,7 +111,11 @@ const CreateColumnForm = ({
     },
   });
 
-  const { isSubmitting } = form.formState;
+  const {
+    control,
+    setValue,
+    formState: { isSubmitting },
+  } = form;
 
   useEffect(() => {
     if (selectedTable) {
@@ -87,9 +128,10 @@ const CreateColumnForm = ({
     }
   }, [selectedTable]);
 
+  // callback when validation succeed
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     // reset condition for logic disabled reference table
-    setType('');
+    //setType('');
 
     // transform data from form schema
     // check logic naming for foreign key id
@@ -155,13 +197,16 @@ const CreateColumnForm = ({
     if (values.type === 'link') {
       setLocalData((previous) => {
         const newData = previous.map((row) => {
-          row[newColData.id] = {
-            referenceTableId: `${values.referenceTable}`,
-            referenceRecords: [],
+          const newRow = {
+            ...row,
+            [newColData.id]: {
+              referenceTableId: `${values.referenceTable}`,
+              referenceRecords: [],
+            },
           };
 
-          console.log('New Created', row[values.columnname]);
-          return row;
+          console.log('New Created', newRow[values.columnname]);
+          return newRow;
         });
 
         return newData;
@@ -189,12 +234,21 @@ const CreateColumnForm = ({
     // });
   };
 
-  const references = data?.map((data) => ({
-    id: data.id,
-    tablename: data.name,
-  }));
+  // callback when validation failed
+  const onError = (errors: any) => {
+    console.log('Error:', errors);
+    // reset the reference table if the type is not link
+    setValue('referenceTable', undefined);
+  };
 
-  if (!data || isLoading) {
+  const references = useMemo(() => {
+    return allTables?.map((data) => ({
+      id: data.id,
+      tablename: data.name,
+    }));
+  }, [allTables]);
+
+  if (!allTables || isLoading) {
     return <div>Loading...</div>;
   }
 
@@ -208,9 +262,12 @@ const CreateColumnForm = ({
 
       <SheetContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form
+            onSubmit={form.handleSubmit(onSubmit, onError)}
+            className="space-y-8"
+          >
             <FormField
-              control={form.control}
+              control={control}
               name="columnname"
               render={({ field }) => (
                 <FormItem>
@@ -224,7 +281,7 @@ const CreateColumnForm = ({
             />
 
             <FormField
-              control={form.control}
+              control={control}
               name="type"
               render={({ field }) => (
                 <FormItem>
@@ -232,7 +289,7 @@ const CreateColumnForm = ({
                   <Select
                     onValueChange={(e) => {
                       field.onChange(e);
-                      setType(e);
+                      //  setType(e);
                     }}
                     defaultValue={field.value}
                   >
@@ -257,18 +314,86 @@ const CreateColumnForm = ({
             />
 
             <FormField
-              control={form.control}
+              control={control}
               name="referenceTable"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Reference Table</FormLabel>
-                  <Select
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            'justify-between',
+                            !field.value && 'text-muted-foreground',
+                          )}
+                        >
+                          {references?.find((ref) => ref.id === field.value)
+                            ?.tablename || 'Select a category'}
+                          <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <Command>
+                        <CommandInput
+                          placeholder="Search for a table"
+                          className="w-full"
+                        />
+                        <CommandGroup>
+                          {references &&
+                            references.map((ref, index) => (
+                              <CommandItem
+                                key={index}
+                                value={ref.id}
+                                onSelect={(value) => {
+                                  console.log('Selected:', value);
+                                  setSelectedTable(
+                                    allTables.find(
+                                      (table) => table.id === value,
+                                    ),
+                                  );
+
+                                  setValue(
+                                    'referenceTable',
+                                    value == field.value ? undefined : value,
+                                  );
+                                }}
+                                className={cn(
+                                  'flex items-center',
+                                  field.value === ref.id &&
+                                    'bg-slate-950 text-white',
+                                )}
+                              >
+                                {ref.tablename}
+                                {field.value === ref.id && (
+                                  <CheckIcon
+                                    className={cn(
+                                      'ml-auto h-4 w-4',
+                                      ref.id === field.value
+                                        ? 'opacity-100'
+                                        : 'opacity-0',
+                                    )}
+                                  />
+                                )}
+                              </CommandItem>
+                            ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {/*<Select
                     onValueChange={(value) => {
-                      const table = data.find((table) => table.id === value);
+                      const table = allTables.find(
+                        (table) => table.id === value,
+                      );
                       setSelectedTable(table);
                       return field.onChange(value);
                     }}
-                    disabled={type !== 'link'}
+					defaultValue={undefined}
+                    //disabled={type !== 'link'}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -283,7 +408,7 @@ const CreateColumnForm = ({
                           </SelectItem>
                         ))}
                     </SelectContent>
-                  </Select>
+                  </Select>*/}
                   <FormMessage />
                 </FormItem>
               )}

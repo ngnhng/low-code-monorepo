@@ -37,22 +37,23 @@ export default function Page({
     return <div>Loading...</div>;
   }
 
-  const handleCommit = (
+
+  const handleCommit = async (
     localColumns: ColumnDef[],
     localData: RowDef[],
     deletedRowIds: Set<number>,
     newReferenceTable,
-    // eslint-disable-next-line unicorn/consistent-function-scoping
   ) => {
-    if (deletedRowIds.size > 0) {
-      localData = localData.filter((row) => !deletedRowIds.has(row.id));
-    }
+    const filteredData =
+      deletedRowIds.size > 0
+        ? localData.filter((row) => !deletedRowIds.has(row.id))
+        : localData;
 
     try {
-      axios.put(`/api/mock/${params.projectId}/data/${params.tableId}`, {
+      await axios.put(`/api/mock/${params.projectId}/data/${params.tableId}`, {
         data: {
           columns: localColumns,
-          rows: localData,
+          rows: filteredData,
         },
         newReferenceTableIds: newReferenceTable,
       });
@@ -69,20 +70,20 @@ export default function Page({
           ),
         },
       );
-    } catch {
-      console.error('Something went wrong when committing');
+    } catch (error) {
+      console.error('Something went wrong when committing', error);
     }
 
     console.log('handleCommit');
   };
 
   return (
-    <>
+    <div className="mx-4 h-full">
       <TableEditor
         tableId={params.tableId}
         tableData={data}
         onCommit={handleCommit}
       />
-    </>
+    </div>
   );
 }

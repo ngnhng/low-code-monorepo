@@ -84,7 +84,7 @@ export function DatabaseTabs({ data, columns, projectId }) {
       <Separator className="my-4" />
 
       <TabsContent value="tables">
-        <div className="container mx-auto">
+        <div className="container mr-auto">
           <HorizontalList>
             <CreateTableForm projectId={projectId} />
 

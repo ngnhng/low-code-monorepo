@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useEffect, useMemo, useState } from 'react';
 
 import {
@@ -10,7 +9,6 @@ import {
   dateColumn,
   DynamicDataSheetGrid,
   AddRowsComponentProps,
-  // CellComponent,
 } from 'react-datasheet-grid';
 import 'react-datasheet-grid/dist/style.css';
 import { Operation } from 'react-datasheet-grid/dist/types';
@@ -18,28 +16,24 @@ import { ColumnType, DataTable, RowDef, ColumnDef } from 'types/table-data';
 
 import { ViewMenuBar } from './view-menu-bar';
 import RelationRecords from '../relation-record/relation-records';
-import {
-  Button,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@repo/ui';
-import { FlaskConical } from 'lucide-react';
+import { Button } from '@repo/ui';
 
-interface TableEditorProps {
+type CommitFunc = (
+  // eslint-disable-next-line no-unused-vars
+  localColumns: ColumnDef[],
+  // eslint-disable-next-line no-unused-vars
+  localData: RowDef[],
+  // eslint-disable-next-line no-unused-vars
+  deletedRowIds: Set<number>,
+  // eslint-disable-next-line no-unused-vars
+  newReferenceTableId: any,
+) => void;
+
+type TableEditorProps = {
   tableId: string;
   tableData: DataTable;
-  onCommit: (
-    localColumns: ColumnDef[],
-    localData: RowDef[],
-    deletedRowIds: Set<number>,
-    newReferenceTableId: any,
-  ) => void;
-}
+  onCommit: CommitFunc;
+};
 
 // TODO: handle types
 interface TitleDataSheetProps {
@@ -154,7 +148,7 @@ export const TableEditor = ({
   };
 
   return (
-    <>
+    <div className="flex flex-col h-full">
       <ViewMenuBar
         onCommit={onCommit}
         discardData={discardData}
@@ -167,66 +161,70 @@ export const TableEditor = ({
         setNewReferenceTableId={setNewReferenceTableId}
         tableId={tableId}
       />
-      <DynamicDataSheetGrid
-        value={localData}
-        columns={fields}
-        rowKey={'id'}
-        height={700}
-        headerRowHeight={50}
-        rowHeight={100}
-        gutterColumn={{ component: ({ rowData }) => <div>{rowData.id}</div> }}
-        onChange={handleChange}
-        createRow={() => {
-          const rowReturn = {
-            ...Object.fromEntries(
-              localColumns.map((col) => [
-                col.id,
-                returnDefaultValue(col.type, col.referenceTable),
-              ]),
-            ),
-          };
+      <div className="mx-4 h-full">
+        <DynamicDataSheetGrid
+          value={localData}
+          columns={fields}
+          rowKey={'id'}
+          height={700}
+          headerRowHeight={50}
+          rowHeight={100}
+          gutterColumn={{ component: ({ rowData }) => <div>{rowData.id}</div> }}
+          onChange={handleChange}
+          createRow={() => {
+            const rowReturn = {
+              ...Object.fromEntries(
+                localColumns.map((col) => [
+                  col.id,
+                  returnDefaultValue(col.type, col.referenceTable),
+                ]),
+              ),
+            };
 
-          console.log(rowReturn);
+            console.log(rowReturn);
 
-          return {
-            ...rowReturn,
-            id: genId(),
-          };
-        }}
-        duplicateRow={({ rowData }) => {
-          return {
-            ...recreateNestedObjects(rowData),
-            id: genId(),
-          };
-        }}
-        rowClassName={({ rowData }) => {
-          if (deletedRowIds.has(rowData.id)) {
-            return 'row-deleted';
-          }
-          if (createdRowIds.has(rowData.id)) {
-            return 'row-created';
-          }
-          if (updatedRowIds.has(rowData.id)) {
-            return 'row-updated';
-          }
-        }}
-        cellClassName={({ columnId }) => {
-          if (createdColumn.has(columnId || '')) {
-            return 'cell-created';
-          }
-          if (deletedColumn.has(columnId || '')) {
-            return 'cell-deleted';
-          }
-        }}
-        addRowsComponent={(props) => <AddRows {...props} table={tableData} />}
-      />
-    </>
+            return {
+              ...rowReturn,
+              id: genId(),
+            };
+          }}
+          duplicateRow={({ rowData }) => {
+            return {
+              ...recreateNestedObjects(rowData),
+              id: genId(),
+            };
+          }}
+          rowClassName={({ rowData }) => {
+            if (deletedRowIds.has(rowData.id)) {
+              return 'row-deleted';
+            }
+            if (createdRowIds.has(rowData.id)) {
+              return 'row-created';
+            }
+            if (updatedRowIds.has(rowData.id)) {
+              return 'row-updated';
+            }
+          }}
+          cellClassName={({ columnId }) => {
+            if (createdColumn.has(columnId || '')) {
+              return 'cell-created';
+            }
+            if (deletedColumn.has(columnId || '')) {
+              return 'cell-deleted';
+            }
+          }}
+          addRowsComponent={(props) => <AddRows {...props} table={tableData} />}
+        />
+      </div>
+    </div>
   );
 };
 
 const TitleDataSheet = ({
   column,
+  // eslint-disable-next-line no-unused-vars
   handleSortClickAsc,
+  // eslint-disable-next-line no-unused-vars
   handleSortClickDesc,
 }: TitleDataSheetProps) => {
   return (
