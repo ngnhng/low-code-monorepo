@@ -1,19 +1,19 @@
-import styles from './style.module.css';
+import styles from "./style.module.css";
 
-import React, { useEffect, useState } from 'react';
-import { ComponentConfig } from '@measured/puck';
-import getClassNameFactory from 'lib/classname-factory/get-classname-factory';
-import { Type, ChevronDown } from 'react-feather';
+import React, { useEffect, useState } from "react";
+import { ComponentConfig } from "@measured/puck";
+import getClassNameFactory from "lib/classname-factory/get-classname-factory";
+import { Type, ChevronDown } from "react-feather";
 
-import 'chart.js/auto';
-import { Chart } from 'react-chartjs-2';
-import { ChartTypeRegistry } from 'chart.js/auto';
-import axios, { CancelTokenSource } from 'axios';
-import Loading from './loading';
-import { RowDef } from 'types/table-data';
-import { Checkbox } from '@repo/ui';
+import "chart.js/auto";
+import { Chart } from "react-chartjs-2";
+import { ChartTypeRegistry } from "chart.js/auto";
+import axios, { CancelTokenSource } from "axios";
+import Loading from "./loading";
+import { RowDef } from "types/table-data";
+import { Checkbox } from "@repo/ui";
 
-const getClassNameInput = getClassNameFactory('Input', styles);
+const getClassNameInput = getClassNameFactory("Input", styles);
 
 export type ChartsProps = {
   config: {
@@ -24,7 +24,7 @@ export type ChartsProps = {
     height: string;
     // ----
     visibleColumns: string[];
-    importType: 'provider' | 'database' | '';
+    importType: "provider" | "database" | "";
     tableId: string;
     // ---
     labels: string;
@@ -40,14 +40,14 @@ export type DataFormat = {
 };
 
 const chartTypes = [
-  'bar',
-  'line',
-  'pie',
-  'doughnut',
-  'polarArea',
-  'radar',
-  'scatter',
-  'bubble',
+  "bar",
+  "line",
+  "pie",
+  "doughnut",
+  "polarArea",
+  "radar",
+  "scatter",
+  "bubble",
 ];
 
 /**
@@ -60,15 +60,15 @@ Transforms the given row data into a format that can be used by charts.
 function transformDataset(rowData: RowDef[], labels: string, y: string[]) {
   if (!rowData || !rowData[0]) {
     return {
-      labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple'],
+      labels: ["Red", "Blue", "Yellow", "Green", "Purple"],
       datasets: [
         {
-          label: 'Sample',
+          label: "Sample",
           data: [7, 19, 3, 5, 2, 3],
           borderWidth: 1,
         },
         {
-          label: 'Sample 2',
+          label: "Sample 2",
           data: [7, 19, 3, 5, 2, 3],
           borderWidth: 1,
         },
@@ -91,7 +91,7 @@ function transformDataset(rowData: RowDef[], labels: string, y: string[]) {
         labels: [],
         datasets: [
           {
-            label: 'Choose labels and datasets',
+            label: "Choose labels and datasets",
             data: [],
             borderWidth: 1,
           },
@@ -108,18 +108,18 @@ function transformDataset(rowData: RowDef[], labels: string, y: string[]) {
 const cssValueCheck = (value: string) =>
   /\d+(\.\d+)?(%|px|em|rem|(d|s|l)v(w|h))/g.test(value);
 
-const importTypes = ['provider', 'database'];
+const importTypes = ["provider", "database"];
 
 export const Charts: ComponentConfig<ChartsProps> = {
   fields: {
     config: {
-      type: 'custom',
+      type: "custom",
       render: ({ value, onChange }) => {
         // eslint-disable-next-line no-unused-vars
         const [chartData, setChartData] = useState<any[]>();
         // eslint-disable-next-line no-unused-vars
         const [isLoading, setIsLoading] = useState(false);
-        const [importType, setImportType] = useState<string>('provider');
+        const [importType, setImportType] = useState<string>("provider");
         const [checkedArray, setCheckedArray] = useState<string[]>([]);
 
         const fetchChartData = async (source: CancelTokenSource) => {
@@ -140,10 +140,10 @@ export const Charts: ComponentConfig<ChartsProps> = {
         };
 
         useEffect(() => {
-          if (value.importType === '' || value.importType === 'provider')
+          if (value.importType === "" || value.importType === "provider")
             return;
 
-          if (value.url === '') return;
+          if (value.url === "") return;
 
           const source = axios.CancelToken.source();
           fetchChartData(source);
@@ -156,24 +156,24 @@ export const Charts: ComponentConfig<ChartsProps> = {
         const Select = ({ prop, name, selectOptions, special }) => {
           return (
             <label className={getClassNameInput()}>
-              <div className={getClassNameInput('label')}>
-                <div className={getClassNameInput('labelIcon')}>
+              <div className={getClassNameInput("label")}>
+                <div className={getClassNameInput("labelIcon")}>
                   <ChevronDown size={16} />
                 </div>
                 {name as string}
               </div>
               <select
-                className={getClassNameInput('input')}
+                className={getClassNameInput("input")}
                 onChange={(e) => {
                   const clone = structuredClone(value);
                   clone[prop] = e.currentTarget.value;
 
                   if (special === true) {
-                    clone['datasets'] = [];
+                    clone["datasets"] = [];
                   }
 
                   onChange(clone);
-                  console.log('Clone:', clone);
+                  console.log("Clone:", clone);
                 }}
                 value={value[prop]}
               >
@@ -199,8 +199,8 @@ export const Charts: ComponentConfig<ChartsProps> = {
         }) => {
           return (
             <label className={getClassNameInput()}>
-              <div className={getClassNameInput('label')}>
-                <div className={getClassNameInput('labelIcon')}>
+              <div className={getClassNameInput("label")}>
+                <div className={getClassNameInput("labelIcon")}>
                   <Type size={16} />
                 </div>
                 {name}
@@ -208,10 +208,10 @@ export const Charts: ComponentConfig<ChartsProps> = {
               <div className="flex items-center justify-center">
                 <input
                   type={type}
-                  className={getClassNameInput('input')}
+                  className={getClassNameInput("input")}
                   autoComplete="off"
                   onBlur={(e) => {
-                    if (type === 'text') {
+                    if (type === "text") {
                       const clone = structuredClone(value);
                       clone[prop] = e.currentTarget.value;
 
@@ -222,7 +222,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
                         onChange(clone);
                     }
 
-                    if (type === 'checkbox') {
+                    if (type === "checkbox") {
                       const clone = structuredClone(value);
                       clone[prop].push(e.currentTarget.value);
 
@@ -230,9 +230,9 @@ export const Charts: ComponentConfig<ChartsProps> = {
                       console.log(value);
                     }
                   }}
-                  defaultValue={type === 'text' ? value[prop] : 'Mock Fields'}
+                  defaultValue={type === "text" ? value[prop] : "Mock Fields"}
                 />
-                {type === 'checkbox' ? <label>{name}</label> : undefined}
+                {type === "checkbox" ? <label>{name}</label> : undefined}
               </div>
             </label>
           );
@@ -276,25 +276,25 @@ export const Charts: ComponentConfig<ChartsProps> = {
             />
             <div>
               <label className={getClassNameInput()}>
-                <div className={getClassNameInput('label')}>
-                  <div className={getClassNameInput('labelIcon')}>
+                <div className={getClassNameInput("label")}>
+                  <div className={getClassNameInput("labelIcon")}>
                     <ChevronDown size={16} />
                   </div>
                   Import Type
                 </div>
                 <select
-                  className={getClassNameInput('input')}
+                  className={getClassNameInput("input")}
                   onChange={(e) => {
                     setChartData(undefined);
                     setImportType(e.currentTarget.value);
                     const clone = structuredClone(value);
                     clone.importType = e.currentTarget.value;
-                    clone.url = '';
+                    clone.url = "";
                     clone.selectedTableFields = [];
-                    clone.labels = '';
+                    clone.labels = "";
                     clone.datasets = [];
 
-                    if (e.currentTarget.value === 'database') {
+                    if (e.currentTarget.value === "database") {
                       clone.url = `http://localhost:3000/api/mock/trollface/data/all`;
                     }
 
@@ -309,7 +309,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
               </label>
             </div>
 
-            {importType === 'provider' ? (
+            {importType === "provider" ? (
               <Input prop="url" name="Data source URL" type="text" />
             ) : // eslint-disable-next-line unicorn/no-nested-ternary
             chartData ? (
@@ -332,11 +332,11 @@ export const Charts: ComponentConfig<ChartsProps> = {
                 />
 
                 <div>
-                  <div className={getClassNameInput('label')}>
-                    <div className={getClassNameInput('labelIcon')}>
+                  <div className={getClassNameInput("label")}>
+                    <div className={getClassNameInput("labelIcon")}>
                       <ChevronDown size={16} />
                     </div>
-                    {'Datasets Columns'}
+                    {"Datasets Columns"}
                   </div>
                   <ul>
                     {value.selectedTableFields.map((field, index) => (
@@ -368,15 +368,15 @@ export const Charts: ComponentConfig<ChartsProps> = {
   },
   defaultProps: {
     config: {
-      url: '',
-      title: 'Sample Chart',
-      chartType: 'bar',
-      width: '100%',
-      height: '600px',
+      url: "",
+      title: "Sample Chart",
+      chartType: "bar",
+      width: "100%",
+      height: "600px",
       visibleColumns: [],
-      importType: 'provider',
-      tableId: '',
-      labels: '',
+      importType: "provider",
+      tableId: "",
+      labels: "",
       datasets: [],
       selectedTableFields: [],
     },
@@ -388,9 +388,9 @@ export const Charts: ComponentConfig<ChartsProps> = {
     const [isLoading, setIsLoading] = useState(false);
 
     const fetchChartData = async (source: CancelTokenSource) => {
-      console.log('Fetching chart data ...');
+      console.log("Fetching chart data ...");
       const urlToFetch =
-        config.importType === 'database'
+        config.importType === "database"
           ? `http://localhost:3000/api/mock/trollface/data/${config.tableId}/rows`
           : config.url;
 
@@ -403,7 +403,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
 
         const data = response.data;
 
-        console.log('chart data', data);
+        console.log("chart data", data);
 
         setIsLoading(false);
         setChartData(data);
@@ -415,11 +415,11 @@ export const Charts: ComponentConfig<ChartsProps> = {
     };
 
     useEffect(() => {
-      if (config.importType === '') return;
+      if (config.importType === "") return;
 
-      if (config.importType === 'database' && config.tableId === '') return;
+      if (config.importType === "database" && config.tableId === "") return;
 
-      if (config.url === '') return;
+      if (config.url === "") return;
 
       const source = axios.CancelToken.source();
       fetchChartData(source);
@@ -434,18 +434,18 @@ export const Charts: ComponentConfig<ChartsProps> = {
     ) : (
       <div
         style={{
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '20px',
-          padding: '20px',
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "20px",
+          padding: "20px",
         }}
       >
         <div
           style={{
-            maxWidth: '1280px',
+            maxWidth: "1280px",
             width: config.width,
             height: config.height,
           }}
@@ -470,7 +470,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
         </div>
         <div
           style={{
-            fontSize: '1.5rem',
+            fontSize: "1.5rem",
           }}
         >
           {config.title}
