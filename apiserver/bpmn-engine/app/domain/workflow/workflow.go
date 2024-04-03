@@ -15,15 +15,31 @@ type (
 	}
 
 	WorkflowStatusResponse struct {
-		WorkflowID  string                 `json:"workflow_id"`
-		CurrentNode string                 `json:"current_node"`
-		Health      string                 `json:"health"`
-		Logs        map[time.Time][]string `json:"logs"`
+		CurrentNode string    `json:"current_node"`
+		Health      string    `json:"health"`
+		Logs        []TaskLog `json:"logs"`
+	}
+	// TaskLog is the log of a service task or user task
+	TaskLog struct {
+		Id       string    `json:"id"`
+		Subject  string    `json:"subject"`
+		Received time.Time `json:"received"`
+
+		Payload string `json:"payload"`
 	}
 
 	LaunchStatus struct {
 		ProcessInstanceID string `json:"process_instance_id"`
 		WorkflowID        string `json:"workflow_id"`
+	}
+
+	CompleteUserTaskRequest struct {
+		Assignee string                 `json:"assignee"`
+		Vars     map[string]interface{} `json:"vars"`
+	}
+
+	CompleteUserTaskResponse struct {
+		Vars map[string]interface{} `json:"vars"`
 	}
 )
 
@@ -39,7 +55,6 @@ func (w *WorkflowLaunchRequest) Validate() error {
 
 func (w *WorkflowStatusResponse) Validate() error {
 	return validation.ValidateStruct(w,
-		validation.Field(&w.WorkflowID, validation.Required),
 		validation.Field(&w.CurrentNode, validation.Required),
 		validation.Field(&w.Health, validation.Required),
 		validation.Field(&w.Logs, validation.Required),

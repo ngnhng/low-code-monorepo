@@ -6,6 +6,8 @@ var Module = fx.Options(
 	fx.Provide(
 		NewLaunchWorkflowUseCase,
 		NewGoogleSheetUseCase,
+		NewFetchWorkflowStatusUseCase,
+		NewCompleteUserTaskUseCase,
 	),
 )
 

@@ -1,7 +1,7 @@
 version: "1.0"
 kind: ServiceTask
 metadata:
-    type: googleSheet
+    type: googleSheetReadData
     version: "0.1"
     description: A test task
 behaviour:

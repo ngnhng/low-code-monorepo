@@ -26,7 +26,9 @@ func NewLocalConfig() (Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	c := LocalConfig{}
+	c := LocalConfig{
+		Env: &Env{},
+	}
 	err = c.load(envMap)
 	if err != nil {
 		return nil, err
@@ -74,7 +76,7 @@ func (c *LocalConfig) GetApiConfig() ApiConfig {
 }
 
 func (c *LocalConfig) load(envMap map[string]string) error {
-	c.Env.Environment = c.getEnvOrDefault(envMap, "ENVIRONMENT", "development")
+	c.Env.Environment = c.getEnvOrDefault(envMap, "ENVIRONMENT", "local")
 	c.Env.LogLevel = c.getEnvOrDefault(envMap, "LOG_LEVEL", "debug")
 	c.Env.NatsURL = c.getEnvOrDefault(envMap, "NATS_URL", "nats://localhost:4222")
 	c.Env.LogPath = c.getEnvOrDefault(envMap, "LOG_PATH", "./log")

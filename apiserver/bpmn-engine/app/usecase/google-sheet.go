@@ -43,6 +43,7 @@ func NewGoogleSheetFn(uc *GoogleSheetUseCase) func(
 ) (model.Vars, error) {
 	return func(ctx context.Context, cl client.JobClient, vars model.Vars) (model.Vars, error) {
 		// get the sheet id and range from the vars
+		uc.Logger.Debug("Context", "ctx", ctx)
 		uc.Logger.Debug("Getting sheet data", "vars", vars)
 		sheetId, ok := vars["sheetId"].(string)
 		if !ok {

@@ -1,6 +1,8 @@
 package bpmn
 
 import (
+	executionlog "yalc/bpmn-engine/modules/bpmn/execution-log"
+
 	"go.uber.org/fx"
 )
 
@@ -8,6 +10,7 @@ var Module = fx.Module(
 	"bpmn",
 	fx.Provide(
 		NewSharClient,
+		executionlog.NewExecutionLogger,
 	),
 	//fx.Options(fx.Invoke(registerHooks)),
 )
