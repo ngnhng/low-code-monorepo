@@ -41,13 +41,13 @@ interface DataTable {
 
 type ColumnType = 'date' | 'text' | 'number' | 'boolean' | LinkColumn | 'link';
 
-export type ColumnDef = {id: string} & ColumnAttributes;
+export type ColumnDef = { id: string } & ColumnAttributes;
 
-export type RowDef = {id: number} & RowAttributes;
+export type RowDef = { id: number } & RowAttributes;
 
 export type RowAttributes = {
-	[key: string]: any;
-}
+  [key: string]: any;
+};
 
 export type ColumnAttributes = {
   label: string;
@@ -58,7 +58,7 @@ export type ColumnAttributes = {
   referenceTable?: string;
   foreignKeyId?: string;
   defaultValue?: string;
-}
+};
 
 export type TableListAttributes = {
   name: string;
@@ -67,7 +67,8 @@ export type TableListAttributes = {
   updated: string;
   status: string;
   referenceTables: string[];
-}
+  columns: ColumnDef[];
+};
 
 type LinkColumn = {
   referenceTableId: string;
