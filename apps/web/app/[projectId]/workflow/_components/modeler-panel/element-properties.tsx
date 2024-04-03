@@ -4,6 +4,7 @@ import { useEffect, useReducer, useState } from "react";
 import { getExtensionElement, hasDefinition } from "helpers/bpmn.helper";
 import { QAElementProperties } from "./qa-element-form";
 import GoogleSheetProps from "./google-sheet-props";
+import GatewayProps from "./gateway-props";
 import {
     Accordion,
     AccordionContent,
@@ -36,6 +37,7 @@ const initialState = {
     isQA: false,
     isGS: false,
     isStartEvent: false,
+    isGateway: false,
 };
 
 function reducer(state, action) {
@@ -54,6 +56,9 @@ function reducer(state, action) {
         }
         case "setIsStartEvent": {
             return { ...state, isStartEvent: action.payload };
+        }
+        case "setIsGateway": {
+            return { ...state, isGateway: action.payload };
         }
         default: {
             throw new Error(`Unsupported action type: ${action.type}`);
@@ -80,6 +85,7 @@ export function ElementProperties({ element, modeler }) {
 
         const { suitable, isGoogleSheet, $type } = bObject;
         const isStartEvent = $type === "bpmn:StartEvent";
+        const isGateway = $type === "bpmn:ExclusiveGateway";
 
         console.log("States", suitable, isGoogleSheet, isStartEvent);
 
@@ -92,8 +98,41 @@ export function ElementProperties({ element, modeler }) {
             handleSuitable();
         } else if (isGoogleSheet) {
             handleGoogleSheet(bObject);
+        } else if (isGateway) {
+            handleGateway(bObject);
         }
     }, [element]);
+
+    const handleGateway = (bObject: any) => {
+        dispatch({ type: "setIsGateway", payload: true });
+
+        if (bObject.extensionElements) return;
+
+        const moddle = modeler.get("moddle");
+        const modeling = modeler.get("modeling");
+        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
+
+        const ioMapping = moddle.create("yalc:ioMapping");
+
+        const input = moddle.create("yalc:input", {
+            source: "_input",
+            target: "",
+        });
+
+        const output = moddle.create("yalc:output", {
+            source: "_output",
+            target: "",
+        });
+
+        ioMapping.get("input").push(input);
+        ioMapping.get("output").push(output);
+
+        extensionElements.get("values").push(ioMapping);
+
+        modeling.updateProperties(element, {
+            extensionElements,
+        });
+    };
 
     const handleStartEvent = (bObject) => {
         dispatch({ type: "setIsStartEvent", payload: true });
@@ -257,6 +296,7 @@ export function ElementProperties({ element, modeler }) {
                         </AccordionContent>
                     </AccordionItem>
                 )}
+                {state.isGateway ? <GatewayProps element={element} modeler={modeler} /> : ""}
                 <AccordionItem value="actions">
                     <AccordionTrigger>Actions</AccordionTrigger>
                     <AccordionContent>
