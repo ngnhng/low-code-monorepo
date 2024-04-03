@@ -25,6 +25,12 @@ export default function GoogleSheetProps({ element, modeler }) {
     const [output, setOutput] = useState<any>();
 
     useEffect(() => {
+        const fnEnum = {
+            googleSheetGetData: "getData",
+            googleSheetAddRow: "add",
+            googleSheetRemoveRow: "remove",
+        };
+
         const bObject = getBusinessObject(element);
         if (!bObject.extensionElements) return;
 
@@ -32,9 +38,11 @@ export default function GoogleSheetProps({ element, modeler }) {
         setExtensionElements(extensionElements);
 
         const { input: ioMapping, output } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:ioMapping");
+        const definition = extensionElements.get("values").find((extension: any) => extension.type);
 
-        setInputs(ioMapping.filter((input: any) => input.source !== "=_globalContext_user"));
+        setInputs(ioMapping?.filter((input: any) => input.source !== "=_globalContext_user") ?? []);
         setOutput(output);
+        setType(definition ? fnEnum[definition.type] : "");
     }, []);
 
     const setInputSource = (value: string) => {
@@ -146,7 +154,7 @@ export default function GoogleSheetProps({ element, modeler }) {
                     onValueChange={(value) => {
                         setFunctionType(value);
                     }}
-                    defaultValue="getData"
+                    defaultValue={type}
                 >
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Select an action" />
