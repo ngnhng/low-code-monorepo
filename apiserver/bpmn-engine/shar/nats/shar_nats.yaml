@@ -1,0 +1,4 @@
+streams:
+  - name: "WORKFLOW"
+    consumers:
+      - name: "consumer 1"

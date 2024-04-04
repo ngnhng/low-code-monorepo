@@ -1,0 +1,47 @@
+version: "3.8"
+
+networks:
+    mynetwork:
+        driver: bridge
+
+services:
+    #workflow:
+    #    build:
+    #        context: .
+    #        dockerfile: Dockerfile.dev
+    #    networks:
+    #        - mynetwork
+    #    ports:
+    #        - "3000:3000"
+    #    env_file:
+    #        - ./app/.env.local
+    #    depends_on:
+    #        shar-server:
+    #            condition: service_started
+    #        nats:
+    #            condition: service_started
+
+    nats:
+        image: nats:2.10-alpine3.19
+        networks:
+            - mynetwork
+        ports:
+            - "4222:4222"
+            - "6222:6222"
+            - "8222:8222"
+        command:
+            - "--js"
+            - "--server_name"
+            - "nats"
+            - "-m"
+            - "8222"
+
+    shar-server:
+        image: registry.gitlab.com/shar-workflow/shar/dev/server:1.1.876
+        networks:
+            - mynetwork
+        environment:
+            - NATS_URL=nats://nats:4222
+        depends_on:
+            nats:
+                condition: service_started

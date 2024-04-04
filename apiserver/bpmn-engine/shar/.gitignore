@@ -1,0 +1,35 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+*.prof
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+.idea
+.vscode
+
+# private tests
+examples/private
+
+# avoid checking in binaries
+server/cmd/shar/shar
+
+build/
+/deploy/compose/.docker-compose.yml.swp
+/telemetry/cmd/shar-telemetry/shar-telemetry
+/server/shar
+/server/shar-telemetry
+/common/version/version.go
+/zen-shar/cmd/zen-shar/zen-shar
+/cli/cmd/shar/shar
+/report.xml
+/model/protodoc/protodoc

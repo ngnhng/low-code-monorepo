@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_09hgnht" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.4.2" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.0.0">
+  <bpmn:process id="Process_1k2x28n" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="= carried" target="carried" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_0ynzf3r</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="Gateway_15k9ot2">
+      <bpmn:incoming>Flow_021g9pt</bpmn:incoming>
+      <bpmn:outgoing>Flow_1xi15dh</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0y9720h</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0ynzf3r" sourceRef="StartEvent_1" targetRef="Activity_1ct20rx" />
+    <bpmn:sequenceFlow id="Flow_021g9pt" sourceRef="Activity_1ct20rx" targetRef="Gateway_15k9ot2" />
+    <bpmn:sequenceFlow id="Flow_1xi15dh" name="Win" sourceRef="Gateway_15k9ot2" targetRef="ReceiveTrophy">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= GameResult == "Win"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0y9720h" name="Lose" sourceRef="Gateway_15k9ot2" targetRef="ReceiveCommiserations">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= GameResult == "Lose"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="Event_0v0nez9" name="Happy Ending">
+      <bpmn:incoming>Flow_1tjz4t6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1tjz4t6" sourceRef="ReceiveTrophy" targetRef="Event_0v0nez9" />
+    <bpmn:endEvent id="Event_0bczrc7" name="Sad Ending">
+      <bpmn:incoming>Flow_1ceff8y</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1ceff8y" sourceRef="ReceiveCommiserations" targetRef="Event_0bczrc7" />
+    <bpmn:serviceTask id="Activity_1ct20rx" name="Play the Game">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:input source="= carried" target="carried" />
+          <zeebe:output source="= GameResult" target="GameResult" />
+        </zeebe:ioMapping>
+        <zeebe:taskDefinition type="PlayGame" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ynzf3r</bpmn:incoming>
+      <bpmn:outgoing>Flow_021g9pt</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ReceiveTrophy" name="Receive Trophy">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="ReceiveTrophy" />
+        <zeebe:ioMapping>
+          <zeebe:input source="= GameResult" target="GameResult" />
+          <zeebe:input source="= carried" target="carried" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1xi15dh</bpmn:incoming>
+      <bpmn:outgoing>Flow_1tjz4t6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ReceiveCommiserations" name="Receive Commiserations">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="ReceiveCommiserations" />
+        <zeebe:ioMapping>
+          <zeebe:input source="= GameResult" target="GameResult" />
+          <zeebe:input source="= carried" target="carried" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0y9720h</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ceff8y</bpmn:outgoing>
+    </bpmn:serviceTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1k2x28n">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="209" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_15k9ot2_di" bpmnElement="Gateway_15k9ot2" isMarkerVisible="true">
+        <dc:Bounds x="405" y="202" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0v0nez9_di" bpmnElement="Event_0v0nez9">
+        <dc:Bounds x="792" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="775" y="145" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0bczrc7_di" bpmnElement="Event_0bczrc7">
+        <dc:Bounds x="792" y="312" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="782" y="355" width="57" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jtc22t_di" bpmnElement="Activity_1ct20rx">
+        <dc:Bounds x="250" y="187" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0x3bcnk_di" bpmnElement="ReceiveTrophy">
+        <dc:Bounds x="570" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0mh4lww_di" bpmnElement="ReceiveCommiserations">
+        <dc:Bounds x="570" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0ynzf3r_di" bpmnElement="Flow_0ynzf3r">
+        <di:waypoint x="188" y="227" />
+        <di:waypoint x="250" y="227" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_021g9pt_di" bpmnElement="Flow_021g9pt">
+        <di:waypoint x="350" y="227" />
+        <di:waypoint x="405" y="227" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1xi15dh_di" bpmnElement="Flow_1xi15dh">
+        <di:waypoint x="430" y="202" />
+        <di:waypoint x="430" y="120" />
+        <di:waypoint x="570" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="390" y="158" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0y9720h_di" bpmnElement="Flow_0y9720h">
+        <di:waypoint x="430" y="252" />
+        <di:waypoint x="430" y="330" />
+        <di:waypoint x="570" y="330" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="388" y="288" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1tjz4t6_di" bpmnElement="Flow_1tjz4t6">
+        <di:waypoint x="670" y="120" />
+        <di:waypoint x="792" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ceff8y_di" bpmnElement="Flow_1ceff8y">
+        <di:waypoint x="670" y="330" />
+        <di:waypoint x="792" y="330" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

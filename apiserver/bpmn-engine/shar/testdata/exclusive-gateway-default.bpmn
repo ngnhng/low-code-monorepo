@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0l89elc" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.16.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.3.0">
+  <bpmn:process id="GatewayTest" isExecutable="true">
+    <bpmn:documentation>A test of default options and option choice in an exclusive gateway.</bpmn:documentation>
+    <bpmn:startEvent id="GatewayTestStart">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=val1" target="val1" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_0lm96vc</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="OpeningGateway" default="DefaultFlow">
+      <bpmn:incoming>Flow_0lm96vc</bpmn:incoming>
+      <bpmn:outgoing>Option2Flow</bpmn:outgoing>
+      <bpmn:outgoing>DefaultFlow</bpmn:outgoing>
+      <bpmn:outgoing>Option1Flow</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0lm96vc" sourceRef="GatewayTestStart" targetRef="OpeningGateway" />
+    <bpmn:sequenceFlow id="Option2Flow" sourceRef="OpeningGateway" targetRef="Option2Activity">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=val1 == 2</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="DefaultFlow" sourceRef="OpeningGateway" targetRef="DefaultOptionActivity" />
+    <bpmn:sequenceFlow id="Option1Flow" sourceRef="OpeningGateway" targetRef="Option1Activity">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=val1 == 1</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:exclusiveGateway id="ClosingGateway">
+      <bpmn:incoming>DefaultConverger</bpmn:incoming>
+      <bpmn:incoming>Option1Converger</bpmn:incoming>
+      <bpmn:incoming>Option2Converger</bpmn:incoming>
+      <bpmn:outgoing>Final</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="DefaultConverger" sourceRef="DefaultOptionActivity" targetRef="ClosingGateway" />
+    <bpmn:sequenceFlow id="Option1Converger" sourceRef="Option1Activity" targetRef="ClosingGateway" />
+    <bpmn:serviceTask id="DefaultOptionActivity" name="Default Option">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="DefaultOption" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>DefaultFlow</bpmn:incoming>
+      <bpmn:outgoing>DefaultConverger</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Option1Activity" name="Option 1">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Option1" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Option1Flow</bpmn:incoming>
+      <bpmn:outgoing>Option1Converger</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="GatewayTestEnd">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=val1" target="val1" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Final</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Final" sourceRef="ClosingGateway" targetRef="GatewayTestEnd" />
+    <bpmn:serviceTask id="Option2Activity" name="Option 2">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="Option2" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Option2Flow</bpmn:incoming>
+      <bpmn:outgoing>Option2Converger</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Option2Converger" sourceRef="Option2Activity" targetRef="ClosingGateway" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="GatewayTest">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="GatewayTestStart">
+        <dc:Bounds x="132" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1xzfs50_di" bpmnElement="OpeningGateway" isMarkerVisible="true">
+        <dc:Bounds x="225" y="222" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0srll5v_di" bpmnElement="ClosingGateway" isMarkerVisible="true">
+        <dc:Bounds x="495" y="222" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_191k8uz_di" bpmnElement="DefaultOptionActivity">
+        <dc:Bounds x="330" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0rzn0qb_di" bpmnElement="Option1Activity">
+        <dc:Bounds x="330" y="330" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0wamc6d_di" bpmnElement="GatewayTestEnd">
+        <dc:Bounds x="602" y="229" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0iwqx09_di" bpmnElement="Option2Activity">
+        <dc:Bounds x="330" y="207" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0lm96vc_di" bpmnElement="Flow_0lm96vc">
+        <di:waypoint x="168" y="247" />
+        <di:waypoint x="225" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1alh7l4_di" bpmnElement="Option2Flow">
+        <di:waypoint x="275" y="247" />
+        <di:waypoint x="330" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05c2gg6_di" bpmnElement="DefaultFlow">
+        <di:waypoint x="250" y="222" />
+        <di:waypoint x="250" y="120" />
+        <di:waypoint x="330" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1pnqy8h_di" bpmnElement="Option1Flow">
+        <di:waypoint x="250" y="272" />
+        <di:waypoint x="250" y="370" />
+        <di:waypoint x="330" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0f653hd_di" bpmnElement="DefaultConverger">
+        <di:waypoint x="430" y="120" />
+        <di:waypoint x="520" y="120" />
+        <di:waypoint x="520" y="222" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06lmghm_di" bpmnElement="Option1Converger">
+        <di:waypoint x="430" y="370" />
+        <di:waypoint x="520" y="370" />
+        <di:waypoint x="520" y="272" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03pv6q5_di" bpmnElement="Final">
+        <di:waypoint x="545" y="247" />
+        <di:waypoint x="602" y="247" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0idwtxn_di" bpmnElement="Option2Converger">
+        <di:waypoint x="430" y="247" />
+        <di:waypoint x="495" y="247" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

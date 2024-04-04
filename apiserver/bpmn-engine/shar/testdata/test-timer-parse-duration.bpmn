@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_08qgqm5" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.0.0">
+  <bpmn:collaboration id="Collaboration_1a9ogzi">
+    <bpmn:participant id="Participant_0ryzayq" processRef="Process_0cxoltv" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_0cxoltv" isExecutable="true">
+    <bpmn:sequenceFlow id="Flow_1a78rtu" sourceRef="startEvent" targetRef="timerEvent" />
+    <bpmn:sequenceFlow id="Flow_1uqjyt5" sourceRef="timerEvent" targetRef="endEvent" />
+    <bpmn:startEvent id="startEvent" name="Start Event">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=50" target="ShouldCarry" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_1a78rtu</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:intermediateCatchEvent id="timerEvent" name="Timer Event">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="= 69" target="FavouriteNumber" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1a78rtu</bpmn:incoming>
+      <bpmn:outgoing>Flow_1uqjyt5</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_16btwa1">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT2S</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="endEvent" name="End Event">
+      <bpmn:incoming>Flow_1uqjyt5</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1a9ogzi">
+      <bpmndi:BPMNShape id="Participant_0ryzayq_di" bpmnElement="Participant_0ryzayq" isHorizontal="true">
+        <dc:Bounds x="160" y="62" width="450" height="108" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1uqjyt5_di" bpmnElement="Flow_1uqjyt5">
+        <di:waypoint x="418" y="110" />
+        <di:waypoint x="522" y="110" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1a78rtu_di" bpmnElement="Flow_1a78rtu">
+        <di:waypoint x="268" y="110" />
+        <di:waypoint x="382" y="110" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_1i2emrn_di" bpmnElement="startEvent">
+        <dc:Bounds x="232" y="92" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="224" y="135" width="55" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1a8892a_di" bpmnElement="timerEvent">
+        <dc:Bounds x="382" y="92" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="372" y="135" width="59" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0llxwog_di" bpmnElement="endEvent">
+        <dc:Bounds x="522" y="92" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="515" y="135" width="51" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

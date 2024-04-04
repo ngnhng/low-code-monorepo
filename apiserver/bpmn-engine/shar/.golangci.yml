@@ -1,0 +1,29 @@
+# enable revive linter
+linters:
+  enable:
+    - revive
+    - gosec
+    - wrapcheck
+linters-settings:
+  revive:
+    rules:
+      - name: exported
+        arguments:
+          - disableStutteringCheck
+  wrapcheck:
+    ignoreSigs:
+      - logx.Err(
+      - fmt.Errorf(
+    ignorePackageGlobs:
+      - intTests
+  ireturn:
+    allow:
+      - anon
+      - error
+      - empty
+      - stdlib
+      - trace.Span
+issues:
+  include:
+    - EXC0012  # EXC0012 revive: Annoying issue about not having a comment. The rare codebase has such comments
+    - EXC0014  # EXC0014 revive: Annoying issue about not having a comment. The rare codebase has such comments

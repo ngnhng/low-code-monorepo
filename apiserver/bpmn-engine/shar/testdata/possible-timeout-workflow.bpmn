@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_09w50gs" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.6.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.0.0">
+  <bpmn:process id="Process_16piog5" name="PossibleTimeout" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="= 1" target="TimedOutCreatedVar" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_0lmu2eg</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0lmu2eg" sourceRef="StartEvent_1" targetRef="CanTimeout" />
+    <bpmn:sequenceFlow id="Flow_1w0ibbw" sourceRef="TimeOut" targetRef="ErrorHandler" />
+    <bpmn:sequenceFlow id="Flow_1rrsz5z" sourceRef="ErrorHandler" targetRef="CheckResult" />
+    <bpmn:boundaryEvent id="TimeOut" name="TimeOut" attachedToRef="CanTimeout">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="= 42" target="TimedOutCreatedVar" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_1w0ibbw</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0o581h6">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT1S</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="Event_1y26hce">
+      <bpmn:incoming>Flow_018g2dp</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_018g2dp" sourceRef="CheckResult" targetRef="Event_1y26hce" />
+    <bpmn:serviceTask id="CanTimeout" name="CanTimeout">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="CanTimeout" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0lmu2eg</bpmn:incoming>
+      <bpmn:outgoing>Flow_03wsckn</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="CheckResult" name="CheckResult">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="CheckResult" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1rrsz5z</bpmn:incoming>
+      <bpmn:incoming>Flow_04v3vts</bpmn:incoming>
+      <bpmn:outgoing>Flow_018g2dp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ErrorHandler" name="TimedOut">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="TimedOut" />
+        <zeebe:ioMapping>
+          <zeebe:input source="= TimedOutCreatedVar" target="testVar" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1w0ibbw</bpmn:incoming>
+      <bpmn:outgoing>Flow_1rrsz5z</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_03wsckn" sourceRef="CanTimeout" targetRef="NoTimeout" />
+    <bpmn:sequenceFlow id="Flow_04v3vts" sourceRef="NoTimeout" targetRef="CheckResult" />
+    <bpmn:serviceTask id="NoTimeout" name="No Timeout">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="NoTimeout" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_03wsckn</bpmn:incoming>
+      <bpmn:outgoing>Flow_04v3vts</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:textAnnotation id="TextAnnotation_11dwlmx">
+      <bpmn:text>This provides the basis for 3 kinds of test for Exclusive Gateways and Timer Boundary Events.
+1. No waits - The path should continue straight through.
+2. "CanTimeout" waits &gt; 2s - "CheckResult" should get hit via the "TimedOut" path.
+3. "CheckResult" waits &gt; 2s - "CheckResult"should get hit only once</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_02f21cc" sourceRef="CanTimeout" targetRef="TextAnnotation_11dwlmx" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_16piog5">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="209" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_07uxvnp_di" bpmnElement="CanTimeout">
+        <dc:Bounds x="280" y="187" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0okz8k0_di" bpmnElement="ErrorHandler">
+        <dc:Bounds x="380" y="300" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0qtab7k_di" bpmnElement="NoTimeout">
+        <dc:Bounds x="440" y="187" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_11dwlmx_di" bpmnElement="TextAnnotation_11dwlmx">
+        <dc:Bounds x="320" y="80" width="523" height="81" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_192sl6c_di" bpmnElement="CheckResult">
+        <dc:Bounds x="620" y="187" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1y26hce_di" bpmnElement="Event_1y26hce">
+        <dc:Bounds x="812" y="209" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1tf63zo_di" bpmnElement="TimeOut">
+        <dc:Bounds x="312" y="249" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="269" y="283" width="42" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0lmu2eg_di" bpmnElement="Flow_0lmu2eg">
+        <di:waypoint x="215" y="227" />
+        <di:waypoint x="280" y="227" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1w0ibbw_di" bpmnElement="Flow_1w0ibbw">
+        <di:waypoint x="330" y="285" />
+        <di:waypoint x="330" y="340" />
+        <di:waypoint x="380" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1rrsz5z_di" bpmnElement="Flow_1rrsz5z">
+        <di:waypoint x="480" y="340" />
+        <di:waypoint x="670" y="340" />
+        <di:waypoint x="670" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_018g2dp_di" bpmnElement="Flow_018g2dp">
+        <di:waypoint x="720" y="227" />
+        <di:waypoint x="812" y="227" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03wsckn_di" bpmnElement="Flow_03wsckn">
+        <di:waypoint x="380" y="227" />
+        <di:waypoint x="440" y="227" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04v3vts_di" bpmnElement="Flow_04v3vts">
+        <di:waypoint x="540" y="227" />
+        <di:waypoint x="620" y="227" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_02f21cc_di" bpmnElement="Association_02f21cc">
+        <di:waypoint x="302" y="187" />
+        <di:waypoint x="321" y="161" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,7 +1,7 @@
 package route
 
 import (
-	oauthController "yalc/auth-service/api/controller/oauth-login"
+	oauthController "yalc/auth-service/api/controller/oauth"
 	"yalc/auth-service/module/config"
 	"yalc/auth-service/module/httpserver"
 	"yalc/auth-service/shared/constant"
@@ -29,7 +29,4 @@ func NewAuthenticationRouterV1(
 				g.POST("/token", controller.ValidateToken)
 			},
 		)
-
-	//// Login
-	//authRoute.POST("/login", controller.Login)
 }
