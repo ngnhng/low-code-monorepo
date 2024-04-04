@@ -62,13 +62,13 @@ function transformDataset(rowData: RowDef[], labels: string, y: string[]) {
       labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple'],
       datasets: [
         {
-          label: '# of Votes',
-          data: ['ae', 19, 3, 5, 2, 3],
+          label: 'Sample',
+          data: [7, 19, 3, 5, 2, 3],
           borderWidth: 1,
         },
         {
-          label: '# of Votes1',
-          data: ['ae', 19, 3, 5, 2, 3],
+          label: 'Sample 2',
+          data: [7, 19, 3, 5, 2, 3],
           borderWidth: 1,
         },
       ],
@@ -87,11 +87,11 @@ function transformDataset(rowData: RowDef[], labels: string, y: string[]) {
         datasets: chartDatasets,
       }
     : {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple'],
+        labels: [],
         datasets: [
           {
-            label: '# of Votes',
-            data: ['ae', 19, 3, 5, 2, 3],
+            label: 'Choose labels and datasets',
+            data: [],
             borderWidth: 1,
           },
         ],
@@ -322,19 +322,22 @@ export const Charts: ComponentConfig<ChartsProps> = {
                   selectOptions={value.selectedTableFields}
                 />
 
-                <ul>
-                  {value.selectedTableFields.map((field, index) => (
-                    <li key={index}>
-                      <input
-                        type="checkbox"
-                        id={field}
-                        checked={checkedArray.includes(field)}
-                        onChange={() => handleChangeChecked(field)}
-                      />
-                      <label htmlFor={field}>{field}</label>
-                    </li>
-                  ))}
-                </ul>
+                <div>
+                  <p>Choose Datasets Columns</p>
+                  <ul>
+                    {value.selectedTableFields.map((field, index) => (
+                      <li key={index}>
+                        <input
+                          type="checkbox"
+                          id={field}
+                          checked={checkedArray.includes(field)}
+                          onChange={() => handleChangeChecked(field)}
+                        />
+                        <label htmlFor={field}>{field}</label>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </>
             )}
           </div>
@@ -345,7 +348,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
   defaultProps: {
     config: {
       url: '',
-      title: 'Title',
+      title: 'Sample Chart',
       chartType: 'bar',
       width: '100%',
       height: '600px',
