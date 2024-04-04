@@ -36,18 +36,18 @@ func NewCompleteUserTaskUseCase(p CompleteUserTaskUseCaseParams) *CompleteUserTa
 }
 
 // Execute the complete user task use case
-func (uc *CompleteUserTaskUseCase) Execute(ctx context.Context, workflow, instanceId string, req workflow.CompleteUserTaskRequest) (map[string]any, error) {
+func (uc *CompleteUserTaskUseCase) Execute(ctx context.Context, trackingID string, req workflow.CompleteUserTaskRequest) (map[string]any, error) {
 	uc.Logger.Debug("Starting complete user task use case")
 
 	// complete the user task
 	if client := uc.engineClient.GetClient(); client != nil {
 		task, err := client.ListUserTaskIDs(ctx, req.Assignee)
 		uc.Logger.Debug("ListUserTaskIDs: ", task.Id, err)
-		uc.Logger.Debug("Instance ID: ", workflow)
+		uc.Logger.Debug("Instance ID: ", trackingID)
 		if err != nil || len(task.Id) == 0 {
 			return nil, err
 		}
-		err = client.CompleteUserTask(ctx, req.Assignee, workflow, req.Vars)
+		err = client.CompleteUserTask(ctx, req.Assignee, trackingID, req.Vars)
 		if err != nil {
 			return nil, err
 		}

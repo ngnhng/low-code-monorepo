@@ -90,8 +90,8 @@ func (ctrl *WorkflowController) FetchInstanceLog(c echo.Context) error {
 	ctrl.logger.Debug("Workflow ID: ", workflowID)
 
 	ctx := c.Request().Context()
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
+	//ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	//defer cancel()
 
 	ctx = context.WithValue(ctx, domain.UserKey, c.Get("user"))
 
@@ -142,10 +142,8 @@ func (ctrl *WorkflowController) FetchInstanceLog(c echo.Context) error {
 // CompleteUserTask is the method to complete a user task
 func (ctrl *WorkflowController) CompleteUserTask(c echo.Context) error {
 	ctrl.logger.Debug("CompleteUserTaskController.Complete")
-	workflowID := c.Param("workflowId")
-	taskID := c.Param("taskId")
-	ctrl.logger.Debug("Workflow ID: ", workflowID)
-	ctrl.logger.Debug("Task ID: ", taskID)
+	trackingID := c.Param("trackingId")
+	ctrl.logger.Debug("Tracking ID: ", trackingID)
 
 	var req workflow.CompleteUserTaskRequest
 	if err := c.Bind(&req); err != nil {
@@ -158,7 +156,7 @@ func (ctrl *WorkflowController) CompleteUserTask(c echo.Context) error {
 
 	ctx = context.WithValue(ctx, domain.UserKey, c.Get("user"))
 
-	vars, err := ctrl.CompleteUserTaskUseCase.Execute(ctx, workflowID, taskID, req)
+	vars, err := ctrl.CompleteUserTaskUseCase.Execute(ctx, trackingID, req)
 	if err != nil {
 		ctrl.logger.Error("Error completing user task", "err", err)
 		return c.JSON(domain_error.InternalServerError("Internal Server Error", "INTERNAL_SERVER_ERROR"))

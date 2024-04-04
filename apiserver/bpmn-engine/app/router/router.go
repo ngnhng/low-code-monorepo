@@ -32,7 +32,7 @@ func InitWorkflowRouter(p WorkflowRouterParams) {
 	p.Server.AddGroup("/workflow", func(g *echo.Group) {
 		g.POST("", p.WorkflowController.Execute)
 		g.GET("/:id/logs", p.WorkflowController.FetchInstanceLog)
-		g.POST("/:workflowId/:taskId/complete", p.WorkflowController.CompleteUserTask)
+		g.POST("/:trackingId/complete", p.WorkflowController.CompleteUserTask)
 	},
 	)
 }

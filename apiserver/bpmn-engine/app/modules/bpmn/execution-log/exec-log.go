@@ -26,11 +26,12 @@ const (
 
 type (
 	ExecutionLogger struct {
-		natsConn  *nats.Conn
-		Config    config.Config
-		Logger    logger.Logger
-		JetStream jetstream.JetStream
-		Consumer  jetstream.Consumer
+		natsConn          *nats.Conn
+		Config            config.Config
+		Logger            logger.Logger
+		JetStream         jetstream.JetStream
+		JobConsumer       jetstream.Consumer
+		ExecutionConsumer jetstream.Consumer
 	}
 
 	Params struct {
@@ -55,10 +56,21 @@ func NewExecutionLogger(p Params) (*ExecutionLogger, error) {
 	}
 
 	// create a consumer to read the logs
-	consumer, err := js.CreateConsumer(ctx, STREAM, jetstream.ConsumerConfig{
+	jobConsumer, err := js.CreateConsumer(ctx, STREAM, jetstream.ConsumerConfig{
 		Durable:       "CONS",
 		DeliverPolicy: jetstream.DeliverAllPolicy,
 		FilterSubject: "WORKFLOW.*.State.Job.*.>",
+		AckPolicy:     jetstream.AckExplicitPolicy,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	executionConsumer, err := js.CreateConsumer(ctx, STREAM, jetstream.ConsumerConfig{
+		Durable:       "EXECUTION_CONS",
+		DeliverPolicy: jetstream.DeliverAllPolicy,
+		FilterSubject: "WORKFLOW.*.State.Execution.*",
 		AckPolicy:     jetstream.AckExplicitPolicy,
 	})
 	if err != nil {
@@ -66,11 +78,12 @@ func NewExecutionLogger(p Params) (*ExecutionLogger, error) {
 	}
 
 	return &ExecutionLogger{
-		natsConn:  conn,
-		Config:    p.Config,
-		Logger:    p.Logger,
-		JetStream: js,
-		Consumer:  consumer,
+		natsConn:          conn,
+		Config:            p.Config,
+		Logger:            p.Logger,
+		JetStream:         js,
+		JobConsumer:       jobConsumer,
+		ExecutionConsumer: executionConsumer,
 	}, nil
 }
 
@@ -112,13 +125,21 @@ func (el *ExecutionLogger) GetServiceTaskLogById(ctx context.Context, id string,
 
 	// get the stream and search for the log
 	el.Logger.Debug("Consuming logs")
-	consumeCtx, err := el.Consumer.Consume(handler)
+	jobConsumeCtx, err := el.JobConsumer.Consume(handler)
 	if err != nil {
 		el.Logger.Error("Error consuming logs", err)
 		errCh <- err
 		finish <- struct{}{}
 	}
-	defer consumeCtx.Stop()
+	defer jobConsumeCtx.Stop()
+
+	executionConsumeCtx, err := el.ExecutionConsumer.Consume(handler)
+	if err != nil {
+		el.Logger.Error("Error consuming logs", err)
+		errCh <- err
+		finish <- struct{}{}
+	}
+	defer executionConsumeCtx.Stop()
 
 	//ticker := time.NewTicker(10 * time.Second)
 	//defer ticker.Stop()
