@@ -25,6 +25,10 @@ export type ChartsProps = {
     visibleColumns: string[];
     importType: 'provider' | 'database' | '';
     tableId: string;
+    // ---
+    labels: string;
+    datasets: any[];
+    selectedTableFields: any[];
   };
 };
 
@@ -48,11 +52,11 @@ const chartTypes = [
 /**
 Transforms the given row data into a format that can be used by charts.
   @param rowData - the data to be transformed
-  @param x - the ID of the column that should be used as the x-axis
+  @param labels - contain the value of name column labels
   @param y - the ID of the column that should be used as the y-axis
   @returns an object containing the transformed data
 */
-function transformDataset(rowData: RowDef[], x: string, y: string) {
+function transformDataset(rowData: RowDef[], labels: string, y: string[]) {
   if (!rowData || !rowData[0]) {
     return {
       labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple'],
@@ -62,20 +66,25 @@ function transformDataset(rowData: RowDef[], x: string, y: string) {
           data: ['ae', 19, 3, 5, 2, 3],
           borderWidth: 1,
         },
+        {
+          label: '# of Votes1',
+          data: ['ae', 19, 3, 5, 2, 3],
+          borderWidth: 1,
+        },
       ],
     };
   }
 
-  return rowData[0][x] && rowData[0][y]
+  const chartDatasets = y.map((field) => ({
+    label: field,
+    data: rowData.map((row) => row[field]),
+    borderWidth: 1,
+  }));
+
+  return rowData[0][labels]
     ? {
-        labels: rowData.map((row) => row[x]),
-        datasets: [
-          {
-            label: 'Test',
-            data: rowData.map((row) => row[y]),
-            borderWidth: 1,
-          },
-        ],
+        labels: rowData.map((row) => row[labels]),
+        datasets: chartDatasets,
       }
     : {
         labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple'],
@@ -88,6 +97,12 @@ function transformDataset(rowData: RowDef[], x: string, y: string) {
         ],
       };
 }
+
+// function generateLabels(data) {
+//   return data.map();
+// }
+
+// function generateDatasets() {}
 
 const cssValueCheck = (value: string) =>
   /\d+(\.\d+)?(%|px|em|rem|(d|s|l)v(w|h))/g.test(value);
@@ -104,6 +119,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
         // eslint-disable-next-line no-unused-vars
         const [isLoading, setIsLoading] = useState(false);
         const [importType, setImportType] = useState<string>('provider');
+        const [checkedArray, setCheckedArray] = useState<string[]>([]);
 
         const fetchChartData = async (source: CancelTokenSource) => {
           setIsLoading(true);
@@ -217,6 +233,21 @@ export const Charts: ComponentConfig<ChartsProps> = {
           );
         };
 
+        const handleChangeChecked = (field: string) => {
+          const isChecked = checkedArray.includes(field);
+          const clone = structuredClone(value);
+
+          if (isChecked) {
+            setCheckedArray(checkedArray.filter((f) => f !== field));
+            clone.datasets = clone.datasets.filter((f) => f !== field);
+          } else {
+            setCheckedArray([...checkedArray, field]);
+            clone.datasets.push(field);
+          }
+
+          onChange(clone);
+        };
+
         return (
           <div>
             <Input prop="title" name="Title" type="text" />
@@ -238,12 +269,18 @@ export const Charts: ComponentConfig<ChartsProps> = {
                   onChange={(e) => {
                     setChartData(undefined);
                     setImportType(e.currentTarget.value);
-                    value.importType = e.currentTarget.value;
-                    value.url = '';
+                    const clone = structuredClone(value);
+                    clone.importType = e.currentTarget.value;
+                    clone.url = '';
+                    clone.selectedTableFields = [];
+                    clone.labels = '';
+                    clone.datasets = [];
 
                     if (e.currentTarget.value === 'database') {
-                      value.url = `http://localhost:3000/api/mock/trollface/data/all`;
+                      clone.url = `http://localhost:3000/api/mock/trollface/data/all`;
                     }
+
+                    onChange(clone);
                   }}
                   value={importType}
                 >
@@ -277,6 +314,29 @@ export const Charts: ComponentConfig<ChartsProps> = {
             ) : (
               <Loading />
             )}
+            {value.selectedTableFields.length > 0 && (
+              <>
+                <Select
+                  name="Choose Label Columns"
+                  prop="labels"
+                  selectOptions={value.selectedTableFields}
+                />
+
+                <ul>
+                  {value.selectedTableFields.map((field, index) => (
+                    <li key={index}>
+                      <input
+                        type="checkbox"
+                        id={field}
+                        checked={checkedArray.includes(field)}
+                        onChange={() => handleChangeChecked(field)}
+                      />
+                      <label htmlFor={field}>{field}</label>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         );
       },
@@ -292,6 +352,9 @@ export const Charts: ComponentConfig<ChartsProps> = {
       visibleColumns: [],
       importType: 'provider',
       tableId: '',
+      labels: '',
+      datasets: [],
+      selectedTableFields: [],
     },
   },
   render: ({ config }) => {
@@ -320,6 +383,8 @@ export const Charts: ComponentConfig<ChartsProps> = {
 
         setIsLoading(false);
         setChartData(data);
+        config.selectedTableFields = Object.keys(data[0]);
+        // config.labels = config.selectedTableFields[0];
       } catch (error) {
         console.log(error);
       }
@@ -373,7 +438,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
             //     },
             //   ],
             // }}
-            data={transformDataset(chartData!, 'name', 'id')!}
+            data={transformDataset(chartData!, config.labels, config.datasets)!}
             options={{
               maintainAspectRatio: false,
             }}
