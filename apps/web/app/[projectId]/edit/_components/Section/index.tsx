@@ -1,6 +1,6 @@
 import { CSSProperties, ReactNode } from "react";
 import styles from "./styles.module.css";
-import { getClassNameFactory } from "lib";
+import getClassNameFactory from "lib/classname-factory/get-classname-factory";
 
 const getClassName = getClassNameFactory("Section", styles);
 

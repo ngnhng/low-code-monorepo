@@ -1,0 +1,93 @@
+{
+    "name": "GoogleSheet",
+	"uri": "http://some-company/schema/bpmn/gs",
+    "prefix": "yalc",
+    "xml": {
+        "tagAlias": "lowerCase"
+    },
+    "types": [
+        {
+            "name": "AnalyzedNode",
+            "extends": ["bpmn:FlowNode"],
+            "properties": [
+                {
+                    "name": "isGoogleSheet",
+                    "isAttr": true,
+                    "type": "Boolean"
+                }
+            ]
+        },
+        {
+            "name": "taskDefinition",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "type",
+                    "isAttr": true,
+                    "type": "String"
+                }
+            ]
+        },
+        {
+            "name": "conditionExpression",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "text",
+                    "isBody": true,
+                    "type": "String"
+                }
+            ]
+        },
+        {
+            "name": "ioMapping",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "input",
+                    "isMany": true,
+                    "type": "input"
+                },
+				{
+					"name": "output",
+					"isMany": true,
+					"type": "output"
+				}
+            ]
+        },
+        {
+            "name": "input",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "source",
+                    "isAttr": true,
+                    "type": "String"
+                },
+                {
+                    "name": "target",
+                    "isAttr": true,
+                    "type": "String"
+                }
+            ]
+        },
+		{
+			"name": "output",
+			"superClass": ["Element"],
+			"properties": [
+				{
+					"name": "source",
+					"isAttr": true,
+					"type": "String"
+				},
+				{
+					"name": "target",
+					"isAttr": true,
+					"type": "String"
+				}
+			]
+		}
+    ],
+    "emumerations": [],
+    "associations": []
+}

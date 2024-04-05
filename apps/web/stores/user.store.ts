@@ -5,6 +5,7 @@ import { AuthService } from 'services/auth.service';
 import { UserService } from 'services/user.service';
 import { IUser } from 'types/user';
 import { RootStore } from './root';
+import { setLocalStorage } from '../lib/local-storage';
 
 export interface IUserStore {
   isLoggedIn: boolean | undefined;
@@ -75,12 +76,15 @@ export class UserStore {
         this.isLoggedIn = false;
         this.currentUserError = error;
       });
-
       throw error;
     }
   };
 
   setDefaultUser = (): void => {
+    setLocalStorage(
+      'yalc_at',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaXJzdF9uYW1lIjoiSm9obiIsImxhc3RfbmFtZSI6IkRvZSIsImVtYWlsIjoidGVzdGVyQGdtYWlsLmNvbSIsInJvbGUiOiJ3ZWJ1c2VyIiwicHJvZmlsZV9pbWFnZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0p2djdEUGtQWkxNU2hld3NJNmFJc1dFcW82MzgwZmxESzlEeFFoV2REVDl3PXM5Ni1jIiwicmVnaXN0ZXJlZF9jbGFpbXMiOnsiaXNzIjoieWFsYy1hcGkiLCJleHAiOjE4MDg5NDYwMjcsImlhdCI6MTcwODkyNDQyN319.FbSwQZdj_i1FyMmP5FViB9X55vQk-xmisVdIe_4i7gs',
+    );
     runInAction(() => {
       this.currentUser = {
         email: 'abc@gmail.com',
@@ -99,7 +103,7 @@ export class UserStore {
       runInAction(() => {
         this.currentUser = undefined;
         this.isLoggedIn = false;
-		this.currentUserError = undefined;
+        this.currentUserError = undefined;
       });
     } catch (error) {
       throw new Error('Error signing out:' + error);

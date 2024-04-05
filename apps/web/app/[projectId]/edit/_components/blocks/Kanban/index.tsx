@@ -2,7 +2,7 @@ import styles from './style.module.css';
 
 import React, { useState, useEffect } from 'react';
 import { ComponentConfig } from '@measured/puck';
-import { getClassNameFactory } from 'lib';
+import getClassNameFactory from 'lib/classname-factory/get-classname-factory';
 import axios, { CancelTokenSource } from 'axios';
 import { Type, ChevronDown } from 'react-feather';
 

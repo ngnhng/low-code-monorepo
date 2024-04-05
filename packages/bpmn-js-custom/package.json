@@ -1,0 +1,19 @@
+{
+    "name": "bpmn-js-custom",
+    "version": "0.0.0",
+    "main": "index.js",
+    "scripts": {
+        "test": "eslint ."
+    },
+    "license": "MIT",
+    "devDependencies": {
+        "eslint": "^8.22.0",
+        "eslint-plugin-bpmn-io": "^1.0.0"
+    },
+    "dependencies": {
+        "diagram-js": "^5.0.2",
+        "inherits": "^2.0.4",
+        "min-dash": "^3.5.2",
+        "show-toast": "^1.1.4"
+    }
+}

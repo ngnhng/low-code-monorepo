@@ -1,9 +1,9 @@
 'use client';
 
 import { Button } from '@repo/ui';
-import { cn } from 'lib/shadcn/utils';
 import { Icons } from 'components/icons/icons';
 import { useRouter } from 'next/navigation';
+import { cn } from 'lib/shadcn/utils';
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
