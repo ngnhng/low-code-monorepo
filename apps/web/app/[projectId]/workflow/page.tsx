@@ -3,6 +3,7 @@
 import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 import "@bpmn-io/properties-panel/assets/properties-panel.css";
+import defaultXML from "./defaultXML";
 
 import React, { useEffect, useRef, FC, useState } from "react";
 import axios from "axios";
@@ -19,18 +20,19 @@ export default function Page() {
         workflow: { setCurrentWorkflow },
     } = useMobxStore();
 
-    const { data, isLoading, error } = useSWR("workflow", () => {
-        return axios.get("https://cdn.statically.io/gh/camunda/camunda-modeler/v3.5.0/resources/diagram/simple.bpmn").then((r) => r.data);
-    });
+    // const { data, isLoading, error } = useSWR("workflow", () => {
+    //     return axios.get("https://cdn.statically.io/gh/camunda/camunda-modeler/v3.5.0/resources/diagram/simple.bpmn").then((r) => r.data);
+    // });
 
-    useEffect(() => {
-        if (data) {
-            setCurrentWorkflow(data);
-        }
-    }, [data]);
+    // useEffect(() => {
+    //     if (data) {
+    //         setCurrentWorkflow(data);
+    //     }
+    // }, [data]);
 
-    if (isLoading || error) return <div>Loading...</div>;
+    // if (isLoading || error) return <div>Loading...</div>;
 
+    setCurrentWorkflow(defaultXML);
     return <Modeler />;
 }
 
