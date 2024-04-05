@@ -1,0 +1,93 @@
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/shar-workflow/shar/server
+  telemetryRepository: registry.gitlab.com/shar-workflow/shar/telemetry
+  pullPolicy: IfNotPresent
+  tag: "0.1.79"
+
+telemetryImage:
+  repository: registry.gitlab.com/shar-workflow/shar/telemetry
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+telemetryName: "shar-telemetry"
+
+# enable the following for a local nats instance simple deployment (not suitable for production)
+integratedNATS:
+  enabled: true
+  version: 2.8.4
+integratedJaeger:
+  enabled: true
+
+# the following only take effect if the integrated NATS and Jaeger are disabled
+nats:
+  url: "nats://127.0.0.1:4222"
+  serviceurl: "nats://shar:4222"
+jaeger:
+  serviceurl: "http://shar:14268/api/traces"
+
+server:
+  logLevel: "debug"
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 50000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -1,0 +1,41 @@
+version: "1.0"
+kind: ServiceTask
+metadata:
+  type: SimpleProcess
+  version: "0.1"
+  short: Sample simple process
+  description: An example process for integration tests
+  labels:
+  - test
+  - simple
+behaviour:
+  estimatedMaxDuration: 2343255
+  defaultRetry:
+    number: 3
+    initMilli: 100
+    intervalMilli: 100
+    maxMilli: 300
+    defaultExceeded:
+      action: 1
+      errorCode: "123"
+parameters:
+  input:
+  - name: carried
+    short: carried value
+    description: A test value to check that workflow variables are carried across.
+    type: int
+    mandatory: true
+    validateExpr: =param["number"] matches "[0-9]*"
+    example: = 0
+  - name: localVar
+    short: A workflow local variable
+    description: A test value to ensure that local variables are carried across.
+    type: int
+    mandatory: true
+    example: = 0
+  output:
+  - name: Success
+    short: Success flag
+    description: A boolean flag indicating success
+    type: bool
+    example: = false

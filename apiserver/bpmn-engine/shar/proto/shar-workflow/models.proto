@@ -1,0 +1,838 @@
+syntax = "proto3";
+option go_package = "gitlab.com/shar-workflow/shar/model";
+
+
+//import "google/protobuf/timestamp.proto";
+//import "google/protobuf/duration.proto";
+//import "google/protobu f/any.proto";
+
+service Shar {
+  rpc StoreWorkflow (StoreWorkflowRequest) returns (StoreWorkflowResponse);
+  rpc CancelProcessInstance (CancelProcessInstanceRequest) returns (CancelProcessInstanceResponse);
+  rpc LaunchProcess (LaunchWorkflowRequest) returns (LaunchWorkflowResponse);
+  rpc ListWorkflows (ListWorkflowsRequest) returns (ListWorkflowsResponse);
+  rpc ListExecutionProcesses (ListExecutionProcessesRequest) returns (ListExecutionProcessesResponse);
+  rpc ListExecution (ListExecutionRequest) returns (ListExecutionResponse);
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
+  rpc CompleteManualTask (CompleteManualTaskRequest) returns (CompleteManualTaskResponse);
+  rpc CompleteServiceTask (CompleteServiceTaskRequest) returns (CompleteServiceTaskResponse);
+  rpc CompleteUserTask (CompleteUserTaskRequest) returns (CompleteUserTaskResponse);
+  rpc ListUserTaskIDs (ListUserTasksRequest) returns (ListUserTasksResponse);
+  rpc GetUserTask (GetUserTaskRequest) returns (GetUserTaskResponse);
+  rpc HandleWorkflowError (HandleWorkflowErrorRequest) returns (HandleWorkflowErrorResponse);
+  rpc CompleteSendMessageTask (CompleteSendMessageRequest) returns (CompleteSendMessageResponse);
+  rpc GetWorkflowVersions (GetWorkflowVersionsRequest) returns (GetWorkflowVersionsResponse);
+  rpc GetWorkflow (GetWorkflowRequest) returns (GetWorkflowResponse);
+  rpc GetProcessInstanceStatus (GetProcessInstanceStatusRequest) returns (GetProcessInstanceStatusResponse);
+  rpc GetProcessHistory (GetProcessHistoryRequest) returns (GetProcessHistoryResponse);
+  rpc GetVersionInfo (GetVersionInfoRequest) returns (GetVersionInfoResponse);
+  rpc RegisterTask (RegisterTaskRequest) returns (RegisterTaskResponse);
+  rpc GetTaskSpec (GetTaskSpecRequest) returns (GetTaskSpecResponse);
+  rpc DeprecateServiceTask (DeprecateServiceTaskRequest) returns (DeprecateServiceTaskResponse);
+  rpc GetTaskSpecVersions (GetTaskSpecVersionsRequest) returns (GetTaskSpecVersionsResponse);
+  rpc GetTaskSpecUsage (GetTaskSpecUsageRequest) returns (GetTaskSpecUsageResponse);
+  rpc ListTaskSpecUIDs (ListTaskSpecUIDsRequest) returns (ListTaskSpecUIDsResponse);
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+  rpc Log(LogRequest) returns (LogResponse);
+  rpc GetJob (GetJobRequest) returns (GetJobResponse);
+}
+
+message StoreWorkflowRequest {
+  Workflow workflow = 1;
+}
+
+message StoreWorkflowResponse {
+  string WorkflowId = 1;
+}
+
+message CancelProcessInstanceResponse {
+
+}
+
+message ListWorkflowsRequest {
+
+}
+
+message CompleteManualTaskResponse {
+
+}
+
+message CompleteServiceTaskResponse {
+
+}
+
+message CompleteUserTaskResponse {
+
+}
+
+message ListUserTasksResponse {
+
+}
+
+message CompleteSendMessageResponse {
+
+}
+message GetProcessInstanceStatusResponse {
+
+}
+
+message GetTaskSpecUsageResponse {
+
+}
+
+message HeartbeatRequest {
+  string Host = 1;
+  string id = 2;
+  int64 time = 3;
+}
+
+message HeartbeatResponse {
+
+}
+
+// Workflow describes a number of processes that interact together.  It also contains all messages and errors used by the processes.
+message Workflow {
+  string name = 1; // Name defines the common name that describes the workflow.
+  map<string, Process> process = 2; // Process is a map of process names to workflow state machines.
+  repeated Element messages = 3; // Messages define the messages that can be sent by the workflow.
+  repeated Error errors = 4; // Errors define the errors used by the workflow.
+  bytes gzipSource = 5; // Source for round tripping.
+  Collaboration collaboration = 6; // Collaboration between processes.
+  map<string, MessageReceivers> messageReceivers = 7; //MessageReceivers are the activity ids that receive a given messgae
+}
+
+message MessageReceivers {
+  repeated MessageReceiver messageReceiver = 1; //MessageReceiver s are the elements receiving/referencing a message. They could be start events or intermedidate catch events
+  string associatedWorkflowName = 2;
+}
+
+message MessageReceiver {
+  string id = 1;
+  string processIdToStart = 2;
+}
+
+message Collaboration {
+  repeated Participant participant = 1; // Participant in a collaboration.
+  repeated MessageFlow messageFlow = 2; // MessageFlow describes the collaboration message participants.
+}
+
+message Participant {
+  string id = 2; // Id - participation ID.
+  string processId = 1; // ProcessId of the participating process.
+}
+
+message MessageFlow {
+  string id = 1; // Id for the message flow.
+  string sender = 2; // Source of the message.
+  string recipient = 3; // Recipient of the message.
+}
+
+message Metadata {
+  bool timedStart = 1; // Workflow contains timed start activities that can trigger a process.
+}
+
+// Process describes a single workflow state machine.
+message Process {
+  repeated Element elements = 1; // Elements describes each state in the state machine.
+  string Name = 2; // Name - the common name of the state machine.
+  optional Metadata metadata = 6; // Metadata created by SHAR to describe process behavior.
+}
+
+// WorkflowVersions describes the version history.
+message WorkflowVersions {
+  repeated WorkflowVersion version = 1; // WorkflowVersion - a single version of a workflow
+}
+
+// WorkflowVersion contains the metadata for a single workflow version
+message WorkflowVersion {
+  string id = 1; // Id - the launchable ID for the workflow.
+  bytes sha256 = 2; // Sha256 - the hash of the workflow configuration.
+  int32 number = 3; // Number - the version number of the workflow
+}
+
+// Element describes a single state machine state.
+message Element {
+  string id = 1; // Id - the unique identifier for the workflow state machine element.
+  string name = 2; // Name - the name of the state machine element.
+  string type = 3; // Type - the type of state machine element
+  string documentation = 4; // Documentation - any documentation describing the state machine element.
+  string execute = 5;  // Execute - describes the execution parameter,  This is used for diffrerent purposes depending on the type.
+  Targets outbound = 6; // Outbound - a number of possible transitions to other state machine state elements.s
+  Process process = 7; // Process - defines any subprocesses contained within this state machine.
+  string msg = 8; // TODO: Document
+  string candidates = 10; // Candidates - used for user related state machgine types to define users that may complete the task.
+  string candidateGroups = 11; // CandidateGroups - used for user related state machine types to define groups that may complete a task.
+  repeated CatchError errors = 12; // Errors - a number of catchable errors for this state machine element.
+  Error error = 13; // Error - an error that may be thrown.
+  map<string, string> inputTransform = 14; // InputTransform - a transformation to poerform between variable names when calling a state machine task.
+  map<string, string> outputTransform = 15; // OutputTransform - a transformation to poerform between variable names when exiting a state machine task.
+  WorkflowTimerDefinition timer = 16; // Timer - a time to wait before execution for timer tasks.
+  repeated Timer boundaryTimer = 17; // BoundaryTimer - a number of timed transitions between this and another state.
+  optional GatewaySpec gateway = 18; // GatewaySpec - if this element is a gateway, this contains the type specification for it.
+  optional Iteration iteration = 19; // Iteration - gives any instructions for multi instance execution.
+  optional string version = 20; // Version - provides version information about a resource such as a task.
+  optional DefaultTaskRetry retryBehaviour = 21; // RetryBehaviour - the style and type of retry associated with a service task.
+}
+
+enum ThreadingType {
+  Sequential = 0;
+  Parallel = 2;
+}
+
+message Iteration {
+  string collection = 1;
+  string iterator = 2;
+  string collateAs = 3;
+  string collateFrom = 4;
+  optional string until = 5;
+  ThreadingType execute = 6;
+}
+
+message Iterator {
+  string id = 1;
+  repeated bytes value = 2;
+  repeated bytes collated = 3;
+}
+
+enum GatewayType {
+  exclusive = 0; // Exclusive - When splitting, it routes the sequence flow to exactly one of the outgoing branches. When merging, it awaits one incoming branch to complete before triggering the outgoing flow.
+  inclusive = 1; // Inclusive - When splitting, one or more branches are activated. All active incoming branches must complete before merging.
+  parallel = 2; // Parralel - When used to split the sequence flow, all outgoing branches are activated simultaneously. When merging parallel branches it waits for all incoming branches to complete before triggering the outgoing flow.
+}
+
+enum GatewayDirection {
+  divergent = 0;
+  convergent = 1;
+}
+
+
+message GatewaySpec {
+  GatewayType type = 1;
+  GatewayDirection direction = 2;
+  string reciprocalId = 3;
+  repeated string fixedExpectations = 4;
+}
+
+// Timer specifies a timed transition to another state.
+message Timer {
+  string id = 1; // Id - the unique identifier for the timer.
+  string duration = 2; // Duration - the duration of the timer.
+  string target = 3; // Target - state machine element ID to transition to.
+  map<string, string> outputTransform = 4; // OutputTransform - The transformation to apply to variables during the transition.
+}
+
+// Target specifies the target for a state transition.
+message Target {
+  string id = 1; // Id for the transition.
+  repeated string conditions = 2; // Conditions -to apply to the transition specified as Expr.
+  string target = 3; // Target ID for the transition.
+}
+
+// Error represents a known error name and code which may be thrown by the state machine.
+message Error {
+  string id = 1; // Id - the unique id for the error.
+  string name = 2; // Name - the error unique name.
+  string code = 3; // Code - the unique code for the error.
+}
+
+// CatchError specifies an error transition to another state.
+message CatchError {
+  string id = 1; // Id - the unique id.
+  string errorId = 2; // Id - the id of the error.
+  string target = 3; // Target ID for the transition.
+  map<string, string> outputTransform = 4; // OutputTransform - The transformation to apply to variables during the transition.
+}
+
+// Targets defines a set of targets for transition and as to whether only the first match should be executed.
+message Targets {
+  repeated Target target = 1; // Target - the target for a state transition.
+  int64 defaultTarget = 2; // DefaultTarget - the ordinal for a default target.
+}
+
+// WorkflowState describes a current executing state inside a workflow state machine.
+message WorkflowState {
+  string workflowId = 1; // WorkflowId - the ID of the workflow version that provides the template for execution.
+  string executionId = 2; // executionId - The id of the Execution this workflow state is for
+  string elementId = 3; // ElementId - the currently executing element withing the workflow state machine.
+  string elementType = 4; // ElementType - the currently executing element type, cached here to reduce lookups.
+  repeated string id = 5; // Id - a stack of IDs that descibe the state and its parents up to the original workflow instance ID.
+  string executeVersion = 22; // ExecuteVersion specifies a particular version to execute.
+  optional string execute = 7; // Execute - additional information required to execute depending on the element type.
+  CancellationState state = 8; // State - the current execution state of the state machine.
+  optional string condition = 9; // Condition - a message condition that needs to be fulfilled before proceeding.
+  int64 unixTimeNano = 10; // UnixTimeNano - the time this state was observed.
+  bytes vars = 11; // Vars - A go binary encoded map[string]interface{} of variables.
+  repeated string owners = 12; // Owners - a list of user owners for this state that may be responsible for completing tasks
+  repeated string groups = 13; // Groups - a list of user groups for this state that may be responsible for completing tasks
+  Error error = 14; // Error - an error being carried by the state if it has faulted.
+  WorkflowTimer timer = 16; // Timer - a time needed to transition to the next state.
+  string workflowName = 17; // WorkflowName - name of this workflow to avoid lookups.
+  string processName = 18; // ProcessName - name of this process to avoid lookups.
+  string processInstanceId = 19; // ProcessInstanceId - the unique ID for the process instance.
+  map<string,SatisfiesGateway> satisfiesGatewayExpectation = 20; // SatisfiesGatewayExpectation - a list of gateways, and pathway covered that satisfy their expectations.
+  map<string,GatewayExpectations> gatewayExpectations = 21; // GatewayExpectations - a list of dynamic gateway expectations set during traversing from a divergent gateway with a reciprocal.
+  string traceParent = 23; // TraceContext holds an OTEL trace context.
+}
+
+message WorkflowStateSummary {
+  string workflowId = 1; // WorkflowId - the ID of the workflow version that provides the template for execution.
+  string executionId = 2; // ExecutionId - the execution that this state belongs to.
+  string elementId = 3; // ElementId - the currently executing element withing the workflow state machine.
+  string elementType = 4; // ElementType - the currently executing element type, cached here to reduce lookups.
+  repeated string id = 5; // Id - a stack of IDs that describe the state and its parents up to the original workflow instance ID.
+  optional string execute = 7; // Execute - additional information required to execute depending on the element type.
+  CancellationState state = 8; // State - the current execution state of the state machine.
+  optional string condition = 9; // Condition - a message condition that needs to be fulfilled before proceeding.
+  int64 unixTimeNano = 10; // UnixTimeNano - the time this state was observed.
+  bytes vars = 11; // Vars - A go binary encoded map[string]interface{} of variables.
+  Error error = 14; // Error - an error being carried by the state if it has faulted.
+  WorkflowTimer timer = 16; // Timer - a time needed to transition to the next state.
+  string processInstanceId = 19; // ProcessInstanceId - the unique ID for the process instance.
+}
+
+enum ProcessHistoryType {
+  processExecute = 0;
+  activityExecute = 1;
+  activityComplete =2;
+  processSpawnSync = 3;
+  processComplete = 4;
+  processAbort = 5;
+  activityAbort = 6;
+}
+
+message ProcessHistoryEntry {
+  ProcessHistoryType itemType = 1;
+  optional string workflowId = 2;
+  optional string executionId = 3;
+  optional string elementId = 4;
+  optional string processInstanceId = 5;
+  optional CancellationState cancellationState = 6;
+  bytes vars = 7;
+  optional WorkflowTimer timer = 8;
+  optional Error error = 9;
+  int64 unixTimeNano = 10;
+  optional string execute = 11;
+}
+
+message ProcessHistory {
+  repeated ProcessHistoryEntry item = 1;
+}
+
+message SatisfiesGateway {
+  repeated string instanceTracking = 1; // instanceTracking - a list of paths that satisfy the gateway.
+}
+
+message GatewayExpectations {
+  repeated string expectedPaths = 1; // ExpectedPaths - a list of paths that compose a gatew's expectaions
+}
+
+message Gateway {
+  map<string,string> metExpectations = 1; // MetExpectations - a list of expectations that were met for the gateway.
+  repeated bytes vars = 2;  // Vars - A go binary encoded map[string]interface{} of variables.
+  int64 visits = 3; // Visits - The number of visits this gateway has recieved
+}
+
+// WorkflowTimerDefinition defines a workflow timer that can be used to trigger an event.
+message WorkflowTimerDefinition {
+  WorkflowTimerType type = 1; // Type - whether the workflow timer is relative or absolute.
+  int64 value = 2; // Value - the time parameter.
+  int64 repeat = 3; // Repeat - the repeat interval for the timer.
+  bool dropEvents = 4; // DropEvents - unused.
+}
+
+// WorkflowTimer holds the last execution state of a timer.
+message WorkflowTimer {
+  int64 lastFired = 1; // LastFired - the time in UNIX nanoseconds since the timer was last executed.
+  int64 count = 2; // Count - the number of times the timer has fired.
+}
+
+// WorkflowTimerType describes whether a timer is relative or absolute
+enum WorkflowTimerType {
+  duration = 0; // Duration - a relative timer
+  fixed = 1; // Fixed - an absolute timer
+}
+
+// Execution contains all of the metadata for a currently running workflow.
+message Execution {
+  string executionId = 1; // executionId - The id of this particular BPMExecution
+  string workflowId = 2; // WorkflowId - the workflow version ID that this instance is executing.
+  string workflowName = 5; // WorkflowName - name of this workflow to avoid lookups.
+  repeated string processInstanceId = 6; // ProcessInstance - process instances berlonging to this workflow instance.
+}
+
+message ProcessInstance {
+  string processInstanceId = 1; // ProcessInstanceId - the unique ID for the process instance.
+  string executionId = 2; // executionId - The id of this particular BPMExecution
+  optional string parentProcessId = 3; // ParentProcessInstanceId - the parent process instance that launched this process - if nil, the workflow instance launched the process instance.
+  optional string parentElementId = 4; // ParentElementId - the ID of the element in the parent process that triggered the launch of this process instance.
+  string workflowId = 5; // WorkflowId - the workflow version ID that this instance is executing.
+  string workflowName = 6; // WorkflowName - name of this workflow to avoid lookups.
+  string processName = 7; // ProcessName - name of this process to avoid lookups.
+  map<string,bool> gatewayComplete = 8; // GatewayComplete - completed gateway instances register
+}
+
+// MessageInstance represents a workflow message.
+message MessageInstance {
+  string name = 1; // MessageId - the unique messageId for the message.
+  string correlationKey = 2; // CorrelationKey - a receiving key to correlate this message to.
+  bytes vars = 3; // Vars - A go binary encoded map[string]interface{} of variables.
+}
+
+enum RecipientType {
+  job = 0;
+}
+
+message MessageRecipient {
+  RecipientType type = 1;
+  string  id = 2;
+  string CorrelationKey = 3;
+}
+
+message UserTasks {
+  repeated string id = 1;
+}
+
+message ApiAuthorizationRequest {
+  map<string, string> Headers = 1;
+  string function = 2;
+  string workflowName = 3;
+  string user = 4;
+}
+
+message ApiAuthorizationResponse {
+  bool authorized = 1;
+  string userId = 2;
+}
+
+message ApiAuthenticationRequest {
+  map<string, string> headers = 1;
+}
+
+message ApiAuthenticationResponse {
+  string user = 1;
+  bool Authenticated = 2;
+}
+
+message LaunchWorkflowRequest {
+  string name = 1;
+  bytes vars = 2;
+}
+
+message LaunchWorkflowResponse {
+  string instanceId = 1;
+  string workflowId = 2;
+}
+
+enum CancellationState {
+  executing = 0;  // CancellationState_executing - the state machine is executing
+  completed = 1;  // CancellationState_completed - the state machine has completed successfully
+  terminated = 2; // CancellationState_terminated - the state machine instance was terminated
+  errored = 3;    // CancellationState_errored - an error occured during state machine execution
+  obsolete = 4;   // CancellationState_obsolete - this state is obsolete due to an alternate flow
+}
+
+message CancelProcessInstanceRequest {
+  string id = 1;
+  CancellationState state = 2;
+  Error error = 3;
+}
+
+message ListExecutionProcessesRequest {
+  string id = 1;
+}
+
+message ListExecutionProcessesResponse {
+  repeated string processInstanceId = 1; // ProcessInstance - process instances belonging to this workflow instance.
+}
+
+message GetProcessInstanceStatusRequest {
+  string id = 1;
+}
+
+message GetProcessInstanceStatusResult {
+  repeated WorkflowState processState = 1; // ProcessInstance - process instances belonging to this workflow instance.
+}
+
+message ListExecutionRequest {
+  string workflowName = 1;
+}
+
+message ListExecutionResponse {
+  repeated ListExecutionItem result = 1;
+}
+
+
+message ListExecutionItem {
+  string id = 1;
+  int32 version = 2;
+}
+
+message WorkflowInstanceInfo {
+  string id = 1;
+  string workflowId = 2;
+}
+
+message WorkflowInstanceStatus {
+  repeated WorkflowState state = 1;
+}
+
+message ListWorkflowsResponse {
+  repeated ListWorkflowResponse result = 1;
+}
+
+message ListWorkflowResponse {
+  string name = 1;
+  int32 version = 2;
+}
+
+message SendMessageRequest {
+  string name = 1;
+  string correlationKey = 2;
+  bytes vars = 3;
+}
+
+message SendMessageResponse {
+  string executionId = 1;
+  string workflowId = 2;
+}
+
+message WorkflowInstanceComplete {
+  string workflowName = 1;
+  string workflowId = 2;
+  string workflowInstanceId = 3;
+  CancellationState workflowState = 4;
+  Error error = 5;
+}
+
+message CompleteManualTaskRequest {
+  string trackingId = 1;
+  bytes vars = 2;
+}
+
+message CompleteServiceTaskRequest {
+  string trackingId = 1;
+  bytes vars = 2;
+}
+
+message CompleteSendMessageRequest {
+  string trackingId = 1;
+  bytes vars = 2;
+}
+
+message CompleteUserTaskRequest {
+  string trackingId = 1;
+  string owner = 2;
+  bytes vars = 3;
+}
+
+message ListUserTasksRequest {
+  string owner = 1;
+}
+
+message GetUserTaskRequest {
+  string owner = 1;
+  string trackingId = 2;
+}
+
+//message GetMessageSenderRoutingIdRequest {
+//  string workflowName = 1;
+//  string messageName = 2;
+//}
+
+message GetUserTaskResponse {
+  string trackingId = 1;
+  string owner = 2;
+  string description = 3;
+  string name = 4;
+  bytes vars = 5;
+}
+
+message HandleWorkflowErrorRequest {
+  string trackingId = 1;
+  string errorCode = 2;
+  string message = 3;
+  bytes vars = 4;
+}
+
+message HandleWorkflowErrorResponse {
+  bool handled = 1;
+}
+
+message GetWorkflowVersionsRequest {
+  string name = 1;
+}
+
+message GetWorkflowVersionsResponse {
+  WorkflowVersions versions = 1;
+}
+
+message GetWorkflowRequest {
+  string id = 1;
+}
+
+message GetWorkflowResponse {
+  Workflow definition = 1;
+}
+
+message GetProcessHistoryRequest {
+  string Id = 1;
+}
+
+message GetProcessHistoryResponse {
+  repeated ProcessHistoryEntry entry = 1;
+}
+
+message GetServiceTaskRoutingIDRequest {
+  string name = 1;
+  string requestedId = 2;
+}
+
+message GetServiceTaskRoutingIDResponse {
+  string id = 1;
+}
+
+message GetVersionInfoRequest {
+  string clientVersion = 1;
+  string compatibleVersion = 2;
+}
+
+message GetVersionInfoResponse {
+  string serverVersion = 1;
+  string minCompatibleVersion = 2;
+  bool connect = 3;
+}
+
+message GetJobRequest {
+  string jobId = 1;
+}
+
+message GetJobResponse {
+  WorkflowState job = 1;
+}
+
+message WorkflowStats {
+  int64 Workflows = 1;
+  int64 InstancesStarted = 2;
+  int64 InstancesComplete = 3;
+}
+
+message TelemetryState {
+  WorkflowState state = 1;
+  map<int64, TelemetryLogEntry> log = 2;
+}
+
+message TelemetryLogEntry {
+  string trackingID = 1;
+  LogSource source = 2;
+  string message = 3;
+  int32 code = 4;
+  map<string, string> attributes = 5;
+}
+
+enum LogSource {
+  logSourceEngine = 0;
+  logSourceWorkflow = 2;
+  logSourceClient = 3;
+  logSourceJob = 4;
+  logSourceTelemetry = 5;
+}
+
+message TaskSpecVersions {
+  repeated string id = 1;
+}
+
+// Task specification
+message TaskSpec {
+  string version = 1; // Version of task specification. valid-value: "1.0"
+  string kind = 2; // Kind of task specification. valid-value: "ServiceTask" or "UserTask".
+  TaskMetadata metadata = 3 ; // Metadata document any non functional information regarding the TaskSpec.
+  TaskBehaviour behaviour = 4; // Behaviour documents instance behaviour.
+  TaskParameters parameters = 5; // Parameters document input and output parameters for the task.
+  TaskEvents events = 6; // Events document errors and messages that can be emitted from the task.
+}
+
+message TaskMetadata {
+  string uid = 1; // Uid of the task. valid-value: a ksuid
+  string type = 2; // Type - the name for the task when referred to by process. valid-value: arbitrary string
+  string version = 3; // Version - the task version number.  This is useful to describe that the task has internally changed without modifying the input/outout parameters. valid-value: semantic version number
+  string short = 4; // Short description of the task. valid-value: arbitrary string
+  string description = 5; // Description - a long description of the task. valid-value: arbitrary string
+  repeated string labels = 6; // Labels - a list of searchable tags for the task. valid-value: arbitrary string
+  map<string,string> extensionData = 8; // ExtensionData - a map of values that can be used by third party tools. valid-value: arbitrary string
+}
+
+message TaskParameters {
+  repeated ParameterGroup parameterGroup = 1; // ParameterGroup is a list of parameters with their categorization.  This is useful for display. valid-value: arbitrary string
+  repeated Parameter input = 2; // Input documents input parameters to the task.
+  repeated Parameter output = 3; // Output documents output parameters for the task.
+}
+
+message TaskEvents {
+  repeated TaskError error = 1; // Error workflow events that can be returned from the task.
+  repeated Message message = 2; // Message workflow events that can be returned from the task.
+}
+
+message TaskBehaviour {
+  DefaultTaskRetry defaultRetry = 1; // Retry - the recommended retry behavior for the task, this could be overriden by a workflow.
+  uint64 estimatedMaxDuration = 7; // EstimatedMaxDuration documents how long the task is expected to run for. valid-value: a unix millisecond duration
+  bool unsafe = 2; // Unsafe labels the task as non-idempotent.  Non-idempotent tasks are highly unrecommended. valid-value: boolean
+  bool mock = 3; // Mock this task as it has no concrete implementation. valid-value: boolean
+  bool deprecated = 4; // Deprecated task.  Workflows can not be executed that include this task. valid-value: boolean
+}
+
+enum RetryStrategy {
+  Linear = 0; // Retry at regular intervals.
+  Incremental = 1; // Retry at increasingly large intervals.
+}
+
+message DefaultTaskRetry {
+  uint32 number = 1; // Retry - the recommended number of retries for the task. valid-value: arbitrary positive integer
+  RetryStrategy strategy = 2; // Strategy for retrying the task.
+  int64 initMilli = 3; // InitMilli - initial backoff delay for Static, Linear, Incremental. valid-value: positive int
+  int64 intervalMilli = 4; // IntervalMilli - delay interval (Linear) amount to add each attempt (Incremental). valid-value: positive int
+  int64 maxMilli = 5; // MaxMilli - delay ceiling (Static, Linear, Incremental). valid-value: positive int
+  DefaultRetryExceededBehaviour defaultExceeded = 6; // DefaultExceeded - specifies what to do by default when the attempts have been exhausted.  This only specifies the strategy, and doesn't contain runtime parameters.
+}
+
+message DefaultRetryExceededBehaviour {
+  RetryErrorAction action = 1; // Action to take when retries are exceeded.
+  string variable = 2; // Variable - name of variable to set for the SetVariableValue action. valid-value: shar-variable
+  string variableType = 3; // VariableType - type of the variable for the SetVariableValue action. valid-value: "string", "int", "float", "bool"
+  string variableValue = 4; // Variable value to set for the SetVariableValue action. valid-value: arbitrary string representation of a valid value for variableType
+  string errorCode = 5; // ErrorCode for the ThrowWorkflowError action. valid-value: a valid workflow error code for the task.
+}
+
+enum RetryErrorAction {
+  PauseWorkflow = 0; // PauseWorkflow - exhausting retries will pause the workflow and send a shar operational message.
+  ThrowWorkflowError = 1; // ThrowWorkflowError - throw a workflow error.
+  SetVariableValue = 2; // SetVariableValue - set a workflow variable value.
+  FailWorkflow = 3; // FailWorkflow - exhausting retries will fail the workflow.
+}
+
+message ParameterGroup {
+  string name = 1; // Name of the parameter group. valid-value: arbitrary string
+  string short = 2; // Short description of the parameter group. valid-value: arbitrary string
+  string description = 3; // Description - a long description of the parameter group. valid-value: arbitrary string
+}
+
+message Parameter {
+  string name = 1; // Name of the parameter. valid-value: arbitrary string
+  string short = 2; // Short description of the parameter. valid-value: arbitrary string
+  string description = 3; // Description - a long description of the parameter. valid-value: arbitrary string
+  string type = 4; // Type of the parameter. valid-value: "string", "int", "float", "bool"
+  optional string customTypeExtension = 5; // Subtype describing the use of the type.  valid-value: eg. "IPAddress"
+  bool collection = 6; // Collection specifies the parameter is an array. valid-value: bool
+  optional string group = 7; // Group declares this parameter as part of a named parameter group. valid-value: parameter group name.
+  map<string,string> extensionData = 8; // ExtensionData - a map of values that can be used by third party tools. valid-value: arbitrary map of string/string
+  bool mandatory = 9; // Mandatory specifies that this parameter is required. valid-value: bool
+  string validateExpr = 10; // ValidateExpr - an EXPR that is used to validate the field value. valid-value: a valid EXPR expression prefixed by'='
+  string example = 11; // Example - an example EXPR that is used to provide a hint to a user on the nature of a task.  It is also used when the task is being used as a mock before implementation. valid-value: a valid EXPR expression prefixed by'='
+}
+
+message Message {
+  string name = 1; // Name - Message name for a workflow message. valid-value: arbitrary string
+  string correlationKey = 2; // CorrelationKey - the workflow message correlation key. valid-value: NATS-safe identifier
+  string short = 3; // Short description of the parameter. valid-value: arbitrary string
+  string description = 4; // Description - a long description of the parameter. valid-value: arbitrary string
+}
+
+// TaskError represents a known error name and code which may be thrown by the state machine.
+message TaskError {
+  string name = 1; // Name of the error. valid-value: arbitrary string
+  string code = 2; // Code a unique code for the error. valid-value: NATS-safe identifier
+  string short = 3; // Short description of the error. valid-value: arbitrary string
+  string description = 4; // Description - a long description of the error. valid-value: arbitrary string
+}
+
+// RegisterTaskRequest registers a task in SHAR.
+message RegisterTaskRequest {
+  TaskSpec spec = 1; // Spec - the task specification.
+}
+
+// RegisterTaskResponse contains the UID of a registered task.
+message RegisterTaskResponse{
+  string uid = 1; // Uid of the registered task.
+}
+// GetTaskSpecRequest contains the UID of a registered task.
+message GetTaskSpecRequest{
+  string uid = 1; // Uid of the registered task.
+}
+
+// GetTaskSpecResponse returns a task spec.
+message GetTaskSpecResponse{
+  TaskSpec spec = 1; // Spec - the task specification.
+}
+
+// DeleteServiceTaskRequest contains the UID of a registered task.
+message DeprecateServiceTaskRequest{
+  string name = 1; // Name of the task specification.
+}
+
+// DeleteServiceTaskResponse is the result of unregistering a task.
+message DeprecateServiceTaskResponse{
+  optional TaskSpecUsageReport usage = 1;
+  bool success = 2;
+}
+
+message GetTaskSpecVersionsRequest{
+  string name = 1; // Name of the task specification.
+}
+
+message GetTaskSpecVersionsResponse{
+  TaskSpecVersions versions = 1;
+}
+
+message GetTaskSpecUsageRequest {
+  string id = 1;
+}
+
+message TaskSpecUsageReport{
+  repeated string workflow = 1;
+  repeated string process = 2;
+  repeated string executingWorkflow = 3;
+  repeated string executingProcessInstance = 4;
+}
+
+message ListTaskSpecUIDsRequest{
+  bool IncludeDeprecated = 1;
+}
+
+message ListTaskSpecUIDsResponse {
+  repeated string uid = 1;
+}
+
+// Sender is the sender side of a BPMN message. It contains a byte array of vars destined for the receiver
+message Sender {
+  bytes vars = 1; // Vars - A go binary encoded map[string]interface{} of variables.
+  string correlationKey = 2; // CorrelationKey - the workflow message correlation key.
+}
+
+// Receiver is the receiver side of a BPMN message. It contains a reference to the job which receivers the vars from the sender
+message Receiver {
+  string  id = 1; // Id - a uuid identifying the job associated with the receiver
+  string correlationKey = 2; // CorrelationKey - the workflow message correlation key.
+}
+
+message Exchange {
+  Sender sender = 1; // Sender - the sender side of the exchange
+  map<string,Receiver> receivers = 2; // Receivers - the receiver sides of the exchange
+}
+
+message TelemetryClients {
+  int32 count = 1;
+}
+
+message LogRequest {
+  string hostname = 1;
+  string clientId = 2;
+  bytes trackingId = 3;
+  int32 level = 4;
+  int64 time = 5;
+  LogSource source = 6;
+  string message = 7;
+  map<string, string> attributes = 8;
+}
+
+message LogResponse {
+
+}

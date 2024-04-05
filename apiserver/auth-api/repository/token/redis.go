@@ -2,48 +2,74 @@ package token
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	auth "yalc/auth-service/domain/auth"
+	"yalc/auth-service/module/logger"
 
-	redis_db "github.com/redis/go-redis/v9"
+	db "yalc/auth-service/module/database/redis"
+
+	"go.uber.org/fx"
+	"golang.org/x/oauth2"
 )
 
 type (
 	RedisTokenRepository struct {
-		Client *redis_db.Client
+		Client *db.RedisClient
+		Logger logger.Logger
+	}
+
+	Params struct {
+		fx.In
+
+		Client *db.RedisClient
+		Logger logger.Logger
 	}
 )
 
-func NewRedisTokenRepository(client *redis_db.Client) *RedisTokenRepository {
+func NewRedisTokenRepository(p Params) *RedisTokenRepository {
 	return &RedisTokenRepository{
-		Client: client,
+		Client: p.Client,
+		Logger: p.Logger,
 	}
 }
 
 func (r *RedisTokenRepository) Create(ctx context.Context, token auth.OAuthToken) error {
-	r.Client.Set(ctx, createRedisKey(token), token.Value, 0)
+	json, err := json.Marshal(token)
+	if err != nil {
+		return err
+	}
+	r.Client.Set(ctx, createRedisKey(token), json, 0)
 	return nil
 }
 
 func (r *RedisTokenRepository) Update(ctx context.Context, token auth.OAuthToken) error {
-	r.Client.Set(ctx, createRedisKey(token), token.Value, 0)
+	json, err := json.Marshal(token)
+	if err != nil {
+		return err
+	}
+	r.Client.Set(ctx, createRedisKey(token), json, 0)
 	return nil
 }
 
 func (r *RedisTokenRepository) Get(ctx context.Context, token auth.OAuthToken) (auth.OAuthToken, error) {
 	key := createRedisKey(token)
+	r.Logger.Debug("getting token from redis: ", key)
 	value, err := r.Client.Get(ctx, key).Result()
 	if err != nil {
+		r.Logger.Error("error getting token from redis: ", err)
 		return auth.OAuthToken{}, err
 	}
 
-	return auth.OAuthToken{
-		OwnerID:  token.OwnerID,
-		Provider: token.Provider,
-		Type:     token.Type,
-		Value:    value,
-	}, nil
+	var resultToken auth.OAuthToken
+	err = json.Unmarshal([]byte(value), &resultToken)
+	if err != nil {
+		r.Logger.Error("error unmarshalling token from redis: ", err)
+		return auth.OAuthToken{}, err
+	}
+
+	return resultToken, nil
 }
 
 func (r *RedisTokenRepository) GetAllFromOwner(ctx context.Context, ownerId string) ([]auth.OAuthToken, error) {
@@ -59,13 +85,7 @@ func (r *RedisTokenRepository) GetAllFromOwner(ctx context.Context, ownerId stri
 		if err != nil {
 			return nil, err
 		}
-		tokenOwnerID, tokenProvider, tokenType := extractRedisKey(key)
-
-		convertedTokenType := auth.TokenType(tokenType)
-		err = convertedTokenType.Validate()
-		if err != nil {
-			return nil, err
-		}
+		tokenOwnerID, tokenProvider := extractRedisKey(key)
 
 		convertedProvider := auth.OAuthProvider(tokenProvider)
 		err = convertedProvider.Validate()
@@ -73,11 +93,16 @@ func (r *RedisTokenRepository) GetAllFromOwner(ctx context.Context, ownerId stri
 			return nil, err
 		}
 
+		var resultToken *oauth2.Token
+		err = json.Unmarshal([]byte(token), &resultToken)
+		if err != nil {
+			return nil, err
+		}
+
 		tokens = append(tokens, auth.OAuthToken{
-			OwnerID:  tokenOwnerID,
-			Provider: convertedProvider,
-			Type:     convertedTokenType,
-			Value:    token,
+			OwnerID:      tokenOwnerID,
+			Provider:     convertedProvider,
+			RefreshToken: resultToken.RefreshToken,
 		})
 	}
 
@@ -99,10 +124,10 @@ func (r *RedisTokenRepository) DeleteFromProvider(ctx context.Context, ownerId s
 }
 
 func createRedisKey(token auth.OAuthToken) string {
-	return token.OwnerID + ":" + string(token.Provider) + ":" + string(token.Type)
+	return token.OwnerID + ":" + string(token.Provider)
 }
 
-func extractRedisKey(key string) (string, string, string) {
+func extractRedisKey(key string) (string, string) {
 	keys := strings.Split(key, ":")
-	return keys[0], keys[1], keys[2]
+	return keys[0], keys[1]
 }

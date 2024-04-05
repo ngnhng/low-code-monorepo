@@ -7,5 +7,6 @@ import (
 var Module = fx.Options(
 	fx.Provide(
 		NewGoogleOAuthLoginUsecase,
+		NewGetGoogleOAuthTokenUsecase,
 	),
 )

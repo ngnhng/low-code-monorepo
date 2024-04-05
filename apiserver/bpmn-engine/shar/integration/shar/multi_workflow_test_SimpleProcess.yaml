@@ -1,0 +1,16 @@
+version: "1.0"
+kind: ServiceTask
+metadata:
+  type: SimpleProcess
+  version: "0.1"
+  short: A test task.
+behaviour:
+  estimatedMaxDuration: 2343255
+  defaultRetry:
+    number: 30
+    strategy: 30000
+    initMilli: 30000
+    intervalMilli: 10000
+    maxMilli: 120000
+    defaultExceeded:
+      action: 3

@@ -1,0 +1,70 @@
+services:
+  nats:
+    ports:
+      - '4222:4222'
+    image: nats:2.8.4
+    command:
+      - '--js'
+      - '--server_name'
+      - compose_nats
+
+  jaeger-collector:
+    image: jaegertracing/jaeger-collector
+    depends_on:
+     - elastic
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch 
+      - ES_SERVER_URLS=http://elastic:9200
+    ports:
+      - 14268:14268
+      - 14250:14250
+    networks:
+      - elastic
+
+  jaeger-query:
+    image: jaegertracing/jaeger-query
+    depends_on:
+      - elastic
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch 
+      - ES_SERVER_URLS=http://elastic:9200
+    networks:
+      - proxy
+      - elastic
+
+  envoyproxy:
+    build:
+      context: .
+      dockerfile: dockerfile-envoy-http-proxy
+    depends_on:
+     - jaeger-query
+    environment:
+      - ENVOY_LB_ENDPOINT_ADDRESS=jaeger-query
+      - ENVOY_LB_ENDPOINT_PORT=16686
+    networks:
+     - proxy
+    ports:
+      - "16686:80"
+
+
+  elastic:
+    image: elasticsearch:7.17.6
+    environment:
+      - discovery.type=single-node
+    networks:
+      - elastic
+
+  kabana: 
+    image: kibana:7.17.6
+    depends_on:
+     - elastic
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://elastic:9200"]'
+    ports: 
+      - 5601:5601
+    networks:
+      - elastic
+
+networks:
+  elastic:
+  proxy:

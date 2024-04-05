@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shar.fullname" . }}
+  labels:
+    {{- include "shar.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "shar.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "shar.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "shar.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: grpc
+              containerPort: 50000
+              protocol: TCP
+          env:
+            - name: SHAR_PORT
+              value: "50000"
+            - name: NATS_URL
+              value: {{ include "shar.natsURL" . }}
+            - name: SHAR_LOG_LEVEL
+              value: {{ .Values.service.loglevel }}
+          #livenessProbe:
+          #  grpc:
+          #    port: grpc
+          #readinessProbe:
+          #  grpc:
+          #    port: grpc
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+        {{- if .Values.integratedNATS.enabled }}
+        - name: nats
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: nats:{{ .Values.integratedNATS.version }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: nats
+              containerPort: 4222
+              protocol: TCP
+          args:
+            - "--js"
+        {{- end }}
+
+        {{- if .Values.integratedJaeger.enabled }}
+        - name: jaeger
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: jaegertracing/all-in-one
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: jaeger-query
+              containerPort: 16686
+              protocol: TCP
+            - name: jaeger-thrift
+              containerPort: 14268
+              protocol: TCP
+            - name: nats
+              containerPort: 4222
+              protocol: TCP
+        {{- end }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

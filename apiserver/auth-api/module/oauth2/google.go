@@ -33,3 +33,21 @@ func (p *GoogleProvider) Client(ctx context.Context, token *oauth2.Token) *http.
 func (p *GoogleProvider) RefreshToken(ctx context.Context, token *oauth2.Token) (*oauth2.Token, error) {
 	return p.Config.TokenSource(ctx, token).Token()
 }
+
+// NewClientFromRefreshToken returns a new token source from a refresh token.
+func (p *GoogleProvider) NewClientFromRefreshToken(ctx context.Context, refreshToken string) (*http.Client, error) {
+	token := &oauth2.Token{
+		RefreshToken: refreshToken,
+	}
+
+	return p.Config.Client(ctx, token), nil
+}
+
+// NewAccessTokenFromRefreshToken returns a new access token from a refresh token.
+func (p *GoogleProvider) NewAccessTokenFromRefreshToken(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
+	token := &oauth2.Token{
+		RefreshToken: refreshToken,
+	}
+
+	return p.Config.TokenSource(ctx, token).Token()
+}

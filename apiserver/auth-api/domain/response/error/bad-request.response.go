@@ -12,7 +12,7 @@ const (
 	REGISTER_ERROR_CODE          = "REGISTER_ERROR_01"
 )
 
-// BadRequestReponse is a response error returned by the API when the request is invalid.
+// BadRequestResponse is a response error returned by the API when the request is invalid.
 func NewBadRequestResponse(message string, err string) response.Response {
 	meta := response.NewResponseMeta(400, message, err)
 	data := map[string]interface{}{}

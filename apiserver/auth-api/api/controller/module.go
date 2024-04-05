@@ -5,7 +5,8 @@ import (
 	"yalc/auth-service/module/logger"
 	"yalc/auth-service/usecase"
 
-	google_oauth "yalc/auth-service/api/controller/oauth-login"
+	google_oauth "yalc/auth-service/api/controller/oauth"
+	"yalc/auth-service/api/controller/token"
 
 	"go.uber.org/fx"
 )
@@ -13,7 +14,8 @@ import (
 var Module = fx.Module(
 	"controller",
 	fx.Provide(
-		NewController,
+		NewOauthController,
+		token.NewTokenStoreAccessController,
 	),
 )
 
@@ -23,7 +25,7 @@ type (
 
 		Configs            *config.Config
 		Logger             logger.Logger
-		GoogleOAuthUsecase usecase.GoogleOAuthLoginUsecase
+		GoogleOAuthUsecase *usecase.GoogleOAuthLoginUsecase
 	}
 
 	Result struct {
@@ -34,7 +36,7 @@ type (
 )
 
 // Provide your controller implementations here.
-func NewController(p Params) Result {
+func NewOauthController(p Params) Result {
 	//return fx.Provide(
 	//	adminLoginController.New,
 	//	registerController.New,
