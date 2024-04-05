@@ -25,3 +25,4 @@ export * from "./dropdown";
 export * from "./sheet";
 export * from "./popover";
 export * from "./command";
+export * from "./checkbox";

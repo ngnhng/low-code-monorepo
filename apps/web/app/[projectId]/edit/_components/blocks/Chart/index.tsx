@@ -11,6 +11,7 @@ import { ChartTypeRegistry } from 'chart.js/auto';
 import axios, { CancelTokenSource } from 'axios';
 import Loading from './loading';
 import { RowDef } from 'types/table-data';
+import { Checkbox } from '@repo/ui';
 
 const getClassNameInput = getClassNameFactory('Input', styles);
 
@@ -152,7 +153,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
           };
         }, [value.url]);
 
-        const Select = ({ prop, name, selectOptions }) => {
+        const Select = ({ prop, name, selectOptions, special }) => {
           return (
             <label className={getClassNameInput()}>
               <div className={getClassNameInput('label')}>
@@ -166,6 +167,10 @@ export const Charts: ComponentConfig<ChartsProps> = {
                 onChange={(e) => {
                   const clone = structuredClone(value);
                   clone[prop] = e.currentTarget.value;
+
+                  if (special === true) {
+                    clone['datasets'] = [];
+                  }
 
                   onChange(clone);
                   console.log('Clone:', clone);
@@ -255,6 +260,19 @@ export const Charts: ComponentConfig<ChartsProps> = {
               prop="chartType"
               name="Chart Type"
               selectOptions={chartTypes}
+              special={false}
+            />
+            <Input
+              prop="width"
+              name="Width (%, px, em, etc)"
+              checkCallback={cssValueCheck}
+              type="text"
+            />
+            <Input
+              prop="height"
+              name="Height (%, px, em, etc)"
+              checkCallback={cssValueCheck}
+              type="text"
             />
             <div>
               <label className={getClassNameInput()}>
@@ -290,18 +308,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
                 </select>
               </label>
             </div>
-            <Input
-              prop="width"
-              name="Width (in %, px, em, etc)"
-              checkCallback={cssValueCheck}
-              type="text"
-            />
-            <Input
-              prop="height"
-              name="Height (in %, px, em, etc)"
-              checkCallback={cssValueCheck}
-              type="text"
-            />
+
             {importType === 'provider' ? (
               <Input prop="url" name="Data source URL" type="text" />
             ) : // eslint-disable-next-line unicorn/no-nested-ternary
@@ -310,6 +317,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
                 name="Choose Table"
                 prop="tableId"
                 selectOptions={chartData.map((table) => table.id)}
+                special={true}
               />
             ) : (
               <Loading />
@@ -317,23 +325,36 @@ export const Charts: ComponentConfig<ChartsProps> = {
             {value.selectedTableFields.length > 0 && (
               <>
                 <Select
-                  name="Choose Label Columns"
+                  name="Label Column"
                   prop="labels"
                   selectOptions={value.selectedTableFields}
+                  special={false}
                 />
 
                 <div>
-                  <p>Choose Datasets Columns</p>
+                  <div className={getClassNameInput('label')}>
+                    <div className={getClassNameInput('labelIcon')}>
+                      <ChevronDown size={16} />
+                    </div>
+                    {'Datasets Columns'}
+                  </div>
                   <ul>
                     {value.selectedTableFields.map((field, index) => (
-                      <li key={index}>
-                        <input
-                          type="checkbox"
+                      <li
+                        key={index}
+                        className="flex flex-row items-start space-x-3 space-y-0"
+                      >
+                        <Checkbox
                           id={field}
                           checked={checkedArray.includes(field)}
-                          onChange={() => handleChangeChecked(field)}
+                          onCheckedChange={() => handleChangeChecked(field)}
                         />
-                        <label htmlFor={field}>{field}</label>
+                        <label
+                          htmlFor={field}
+                          className="leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {field}
+                        </label>
                       </li>
                     ))}
                   </ul>
