@@ -1,7 +1,11 @@
 #!/bin/sh
 
 # Run the migrations
-yarn prisma migrate deploy
 
-# Start the application
-node dist/main.js
+# apply all pending migrations
+yarn prisma migrate deploy
+# generate the prisma client
+yarn prisma generate
+
+# exec
+exec "$@"

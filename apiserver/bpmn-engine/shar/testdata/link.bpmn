@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0y9ubd6" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.6.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.2.0">
+  <bpmn:process id="Process_0e9etnb" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0l1h696</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0l1h696" sourceRef="StartEvent_1" targetRef="Activity_0lhqzo7" />
+    <bpmn:serviceTask id="Activity_0lhqzo7" name="Spill Substance">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="spillage" />
+        <zeebe:ioMapping>
+          <zeebe:output source="=substance" target="substance" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0l1h696</bpmn:incoming>
+      <bpmn:outgoing>Flow_027vxj2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_0qj26vd" name="What kind of substance?">
+      <bpmn:incoming>Flow_027vxj2</bpmn:incoming>
+      <bpmn:outgoing>Flow_0md3yaq</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1bft4dh</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_027vxj2" sourceRef="Activity_0lhqzo7" targetRef="Gateway_0qj26vd" />
+    <bpmn:sequenceFlow id="Flow_0md3yaq" name="milk" sourceRef="Gateway_0qj26vd" targetRef="Activity_0fcigtd">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=substance == "milk"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1bft4dh" sourceRef="Gateway_0qj26vd" targetRef="Activity_00gi1lk">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=substance != "milk"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="Activity_0fcigtd" name="Don&#39;t cry">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="dontCry" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0md3yaq</bpmn:incoming>
+      <bpmn:outgoing>Flow_0oyqgg9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_00gi1lk" name="Cry">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="cry" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=substance" target="substance" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1bft4dh</bpmn:incoming>
+      <bpmn:outgoing>Flow_12h57ux</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateThrowEvent id="Event_08xhfdi">
+      <bpmn:incoming>Flow_0oyqgg9</bpmn:incoming>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_11im7zs" name="cleanItUp" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="Flow_0oyqgg9" sourceRef="Activity_0fcigtd" targetRef="Event_08xhfdi" />
+    <bpmn:intermediateThrowEvent id="Event_0fwqmeo">
+      <bpmn:incoming>Flow_12h57ux</bpmn:incoming>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_111lrup" name="cleanItUp" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="Flow_12h57ux" sourceRef="Activity_00gi1lk" targetRef="Event_0fwqmeo" />
+    <bpmn:intermediateCatchEvent id="Event_097131w">
+      <bpmn:outgoing>Flow_0nqzmus</bpmn:outgoing>
+      <bpmn:linkEventDefinition id="LinkEventDefinition_0xhowmt" name="cleanItUp" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_0nqzmus" sourceRef="Event_097131w" targetRef="Activity_1yntadz" />
+    <bpmn:endEvent id="Event_133dtxa">
+      <bpmn:incoming>Flow_0q57chx</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0q57chx" sourceRef="Activity_1yntadz" targetRef="Event_133dtxa" />
+    <bpmn:serviceTask id="Activity_1yntadz" name="Wipe it up">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="wipeItUp" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=substance" target="substance" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0nqzmus</bpmn:incoming>
+      <bpmn:outgoing>Flow_0q57chx</bpmn:outgoing>
+    </bpmn:serviceTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0e9etnb">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="209" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0d9iyq0_di" bpmnElement="Activity_0lhqzo7">
+        <dc:Bounds x="300" y="187" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0qj26vd_di" bpmnElement="Gateway_0qj26vd" isMarkerVisible="true">
+        <dc:Bounds x="505" y="202" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="549" y="246" width="62" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_12wjeyz_di" bpmnElement="Activity_0fcigtd">
+        <dc:Bounds x="610" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_01k93a9_di" bpmnElement="Activity_00gi1lk">
+        <dc:Bounds x="610" y="300" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0gvv1af_di" bpmnElement="Event_08xhfdi">
+        <dc:Bounds x="792" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_03o3wsu" bpmnElement="Event_0fwqmeo">
+        <dc:Bounds x="792" y="322" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0lao3as_di" bpmnElement="Event_097131w">
+        <dc:Bounds x="179" y="432" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_133dtxa_di" bpmnElement="Event_133dtxa">
+        <dc:Bounds x="492" y="432" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1xz4c0y_di" bpmnElement="Activity_1yntadz">
+        <dc:Bounds x="300" y="410" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0l1h696_di" bpmnElement="Flow_0l1h696">
+        <di:waypoint x="215" y="227" />
+        <di:waypoint x="300" y="227" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_027vxj2_di" bpmnElement="Flow_027vxj2">
+        <di:waypoint x="400" y="227" />
+        <di:waypoint x="505" y="227" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0md3yaq_di" bpmnElement="Flow_0md3yaq">
+        <di:waypoint x="530" y="202" />
+        <di:waypoint x="530" y="120" />
+        <di:waypoint x="610" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="535" y="158" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1bft4dh_di" bpmnElement="Flow_1bft4dh">
+        <di:waypoint x="530" y="252" />
+        <di:waypoint x="530" y="340" />
+        <di:waypoint x="610" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0oyqgg9_di" bpmnElement="Flow_0oyqgg9">
+        <di:waypoint x="710" y="120" />
+        <di:waypoint x="792" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12h57ux_di" bpmnElement="Flow_12h57ux">
+        <di:waypoint x="710" y="340" />
+        <di:waypoint x="792" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0nqzmus_di" bpmnElement="Flow_0nqzmus">
+        <di:waypoint x="215" y="450" />
+        <di:waypoint x="300" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0q57chx_di" bpmnElement="Flow_0q57chx">
+        <di:waypoint x="400" y="450" />
+        <di:waypoint x="492" y="450" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

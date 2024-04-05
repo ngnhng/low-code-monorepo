@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strings"
 	"time"
 
 	"yalc/auth-service/module/config"
@@ -11,6 +12,7 @@ import (
 	"yalc/auth-service/module/httpserver/validator"
 	"yalc/auth-service/module/logger"
 
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	echo_middleware "github.com/labstack/echo/v4/middleware"
 	"go.uber.org/fx"
@@ -19,8 +21,8 @@ import (
 type (
 	Params struct {
 		fx.In
-		Configs *config.Config
-		Logger  logger.Logger
+		Config *config.Config
+		Logger logger.Logger
 	}
 
 	server struct {
@@ -106,9 +108,19 @@ func NewEchoServer(p Params) *server {
 		middleware.InvalidPathResponseFormatMiddleware,
 	)
 
+	//quick and dirty setup for jwt
+	e.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte(p.Config.Secret.JwtSecret.Access.Key),
+		ContextKey: "user",
+		Skipper: func(c echo.Context) bool {
+			return strings.Contains(c.Path(), "/api/v1/oauth/google")
+		},
+	}),
+	)
+
 	// CORS
 	e.Use(echo_middleware.CORSWithConfig(echo_middleware.CORSConfig{
-		AllowOrigins: []string{p.Configs.App.FrontendURL},
+		AllowOrigins: []string{p.Config.App.FrontendURL},
 		AllowHeaders: []string{
 			echo.HeaderOrigin,
 			echo.HeaderContentType,
@@ -133,15 +145,15 @@ func NewEchoServer(p Params) *server {
 	}))
 
 	rateLimit := 0
-	if p.Configs.Env.App.Server.RateLimit.Enabled {
-		rateLimit = p.Configs.Env.App.Server.RateLimit.Max
+	if p.Config.Env.App.Server.RateLimit.Enabled {
+		rateLimit = p.Config.Env.App.Server.RateLimit.Max
 	}
 
 	return &server{
 		echo: e,
 		ServerConfig: &serverConfig{
-			ServerAddress: p.Configs.Env.App.Server.Address,
-			Port:          p.Configs.Env.App.Server.Port,
+			ServerAddress: p.Config.Env.App.Server.Address,
+			Port:          p.Config.Env.App.Server.Port,
 			RateLimit:     rateLimit,
 			Logger:        p.Logger,
 		},

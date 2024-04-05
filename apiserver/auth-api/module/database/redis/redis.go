@@ -11,7 +11,7 @@ import (
 
 type (
 	RedisClient struct {
-		Client *redis.Client
+		*redis.Client
 	}
 
 	Param struct {

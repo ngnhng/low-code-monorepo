@@ -1,0 +1,23 @@
+streams:
+  - nats-config:
+      name: WORKFLOW_TELEMETRY
+      subjects:
+        - WORKFLOW_TELEMETRY.>
+      retention: 1
+      sources:
+        - name: WORKFLOW
+          filter_subject: WORKFLOW.*.State.>
+      allow_direct: false
+      mirror_direct: false
+    nats-consumers:
+      - nats-config:
+          durable_name: Tracing
+          description: Sequential trace consumer.
+          ack_policy: 2
+          ack_wait: 1s
+          filter_subject: WORKFLOW.*.State.>
+          max_ack_pending: 1
+buckets:
+  - nats-config:
+      bucket: WORKFLOW_TRACKING
+      description: ""

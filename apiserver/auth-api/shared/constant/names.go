@@ -1,5 +1,7 @@
 package constant
 
-const (
-	CONFIG_FILE_NAME = "config_prod"
+import "os"
+
+var (
+	CONFIG_FILE_NAME = os.Getenv("CONFIG_FILE_NAME")
 )

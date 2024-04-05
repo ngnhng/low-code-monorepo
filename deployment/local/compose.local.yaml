@@ -38,7 +38,7 @@ services:
             token-cache:
                 condition: service_healthy
         volumes:
-          - ../../apiserver/auth-api/config_dev.json:/app/config_dev.json
+            - ../../apiserver/auth-api/config_dev.json:/app/config_dev.json
 
         labels:
             - "traefik.enable=true"
@@ -78,6 +78,8 @@ services:
                 condition: service_started
             user-db:
                 condition: service_healthy
+        env_file:
+            - ../../apiserver/user-api/.env
 
         labels:
             - "traefik.enable=true"
@@ -118,6 +120,54 @@ services:
     #    depends_on:
     #        table-api:
     #            condition: service_started
+
+    workflow:
+        build:
+            context: ../../apiserver/bpmn-engine
+            dockerfile: Dockerfile.dev
+        networks:
+            - dev-network
+        depends_on:
+            reverse-proxy:
+                condition: service_started
+            user-api:
+                condition: service_started
+        env_file:
+            - ../../apiserver/bpmn-engine/app/.env.local
+
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.workflow.rule=Host(`localhost`) && PathPrefix(`/workflow`)"
+            - "traefik.http.routers.workflow.entrypoints=web"
+            - "traefik.http.middlewares.workflow-stripprefix.stripprefix.prefixes=/workflow"
+            - "traefik.http.routers.workflow.middlewares=workflow-stripprefix@docker"
+
+    nats:
+        image: nats:2.10-alpine3.19
+        networks:
+            - dev-network
+        ports:
+            - "4222:4222"
+            - "6222:6222"
+            - "8222:8222"
+        command:
+            - "--js"
+            - "--server_name"
+            - "nats"
+            - "-m"
+            - "8222"
+
+    shar-server:
+        image: registry.gitlab.com/shar-workflow/shar/dev/server:latest
+        networks:
+            - dev-network
+        environment:
+            - NATS_URL=nats://nats:4222
+        depends_on:
+            nats:
+                condition: service_started
+        labels:
+            - "traefik.enable=false"
 
     user-db:
         build:

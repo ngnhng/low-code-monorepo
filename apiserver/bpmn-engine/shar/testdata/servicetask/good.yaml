@@ -1,0 +1,58 @@
+version: "1.0"
+kind: ServiceTask
+metadata:
+  type: LookupAddress
+  version: "0.1"
+  short: Look up address
+  description: Looks up a postal address from a PAF API
+  labels:
+  - address
+  - postcode
+behaviour:
+  estimatedMaxDuration: 2343255
+  defaultRetry:
+    number: 30
+    strategy: 30000
+    initMilli: 30000
+    intervalMilli: 10000
+    maxMilli: 120000
+    defaultExceeded:
+      action: 3
+parameters:
+  parameterGroup:
+  - name: address1
+    short: Address parameters
+    description: Address parameters
+  input:
+  - name: number
+    short: House
+    description: House number
+    type: int
+    group: address1
+    extensionData:
+      name1: value1
+    mandatory: true
+    validateExpr: param["number"] matches "[0-9]*"
+  - name: postcode
+    short: Postal code
+    description: UK postal code
+    type: string
+    group: address1
+  output:
+  - name: streetName
+    short: Street Name
+    description: Street or road name
+    type: string
+  - name: county
+    short: County
+    description: Administrative county
+    type: string
+events:
+  taskError:
+  - name: ServiceDown
+    code: "500"
+  message:
+  - name: BlacklistedPostcode
+    correlationKey: =postcode
+    short: Message fired if a blacklisted postcode is enetered
+    description: Attempting to use a postcode which is blacklisted will send a management alert

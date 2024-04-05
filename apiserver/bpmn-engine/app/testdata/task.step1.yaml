@@ -1,0 +1,28 @@
+version: '1.0'
+kind: ServiceTask
+metadata:
+  type: step1
+  version: '0.1'
+  description: A test task
+behaviour:
+  estimatedMaxDuration: 2343255
+  defaultRetry:
+    number: 30
+    strategy: 30000
+    initMilli: 30000
+    intervalMilli: 10000
+    maxMilli: 120000
+    defaultExceeded:
+      action: 3
+  unsafe: false
+  mock: false
+parameters:
+  input:
+    - name: carried
+      short: carried value
+      description: A test value to check that workflow variables are carried across.
+      type: int
+      mandatory: true
+      validateExpr: =param["number"] matches "[0-9]*"
+      example: = 0
+events:
