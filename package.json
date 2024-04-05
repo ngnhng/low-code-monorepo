@@ -14,6 +14,7 @@
     "@repo/typescript-config": "*",
     "husky": "^9.0.11",
     "prettier": "^3.1.0",
+    "react-resizable-panels": "^2.0.16",
     "turbo": "latest"
   },
   "engines": {
