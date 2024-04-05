@@ -3,14 +3,12 @@
 import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 import "@bpmn-io/properties-panel/assets/properties-panel.css";
-import defaultXML from "./defaultXML";
+import defaultXML from "./default-xml";
 
 import React, { useEffect, useRef, FC, useState } from "react";
-import axios from "axios";
 
 import { useMobxStore } from "lib/mobx/store-provider";
 import { observer } from "mobx-react-lite";
-import useSWR from "swr";
 import PropertiesPanel from "./_components/modeler-panel";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup, ScrollArea, Button } from "@repo/ui";
 import { PlayIcon } from "@radix-ui/react-icons";

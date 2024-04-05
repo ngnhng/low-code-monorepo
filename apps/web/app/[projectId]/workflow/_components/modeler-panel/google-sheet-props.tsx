@@ -13,7 +13,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@repo/ui";
-import { Plus } from "lucide-react";
 import { getBusinessObject } from "bpmn-js/lib/util/ModelUtil";
 import { useEffect, useState } from "react";
 
@@ -44,29 +43,6 @@ export default function GoogleSheetProps({ element, modeler }) {
         setOutput(output);
         setType(definition ? fnEnum[definition.type] : "");
     }, []);
-
-    const setInputSource = (value: string) => {
-        const modeling = modeler.get("modeling");
-        const { ioMapping } = extensionElements.get("values").find((extension: any) => extension.ioMapping);
-
-        console.log(ioMapping);
-        if (!ioMapping) return;
-
-        const input = ioMapping.find((input: any) => input.source !== "=_globalContext_user");
-
-        for (const input in ioMapping.filter((input: any) => input.source !== "=_globalContext_user")) {
-            setInputs([...inputs, input]);
-        }
-
-        console.log(input);
-        if (!input) return;
-
-        input.source = value;
-
-        modeling.updateProperties(element, {
-            extensionElements,
-        });
-    };
 
     const setInputTarget = (value: string, source: string) => {
         const modeling = modeler.get("modeling");
@@ -121,6 +97,7 @@ export default function GoogleSheetProps({ element, modeler }) {
         });
     };
 
+    // eslint-disable-next-line no-unused-vars
     const addInput = () => {
         const modeling = modeler.get("modeling");
         const { ioMapping } = extensionElements.get("values").find((extension: any) => extension.ioMapping);
