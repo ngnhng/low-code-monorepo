@@ -13,7 +13,9 @@ import { TableDataService } from "services/table-data.service";
 export interface ITableDataStore {
   tableIds: string[];
   appliedQueries: TableQueries;
+  // eslint-disable-next-line no-unused-vars
   fetchTableData: (a0: GetTableDataParams) => Promise<GetTableDataResponse>;
+  // eslint-disable-next-line no-unused-vars
   fetchAppliedQueries: (tableId: string) => any;
   fetchTables: () => any;
 }

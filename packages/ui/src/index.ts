@@ -26,3 +26,4 @@ export * from "./sheet";
 export * from "./popover";
 export * from "./command";
 export * from "./checkbox";
+export * from "./badge";

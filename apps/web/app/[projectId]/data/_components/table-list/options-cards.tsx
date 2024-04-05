@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTrigger, DialogOverlay } from "@repo/ui";
+import { Dialog, DialogContent, DialogTrigger } from "@repo/ui";
 
 export function OptionDialog({ children, trigger }) {
   return (

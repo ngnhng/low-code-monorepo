@@ -36,6 +36,7 @@ interface CreateTableFormProps {
 }
 
 const typeValues = ["date", "text", "number", "boolean"] as const;
+// const typeValues = ["date", "text", "number", "boolean"] as const;
 
 const requiredFieldsSchema = z.object({
   id: z.string().trim().min(2, {
@@ -71,7 +72,7 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
     projectData: { currentProjectId },
   } = useMobxStore();
 
-  const { data, isLoading, error, mutate } = useSWR(
+  const { data, isLoading, mutate } = useSWR(
     `TABLE_DATA-${currentProjectId}-all`,
     () => fetchTables()
   );
@@ -95,7 +96,7 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
     name: "requiredFields",
   });
 
-  const { isSubmitting, isValid } = form.formState;
+  const { isSubmitting } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {

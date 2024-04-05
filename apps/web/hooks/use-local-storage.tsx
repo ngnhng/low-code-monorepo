@@ -14,15 +14,14 @@ export const useLocalStorage = <T,>(key: string, initialValue: T) => {
     }
   });
 
+  //  eslint-disable-next-line no-unused-vars
   const setValue = (value: T | ((val: T) => T)) => {
     try {
       const valueToStore =
         typeof value === "function" ? (value as Function)(storedValue) : value;
-      typeof value === "function" ? (value as Function)(storedValue) : value;
 
       setStoredValue(valueToStore);
 
-      setLocalStorage(key, JSON.stringify(valueToStore));
       setLocalStorage(key, JSON.stringify(valueToStore));
     } catch (error) {
       console.log(error);
@@ -32,11 +31,11 @@ export const useLocalStorage = <T,>(key: string, initialValue: T) => {
   return [storedValue, setValue];
 };
 
-function isJsonString(str: string) {
-  try {
-    JSON.parse(str);
-  } catch {
-    return false;
-  }
-  return true;
-}
+// function isJsonString(str: string) {
+//   try {
+//     JSON.parse(str);
+//   } catch {
+//     return false;
+//   }
+//   return true;
+// }

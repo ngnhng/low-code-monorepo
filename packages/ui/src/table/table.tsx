@@ -67,22 +67,6 @@ const TableRow = React.forwardRef<
 ));
 TableRow.displayName = "TableRow";
 
-const TableRowButton = React.forwardRef<
-  HTMLTableRowElement,
-  React.HTMLAttributes<HTMLTableRowElement> & { onClick: () => void }
->(({ className, onClick, ...props }, ref) => (
-  <tr
-    ref={ref}
-    className={cn(
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted cursor-pointer",
-      className
-    )}
-    onClick={onClick}
-    {...props}
-  />
-));
-TableRowButton.displayName = "TableRowButton";
-
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement>

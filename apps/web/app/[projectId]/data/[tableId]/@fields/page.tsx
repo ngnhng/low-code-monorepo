@@ -5,7 +5,6 @@ import { useMobxStore } from "lib/mobx/store-provider";
 import { useEffect } from "react";
 
 import ReactFlow, {
-  addEdge,
   useEdgesState,
   useNodesState,
   Background,
@@ -22,7 +21,7 @@ const nodeTypes = {
 
 export default function Page({ params: { tableId } }) {
   const {
-    tableData: { fetchTableData, fetchAppliedQueries, fetchTableRelations },
+    tableData: { fetchTableRelations },
     projectData: { currentProjectId },
   } = useMobxStore();
 
