@@ -1,6 +1,13 @@
 import BaseRenderer from "diagram-js/lib/draw/BaseRenderer";
 
-import { append as svgAppend, attr as svgAttr, classes as svgClasses, create as svgCreate, remove as svgRemove } from "tiny-svg";
+import {
+    append as svgAppend,
+    attr as svgAttr,
+    classes as svgClasses,
+    create as svgCreate,
+    remove as svgRemove,
+    innerSVG as svgInner,
+} from "tiny-svg";
 
 import { getRoundRectPath } from "bpmn-js/lib/draw/BpmnRenderUtil";
 
@@ -14,6 +21,8 @@ const HIGH_PRIORITY = 1500,
     COLOR_YELLOW = "#ffc800",
     COLOR_RED = "#cc0000",
     COLOR_BLACK = "#000";
+
+const googleSheetSvg = `<path fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-2" d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>`;
 
 export default class CustomRenderer extends BaseRenderer {
     constructor(eventBus, bpmnRenderer) {
@@ -41,22 +50,17 @@ export default class CustomRenderer extends BaseRenderer {
     }
 
     drawGoogleSheet(parentNode) {
-        const rect = drawRect(parentNode, 100, 80, 10, COLOR_BLACK, "transparent");
+        drawRect(parentNode, 100, 80, 10, COLOR_BLACK, "transparent");
 
-        const background = drawRect(parentNode, 80, 20, TASK_BORDER_RADIUS, COLOR_GREEN);
-        svgAttr(background, {
-            transform: "translate(8, 52)",
+        const svg = svgCreate("g");
+        svgInner(svg, googleSheetSvg);
+        svgAttr(svg, {
+            transform: "translate(72, 53)",
         });
 
-        const text = svgCreate("text");
-        svgAttr(text, {
-            fill: "#fff",
-            transform: "translate(15, 65)",
-            fontSize: "10"
-        });
-
-        svgAppend(text, document.createTextNode("Google Sheet"));
-        svgAppend(parentNode, text);
+        // svgAppend(text, document.createTextNode("Google Sheet"));
+        // svgAppend(parentNode, text);
+        svgAppend(parentNode, svg);
     }
 
     getShapePath(shape) {
