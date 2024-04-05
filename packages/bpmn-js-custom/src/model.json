@@ -29,6 +29,17 @@
             ]
         },
         {
+            "name": "conditionExpression",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "text",
+                    "isBody": true,
+                    "type": "String"
+                }
+            ]
+        },
+        {
             "name": "ioMapping",
             "superClass": ["Element"],
             "properties": [

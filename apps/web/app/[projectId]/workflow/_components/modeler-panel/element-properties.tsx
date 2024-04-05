@@ -37,7 +37,7 @@ const initialState = {
     isQA: false,
     isGS: false,
     isStartEvent: false,
-    isGateway: false,
+    isSequenceFlow: false,
 };
 
 function reducer(state, action) {
@@ -57,8 +57,8 @@ function reducer(state, action) {
         case "setIsStartEvent": {
             return { ...state, isStartEvent: action.payload };
         }
-        case "setIsGateway": {
-            return { ...state, isGateway: action.payload };
+        case "setIsSequenceFlow": {
+            return { ...state, isSequenceFlow: action.payload };
         }
         default: {
             throw new Error(`Unsupported action type: ${action.type}`);
@@ -85,7 +85,7 @@ export function ElementProperties({ element, modeler }) {
 
         const { suitable, isGoogleSheet, $type } = bObject;
         const isStartEvent = $type === "bpmn:StartEvent";
-        const isGateway = $type === "bpmn:ExclusiveGateway";
+        const isGateway = $type === "bpmn:SequenceFlow";
 
         console.log("States", suitable, isGoogleSheet, isStartEvent);
 
@@ -99,12 +99,12 @@ export function ElementProperties({ element, modeler }) {
         } else if (isGoogleSheet) {
             handleGoogleSheet(bObject);
         } else if (isGateway) {
-            handleGateway(bObject);
+            handleSequenceFlow(bObject);
         }
     }, [element]);
 
-    const handleGateway = (bObject: any) => {
-        dispatch({ type: "setIsGateway", payload: true });
+    const handleSequenceFlow = (bObject: any) => {
+        dispatch({ type: "setIsSequenceFlow", payload: true });
 
         if (bObject.extensionElements) return;
 
@@ -112,22 +112,12 @@ export function ElementProperties({ element, modeler }) {
         const modeling = modeler.get("modeling");
         const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
 
-        const ioMapping = moddle.create("yalc:ioMapping");
-
-        const input = moddle.create("yalc:input", {
-            source: "_input",
-            target: "",
+        const condition = moddle.create("yalc:conditionExpression", {
+            // expression: ""
+            text: ""
         });
 
-        const output = moddle.create("yalc:output", {
-            source: "_output",
-            target: "",
-        });
-
-        ioMapping.get("input").push(input);
-        ioMapping.get("output").push(output);
-
-        extensionElements.get("values").push(ioMapping);
+        extensionElements.get("values").push(condition);
 
         modeling.updateProperties(element, {
             extensionElements,
@@ -296,7 +286,7 @@ export function ElementProperties({ element, modeler }) {
                         </AccordionContent>
                     </AccordionItem>
                 )}
-                {state.isGateway ? <GatewayProps element={element} modeler={modeler} /> : ""}
+                {state.isSequenceFlow ? <GatewayProps element={element} modeler={modeler} /> : ""}
                 <AccordionItem value="actions">
                     <AccordionTrigger>Actions</AccordionTrigger>
                     <AccordionContent>
