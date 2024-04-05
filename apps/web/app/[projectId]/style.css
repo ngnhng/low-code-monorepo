@@ -22,3 +22,9 @@
     border-top-left-radius: var(--corner-radius);
     overflow: hidden;
 }
+
+.bpmn-custom-palette-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

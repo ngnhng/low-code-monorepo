@@ -61,6 +61,7 @@ export default class CustomPalette {
                 group: "activity",
                 title: translate("Create Google Sheet Task"),
                 imageUrl: GSIcon64,
+                className: "bpmn-custom-palette-icon",
                 action: {
                     dragstart: createGSTask("bpmn:ServiceTask"),
                     click: createGSTask("bpmn:ServiceTask"),
