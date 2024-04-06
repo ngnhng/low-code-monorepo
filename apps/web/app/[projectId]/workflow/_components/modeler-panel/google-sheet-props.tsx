@@ -97,7 +97,7 @@ export default function GoogleSheetProps({ element, modeler }) {
         });
     };
 
-    // eslint-disable-next-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const addInput = () => {
         const modeling = modeler.get("modeling");
         const { ioMapping } = extensionElements.get("values").find((extension: any) => extension.ioMapping);

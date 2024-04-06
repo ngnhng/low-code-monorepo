@@ -35,7 +35,7 @@ const Example = () => {
 
   const handleOnChange = (
     value: Record<string, any>[],
-    // eslint-disable-next-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     operations: Operation[],
   ) => {
     const newData = value.map((item: Record<string, any>) => ({

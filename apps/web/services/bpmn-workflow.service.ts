@@ -1,6 +1,6 @@
 "use client";
 
-import { CLIENT_BASE_URL } from "../helpers/common.helper";
+import { API_BASE_URL } from "../helpers/common.helper";
 import { APIService } from "./api.service";
 import { BaseViewerOptions } from "bpmn-js/lib/BaseModeler";
 import {
@@ -13,7 +13,7 @@ import { ModdleExtensions } from "bpmn-js/lib/BaseViewer";
 
 export class BpmnWorkflowService extends APIService {
     constructor() {
-        super(CLIENT_BASE_URL);
+        super(API_BASE_URL + "/workflow");
     }
 
     async renderer(options?: BaseViewerOptions) {
@@ -50,4 +50,5 @@ export class BpmnWorkflowService extends APIService {
                 : undefined,
         });
     }
+
 }

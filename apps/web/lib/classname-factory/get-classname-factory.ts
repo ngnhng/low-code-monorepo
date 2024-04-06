@@ -5,7 +5,7 @@ export const getGlobalClassName = (rootClass: string, options: any) => {
     return `${rootClass}-${options}`;
   } else {
     const mappedOptions: any = {};
-    for (let option in options) {
+    for (const option in options) {
       mappedOptions[`${rootClass}--${option}`] = options[option];
     }
 
@@ -39,7 +39,7 @@ const getClassNameFactory =
     } else if (modifiers) {
       const prefixedModifiers: any = {};
 
-      for (let modifier in modifiers) {
+      for (const modifier in modifiers) {
         prefixedModifiers[styles[`${rootClass}--${modifier}`]] =
           modifiers[modifier];
       }

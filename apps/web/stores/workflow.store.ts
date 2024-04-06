@@ -1,28 +1,21 @@
 'use client';
 
-import { makeObservable, observable, action } from 'mobx';
+import { makeObservable, observable, action, computed } from 'mobx';
 import { RootStore } from './root';
 import { BpmnWorkflowService } from 'services/bpmn-workflow.service';
 
 export interface IWorkflowStore {
-  // eslint-disable-next-line no-unused-vars
   newRenderer: (options?: any) => Promise<any> | any;
   //  setRenderer: (renderer: any) => void;
-
+  
   currentWorkflow: any;
   modeler: any;
   activeElement: any;
-  // eslint-disable-next-line no-unused-vars
+
   setCurrentWorkflow: (workflow: any) => void;
-  // eslint-disable-next-line no-unused-vars
   setModeler: (modeler: any) => void;
   getModeler: () => any;
-  // eslint-disable-next-line no-unused-vars
   setActiveElement: (element: any) => void;
-
-  //  fetchWorkflow: (id: string) => Promise<any>;
-
-  //  fetchWorkflowList: () => Promise<any>;
 }
 
 export class WorkflowStore {
@@ -50,6 +43,7 @@ export class WorkflowStore {
       //  fetchWorkflow: action,
       //  fetchWorkflowList: action,
       //computed
+	  workflowId: computed,
     });
 
     this.rootStore = _rootStore;
@@ -81,6 +75,10 @@ export class WorkflowStore {
 
   setActiveElement = (element: any) => {
 	this.activeElement = element;
+  }
+
+  get workflowId() {
+	return this.currentWorkflow?.id;
   }
 
   //  fetchWorkflow = async (id: string) => {
