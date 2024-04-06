@@ -7,8 +7,8 @@
     },
     "types": [
         {
-            "name": "AnalyzedNode",
-            "extends": ["bpmn:FlowNode"],
+            "name": "GoogleSheetNode",
+            "extends": ["bpmn:ServiceTask"],
             "properties": [
                 {
                     "name": "isGoogleSheet",

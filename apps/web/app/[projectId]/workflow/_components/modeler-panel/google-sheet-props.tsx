@@ -34,6 +34,7 @@ export default function GoogleSheetProps({ element, modeler }) {
         if (!bObject.extensionElements) return;
 
         const extensionElements = bObject.extensionElements;
+		console.log("GGSheet", element, extensionElements);
         setExtensionElements(extensionElements);
 
         const { input: ioMapping, output } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:ioMapping");
