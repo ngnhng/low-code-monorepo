@@ -9,7 +9,7 @@ import {
   ComponentType,
 } from 'react';
 
-let rootStore: RootStore = new RootStore();
+const rootStore: RootStore = new RootStore();
 
 export const MobxStoreContext = createContext<RootStore>(rootStore);
 

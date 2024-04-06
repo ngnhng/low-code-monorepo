@@ -105,7 +105,7 @@ export const Kanban: ComponentConfig<KanbanProps> = {
     config: {
       type: 'custom',
       render: ({ value, onChange }) => {
-        const [rawData, setData] = useState<Object[]>([]);
+        const [rawData, setData] = useState<object[]>([]);
         const [categoryList, setCategoryList] = useState<string[]>([]);
         const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -140,7 +140,7 @@ export const Kanban: ComponentConfig<KanbanProps> = {
           const keys = [
             ...new Set(
               // eslint-disable-next-line unicorn/no-array-reduce
-              rawData.reduce((accumulated: string[], element: Object) => {
+              rawData.reduce((accumulated: string[], element: object) => {
                 accumulated.push(...Object.keys(element));
                 return accumulated;
               }, []) as string[],
@@ -256,8 +256,8 @@ export const Kanban: ComponentConfig<KanbanProps> = {
     },
   },
   render: ({ config }) => {
-    const [rawData, setData] = useState<Object[]>([]);
-    const [categorized, setCategorized] = useState<Object>({});
+    const [rawData, setData] = useState<object[]>([]);
+    const [categorized, setCategorized] = useState<object>({});
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const fetchData = async (source: CancelTokenSource) => {

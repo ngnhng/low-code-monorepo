@@ -250,7 +250,7 @@ export function ElementProperties({ element, modeler }) {
     const append = (element, attrs) => {
         const autoPlace = modeler.get("autoPlace");
         const elementFactory = modeler.get("elementFactory");
-        var shape = elementFactory.createShape(attrs);
+        const shape = elementFactory.createShape(attrs);
         return autoPlace.append(element, shape);
     };
 
