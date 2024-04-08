@@ -51,7 +51,7 @@ function reducer(state, action) {
             return { ...state, isQA: action.payload };
         }
         case "disableAll": {
-            return { ...state, isQA: false, isGS: false, isStartEvent: false };
+            return { ...state, isQA: false, isGS: false, isStartEvent: false, isSequenceFlow: false, isUserTask: false };
         }
         case "setIsGS": {
             return { ...state, isGS: action.payload };
