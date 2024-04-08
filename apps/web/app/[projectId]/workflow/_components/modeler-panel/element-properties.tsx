@@ -5,6 +5,7 @@ import { getExtensionElement, hasDefinition } from "helpers/bpmn.helper";
 import { QAElementProperties } from "./qa-element-form";
 import GoogleSheetProps from "./google-sheet-props";
 import GatewayProps from "./gateway-props";
+import UserTaskProps from "./user-task-props";
 import {
     Accordion,
     AccordionContent,
@@ -38,6 +39,7 @@ const initialState = {
     isGS: false,
     isStartEvent: false,
     isSequenceFlow: false,
+    isUserTask: false,
 };
 
 function reducer(state, action) {
@@ -59,6 +61,9 @@ function reducer(state, action) {
         }
         case "setIsSequenceFlow": {
             return { ...state, isSequenceFlow: action.payload };
+        }
+        case "setIsUserTask": {
+            return { ...state, isUserTask: action.payload };
         }
         default: {
             throw new Error(`Unsupported action type: ${action.type}`);
@@ -86,6 +91,7 @@ export function ElementProperties({ element, modeler }) {
         const { suitable, isGoogleSheet, $type } = bObject;
         const isStartEvent = $type === "bpmn:StartEvent";
         const isGateway = $type === "bpmn:SequenceFlow";
+        const isUserTask = $type === "bpmn:UserTask";
 
         //console.log("States", suitable, isGoogleSheet, isStartEvent);
 
@@ -100,8 +106,38 @@ export function ElementProperties({ element, modeler }) {
             handleGoogleSheet(bObject);
         } else if (isGateway) {
             handleSequenceFlow(bObject);
+        } else if (isUserTask) {
+            handleUserTask(bObject);
         }
     }, [element]);
+
+    const handleUserTask = (bObject: any) => {
+        dispatch({ type: "setIsUserTask", payload: true });
+
+        if (bObject.extensionElements) return;
+
+        const moddle = modeler.get("moddle");
+        const modeling = modeler.get("modeling");
+        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
+
+        const formDefinition = moddle.create("yalc:FormDefinition", {
+            formId: ""
+        });
+
+        const ioMapping = moddle.create("yalc:IoMapping");
+        const output = moddle.create("yalc:Output", {
+            source: "",
+            target: "",
+        });
+
+        ioMapping.get("output").push(output);
+
+        extensionElements.get("values").push(formDefinition, ioMapping);
+
+        modeling.updateProperties(element, {
+            extensionElements,
+        });
+    };
 
     const handleSequenceFlow = (bObject: any) => {
         dispatch({ type: "setIsSequenceFlow", payload: true });
@@ -114,7 +150,7 @@ export function ElementProperties({ element, modeler }) {
 
         const condition = moddle.create("yalc:ConditionExpression", {
             // expression: ""
-            text: ""
+            text: "",
         });
 
         extensionElements.get("values").push(condition);
@@ -287,6 +323,7 @@ export function ElementProperties({ element, modeler }) {
                     </AccordionItem>
                 )}
                 {state.isSequenceFlow ? <GatewayProps element={element} modeler={modeler} /> : ""}
+                {state.isUserTask ? <UserTaskProps element={element} modeler={modeler} /> : ""}
                 <AccordionItem value="actions">
                     <AccordionTrigger>Actions</AccordionTrigger>
                     <AccordionContent>
