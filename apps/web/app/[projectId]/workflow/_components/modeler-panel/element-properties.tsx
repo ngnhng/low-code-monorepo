@@ -352,9 +352,9 @@ const OutputProperties = ({ element, modeler }) => {
 
         const extensionElements = businessObject.get("extensionElements");
 
-        const values = moddle.create("yalc:output", { source, target });
+        const values = moddle.create("yalc:Output", { source, target });
 
-        const ioMapping = getExtensionElement(businessObject, "yalc:ioMapping");
+        const ioMapping = getExtensionElement(businessObject, "yalc:IoMapping");
         ioMapping.get("output").push(values);
         setOutputs([...outputs, { source, target }]);
 
@@ -368,7 +368,7 @@ const OutputProperties = ({ element, modeler }) => {
         const extensionElements = businessObject.get("extensionElements");
         if (!extensionElements) return;
 
-        const ioMapping = getExtensionElement(businessObject, "yalc:ioMapping");
+        const ioMapping = getExtensionElement(businessObject, "yalc:IoMapping");
         if (!ioMapping) return;
 
         setOutputs(
@@ -383,7 +383,7 @@ const OutputProperties = ({ element, modeler }) => {
 
     const handleRemove = (index) => {
         const extensionElements = businessObject.get("extensionElements");
-        const ioMapping = getExtensionElement(businessObject, "yalc:ioMapping");
+        const ioMapping = getExtensionElement(businessObject, "yalc:IoMapping");
         const values = ioMapping.get("output");
         if (!values) return;
 
