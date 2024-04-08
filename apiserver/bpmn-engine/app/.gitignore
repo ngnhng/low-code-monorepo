@@ -1,2 +1,4 @@
 /log
 routes.json
+.env.*
+!.env.example

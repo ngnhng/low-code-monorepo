@@ -3,7 +3,9 @@ export default `<?xml version="1.0" encoding="UTF-8"?>
   <bpmn:process id="Process_1" isExecutable="false">
     <bpmn:startEvent id="StartEvent_1" name="Start Campaign">
       <bpmn:extensionElements>
-        <yalc:ioMapping />
+        <yalc:ioMapping>
+		  <yalc:output source="=_globalContext_user" target="_globalContext_user" />
+		</yalc:ioMapping>
       </bpmn:extensionElements>
       <bpmn:outgoing>Flow_140gkst</bpmn:outgoing>
     </bpmn:startEvent>

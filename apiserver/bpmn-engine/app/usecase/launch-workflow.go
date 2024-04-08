@@ -59,7 +59,7 @@ func (uc *launchWorkflowUseCase) Execute(ctx context.Context, request *workflow.
 	}
 
 	uc.logger.Debug("decodedBPMN: ", string(decodedBPMN)[:10])
-	uc.logger.Debug("decodedMapping: ", string(decodedMapping)[:10])
+	uc.logger.Debug("decodedMapping: ", string(decodedMapping))
 
 	// load the bpmn definition
 	// execution context
