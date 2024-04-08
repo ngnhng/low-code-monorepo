@@ -29,17 +29,6 @@
             ]
         },
         {
-            "name": "FormDefinition",
-            "superClass": ["Element"],
-            "properties": [
-                {
-                    "name": "formId",
-                    "isAttr": true,
-                    "type": "String"
-                }
-            ]
-        },
-        {
             "name": "ConditionExpression",
             "superClass": ["Element"],
             "properties": [
