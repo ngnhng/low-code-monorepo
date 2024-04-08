@@ -18,7 +18,7 @@
             ]
         },
         {
-            "name": "taskDefinition",
+            "name": "TaskDefinition",
             "superClass": ["Element"],
             "properties": [
                 {
@@ -29,7 +29,7 @@
             ]
         },
         {
-            "name": "conditionExpression",
+            "name": "ConditionExpression",
             "superClass": ["Element"],
             "properties": [
                 {

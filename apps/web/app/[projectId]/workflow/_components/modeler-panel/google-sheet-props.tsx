@@ -85,7 +85,7 @@ export default function GoogleSheetProps({ element, modeler }) {
         };
 
         const modeling = modeler.get("modeling");
-        const definition = extensionElements.get("values").find((extension: any) => extension.type);
+        const definition = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:TaskDefinition");
 
         console.log(definition);
         if (!definition) return;

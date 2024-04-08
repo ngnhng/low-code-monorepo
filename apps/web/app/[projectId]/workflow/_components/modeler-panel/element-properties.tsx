@@ -112,7 +112,7 @@ export function ElementProperties({ element, modeler }) {
         const modeling = modeler.get("modeling");
         const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
 
-        const condition = moddle.create("yalc:conditionExpression", {
+        const condition = moddle.create("yalc:ConditionExpression", {
             // expression: ""
             text: ""
         });
@@ -133,7 +133,7 @@ export function ElementProperties({ element, modeler }) {
         const modeling = modeler.get("modeling");
         const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
 
-        const ioMapping = moddle.create("yalc:ioMapping");
+        const ioMapping = moddle.create("yalc:IoMapping");
         extensionElements.get("values").push(ioMapping);
 
         modeling.updateProperties(element, {
@@ -155,28 +155,28 @@ export function ElementProperties({ element, modeler }) {
         const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
 
         // Name of the handle function
-        const taskDefinition = moddle.create("yalc:taskDefinition", {
+        const taskDefinition = moddle.create("yalc:TaskDefinition", {
             type: "getData",
         });
 
-        const ioMapping = moddle.create("yalc:ioMapping");
-        const defaultInput = moddle.create("yalc:input", {
+        const ioMapping = moddle.create("yalc:IoMapping");
+        const defaultInput = moddle.create("yalc:Input", {
             source: "=_globalContext_user",
             target: "_localContext_user",
         });
-        const sheetIdInput = moddle.create("yalc:input", {
+        const sheetIdInput = moddle.create("yalc:Input", {
             source: "sheetId",
             target: "",
         });
-        const sheetDataInput = moddle.create("yalc:input", {
+        const sheetDataInput = moddle.create("yalc:Input", {
             source: "sheetData",
             target: "",
         });
-        const rangeInput = moddle.create("yalc:input", {
+        const rangeInput = moddle.create("yalc:Input", {
             source: "range",
             target: "",
         });
-        const output = moddle.create("yalc:output", {
+        const output = moddle.create("yalc:Output", {
             source: "sheetData",
             target: "",
         });

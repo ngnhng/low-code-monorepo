@@ -18,7 +18,7 @@ export default function GatewayProps({ element, modeler }) {
 
         console.log(extensionElements.get("values"));
 
-        const expression = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:conditionExpression");
+        const expression = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:ConditionExpression");
         setCondition(expression);
     }, []);
 
