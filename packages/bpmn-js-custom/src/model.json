@@ -1,6 +1,6 @@
 {
     "name": "GoogleSheet",
-	"uri": "http://some-company/schema/bpmn/gs",
+    "uri": "http://some-company/schema/bpmn/gs",
     "prefix": "yalc",
     "xml": {
         "tagAlias": "lowerCase"
@@ -40,23 +40,23 @@
             ]
         },
         {
-            "name": "ioMapping",
+            "name": "IoMapping",
             "superClass": ["Element"],
             "properties": [
                 {
                     "name": "input",
                     "isMany": true,
-                    "type": "input"
+                    "type": "Input"
                 },
-				{
-					"name": "output",
-					"isMany": true,
-					"type": "output"
-				}
+                {
+                    "name": "output",
+                    "isMany": true,
+                    "type": "Output"
+                }
             ]
         },
         {
-            "name": "input",
+            "name": "Input",
             "superClass": ["Element"],
             "properties": [
                 {
@@ -71,22 +71,22 @@
                 }
             ]
         },
-		{
-			"name": "output",
-			"superClass": ["Element"],
-			"properties": [
-				{
-					"name": "source",
-					"isAttr": true,
-					"type": "String"
-				},
-				{
-					"name": "target",
-					"isAttr": true,
-					"type": "String"
-				}
-			]
-		}
+        {
+            "name": "Output",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "source",
+                    "isAttr": true,
+                    "type": "String"
+                },
+                {
+                    "name": "target",
+                    "isAttr": true,
+                    "type": "String"
+                }
+            ]
+        }
     ],
     "emumerations": [],
     "associations": []
