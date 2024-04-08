@@ -1,45 +1,16 @@
 "use client";
 
-import {
-    AccordionItem,
-    AccordionTrigger,
-    AccordionContent,
-    Label,
-    Input,
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@repo/ui";
+import { AccordionItem, AccordionTrigger, AccordionContent, Label, Input } from "@repo/ui";
 import { getBusinessObject } from "bpmn-js/lib/util/ModelUtil";
 import { useEffect, useState } from "react";
+import { Plus } from "react-feather";
+import { Trash } from "react-feather";
 
 export default function UserTaskProps({ element, modeler }) {
     const [extensionElements, setExtensionElements] = useState<any>();
-    const [formId, setFormId] = useState<any>();
-    const [formsList, setFormsList] = useState<any>({});
     // eslint-disable-next-line no-unused-vars
     const [inputs, setInputs] = useState<any>([]);
     const [output, setOutput] = useState<any>();
-    const [formDef, setFormDef] = useState<any>();
-
-    const getFormsList = async () => {
-        // Do somekind of fetching here
-        setFormsList({
-            id_1: {
-                field_1: "",
-                field_2: 1,
-                field_3: true,
-            },
-            id_2: {
-                field_1: "",
-                field_2: 1,
-                field_3: true,
-            },
-        });
-    };
 
     useEffect(() => {
         const bObject = getBusinessObject(element);
@@ -48,22 +19,17 @@ export default function UserTaskProps({ element, modeler }) {
         const extensionElements = bObject.extensionElements;
         setExtensionElements(extensionElements);
 
-        const formDefinition = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:FormDefinition");
         const { input, output } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
 
-        setFormId(formDefinition.formId);
         setInputs(input ?? []);
         setOutput(output[0]);
-        setFormDef(formDefinition);
-
-        getFormsList();
     }, []);
 
-    const setInputSource = (value: string, input: any) => {
+    const setInputData = (value: string, input: any, type: "source" | "target") => {
         const modeling = modeler.get("modeling");
 
         if (!input) return;
-        input.source = value;
+        input[type] = value;
 
         modeling.updateProperties(element, {
             extensionElements,
@@ -81,68 +47,69 @@ export default function UserTaskProps({ element, modeler }) {
         });
     };
 
-    const setForm = (value: string) => {
+    const addInput = () => {
+        const moddle = modeler.get("moddle");
         const modeling = modeler.get("modeling");
 
-        setFormId(value);
-        formDef.formId = value;
-
         const ioMapping = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
-        ioMapping.get("input").length = 0;
 
-        const moddle = modeler.get("moddle");
-        ioMapping.get("input").push(
-            ...Object.keys(formsList[value]).map((key) =>
-                moddle.create("yalc:Input", {
-                    source: formsList[value][key],
-                    target: key,
-                })
-            )
-        );
+        const input = moddle.create("yalc:Input", {
+            source: "",
+            target: "",
+        });
+        ioMapping.get("input").push(input);
 
         modeling.updateProperties(element, {
             extensionElements,
         });
 
-        setInputs(ioMapping.input ?? []);
-        return;
+        console.log(ioMapping.input);
+        setInputs([...(ioMapping.input ?? [])]);
+    };
+
+    const removeInput = (idx: number) => {
+        const modeling = modeler.get("modeling");
+        const ioMapping = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
+
+        ioMapping.get("input").length = 0;
+        ioMapping.get("input").push(...inputs.slice(0, idx), ...inputs.slice(idx + 1));
+        setInputs([...ioMapping.input]);
+
+        modeling.updateProperties(element, {
+            extensionElements,
+        });
     };
 
     return (
-        <AccordionItem value="gs">
+        <AccordionItem value="userTask">
             <AccordionTrigger>User Task Properties</AccordionTrigger>
             <AccordionContent className="flex flex-col p-5 gap-5">
-                <Label>Select Form to get data from</Label>
-                <Select
-                    onValueChange={(value) => {
-                        setForm(value);
-                    }}
-                    defaultValue={formId}
-                >
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select an action" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            {Object.keys(formsList).map((id) => (
-                                <SelectItem value={id}>{id}</SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
                 <div className="flex justify-between">
                     <Label>Inputs</Label>
+                    <button onClick={() => addInput()}>
+                        <Plus />
+                    </button>
                 </div>
                 <div className="w-full flex flex-col gap-5 p-5 bg-slate-100 rounded-md">
-                    {inputs.map((input: any) => {
+                    {inputs.map((input: any, idx: number) => {
+                        console.log(idx);
                         return (
-                            <div className="flex gap-2.5 items-center" key={`${formId}/${input.target}`}>
-                                <Label className="w-32">{input.target}</Label>
+                            <div className="flex gap-2.5 items-center" key={`${input.source}-${idx}`}>
+                                <Label className="w-32">Source</Label>
                                 <Input
-                                    onBlur={(event) => setInputSource(event.target.value, input)}
+                                    onBlur={(event) => setInputData(event.target.value, input, "source")}
                                     placeholder="Expression"
                                     defaultValue={input.source}
                                 />
+                                <Label className="w-32">Target</Label>
+                                <Input
+                                    onBlur={(event) => setInputData(event.target.value, input, "target")}
+                                    placeholder="Identifer"
+                                    defaultValue={input.target}
+                                />
+                                <button onClick={() => removeInput(idx)}>
+                                    <Trash />
+                                </button>
                             </div>
                         );
                     })}
