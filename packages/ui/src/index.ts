@@ -13,3 +13,4 @@ export * from './popover';
 export * from './switch';
 export * from './dialog';
 export * from './command';
+export * from './sonner';

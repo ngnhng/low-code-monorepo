@@ -1,6 +1,5 @@
 "use client";
 
-import { API_BASE_URL } from "../helpers/common.helper";
 import { APIService } from "./api.service";
 import { BaseViewerOptions } from "bpmn-js/lib/BaseModeler";
 import {
@@ -9,11 +8,11 @@ import {
 } from "bpmn-js-properties-panel";
 import CustomModule from "bpmn-js-custom";
 import { gsModel } from "bpmn-js-custom";
-import { ModdleExtensions } from "bpmn-js/lib/BaseViewer";
+//import { ModdleExtensions } from "bpmn-js/lib/BaseViewer";
 
 export class BpmnWorkflowService extends APIService {
     constructor() {
-        super(API_BASE_URL + "/workflow");
+        super(process.env.NEXT_PUBLIC_WORKFLOW_API_URL);
     }
 
     async renderer(options?: BaseViewerOptions) {
@@ -37,18 +36,36 @@ export class BpmnWorkflowService extends APIService {
             CustomModule,
         ];
 
-        const moddleExtensions = {
-            // custom: customModdle[1],
-            gs: gsModel[1],
-        };
+        //const moddleExtensions = {
+        //    // custom: customModdle[1],
+        //    yalc: gsModel[1],
+        //};
+
+        //if (!moddleExtensions) return;
 
         return new BpmnModeler({
             ...options,
             additionalModules,
-            moddleExtensions: moddleExtensions
-                ? (moddleExtensions as ModdleExtensions)
-                : undefined,
+            moddleExtensions: {
+				yalc: gsModel[1]!,
+			}
         });
     }
 
+    async launchWorkflow(
+        workflowId: string,
+        wf: string,
+        vars: string
+    ): Promise<[string, boolean]> {
+        try {
+            const response = await this.post(`/workflow`, {
+                workflow_id: workflowId,
+                process_definition: wf,
+                variable_mapping: vars,
+            });
+            return [response.data, true];
+        } catch (error: any) {
+            return [error.response.data.message, false];
+        }
+    }
 }

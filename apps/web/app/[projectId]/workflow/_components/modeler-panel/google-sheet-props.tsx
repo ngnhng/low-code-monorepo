@@ -36,7 +36,7 @@ export default function GoogleSheetProps({ element, modeler }) {
         const extensionElements = bObject.extensionElements;
         setExtensionElements(extensionElements);
 
-        const { input: ioMapping, output } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:ioMapping");
+        const { input: ioMapping, output } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
         const definition = extensionElements.get("values").find((extension: any) => extension.type);
 
         setInputs(ioMapping?.filter((input: any) => input.source !== "=_globalContext_user") ?? []);
@@ -46,7 +46,7 @@ export default function GoogleSheetProps({ element, modeler }) {
 
     const setInputTarget = (value: string, source: string) => {
         const modeling = modeler.get("modeling");
-        const { input: ioMapping } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:ioMapping");
+        const { input: ioMapping } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
 
         console.log(ioMapping);
         if (!ioMapping) return;
@@ -65,7 +65,7 @@ export default function GoogleSheetProps({ element, modeler }) {
 
     const setOutputTarget = (value: string) => {
         const modeling = modeler.get("modeling");
-        const { output: outputArray } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:ioMapping");
+        const { output: outputArray } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
 
         console.log(output);
         if (!output) return;
@@ -106,7 +106,7 @@ export default function GoogleSheetProps({ element, modeler }) {
         if (!ioMapping) return;
 
         const moddle = modeler.get("moddle");
-        const input = moddle.create("yalc:input", {
+        const input = moddle.create("yalc:Input", {
             source: "",
             target: "",
         });

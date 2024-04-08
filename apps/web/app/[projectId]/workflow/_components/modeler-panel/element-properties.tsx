@@ -87,7 +87,7 @@ export function ElementProperties({ element, modeler }) {
         const isStartEvent = $type === "bpmn:StartEvent";
         const isGateway = $type === "bpmn:SequenceFlow";
 
-        console.log("States", suitable, isGoogleSheet, isStartEvent);
+        //console.log("States", suitable, isGoogleSheet, isStartEvent);
 
         // Disable all at the start
         disableAll();

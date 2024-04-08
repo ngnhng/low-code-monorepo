@@ -13,5 +13,5 @@ export default {
     customPalette: ["type", CustomPalette],
     customRenderer: ["type", CustomRenderer],
     // customModdle,
-    gsModel
+    //gsModel
 };
