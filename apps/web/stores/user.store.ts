@@ -83,7 +83,7 @@ export class UserStore {
     setDefaultUser = async () => {
         setLocalStorage(
             "yalc_at",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaXJzdF9uYW1lIjoiSm9obiIsImxhc3RfbmFtZSI6IkRvZSIsImVtYWlsIjoidGVzdGVyQGdtYWlsLmNvbSIsInJvbGUiOiJ3ZWJ1c2VyIiwicHJvZmlsZV9pbWFnZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0p2djdEUGtQWkxNU2hld3NJNmFJc1dFcW82MzgwZmxESzlEeFFoV2REVDl3PXM5Ni1jIiwicmVnaXN0ZXJlZF9jbGFpbXMiOnsiaXNzIjoieWFsYy1hcGkiLCJleHAiOjE4MDg5NDYwMjcsImlhdCI6MTcwODkyNDQyN319.FbSwQZdj_i1FyMmP5FViB9X55vQk-xmisVdIe_4i7gs"
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaXJzdF9uYW1lIjoiSm9obiIsImxhc3RfbmFtZSI6IkRvZSIsImVtYWlsIjoibW91bnRuZ3ViaW5oQGdtYWlsLmNvbSIsInJvbGUiOiJ3ZWJ1c2VyIiwicHJvZmlsZV9pbWFnZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0p2djdEUGtQWkxNU2hld3NJNmFJc1dFcW82MzgwZmxESzlEeFFoV2REVDl3PXM5Ni1jIiwicmVnaXN0ZXJlZF9jbGFpbXMiOnsiaXNzIjoieWFsYy1hcGkiLCJleHAiOjE4MDg5NDYwMjcsImlhdCI6MTcwODkyNDQyN319.XECalE1BiI25MsN6PomhBsH6CLHua_2q7KgSI5-nntQ"
         );
         runInAction(async () => {
             await this.fetchCurrentUser();

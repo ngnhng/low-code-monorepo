@@ -1,6 +1,12 @@
 "use client";
 
-import { makeObservable, observable, action, computed } from "mobx";
+import {
+    makeObservable,
+    observable,
+    action,
+    computed,
+    runInAction,
+} from "mobx";
 import { RootStore } from "./root";
 import { BpmnWorkflowService } from "services/bpmn-workflow.service";
 import defaultXml from "../app/[projectId]/workflow/default-xml";
@@ -13,13 +19,17 @@ export interface IWorkflowStore {
     modeler: any;
     activeElement: any;
 
+    currentExecutingWorkflowId: string;
+    currentExecutingElementId: string;
+    currentExecutingStatus: string;
+
     setCurrentWorkflow: (workflow: any) => void;
     setModeler: (modeler: any) => void;
     getModeler: () => any;
     setActiveElement: (element: any) => void;
 
     launchWorkflow: () => Promise<[string, boolean]>;
-    fetchWorkflow: (workflowId: string) => Promise<[any, boolean]>;
+    fetchWorkflow: (workflowId: string) => Promise<any>;
 
     workflowId: string;
 }
@@ -30,6 +40,10 @@ export class WorkflowStore {
     modeler: any;
     activeElement: any;
 
+    currentExecutingWorkflowId = "";
+    currentExecutingElementId = "";
+    currentExecutingStatus = "";
+
     // root store
     rootStore: RootStore;
 
@@ -39,9 +53,13 @@ export class WorkflowStore {
     constructor(_rootStore: RootStore) {
         makeObservable(this, {
             //observable
-            currentWorkflow: observable.ref,
+            currentWorkflow: observable,
             modeler: observable.ref,
             activeElement: observable.ref,
+            // js strings are immutable, so we can use observable instead of observable.ref
+            currentExecutingWorkflowId: observable,
+            currentExecutingElementId: observable,
+            currentExecutingStatus: observable,
             //action
             //  setRenderer: action,
             setCurrentWorkflow: action,
@@ -59,8 +77,12 @@ export class WorkflowStore {
         this.workflowService = new BpmnWorkflowService();
     }
 
-    newRenderer = (options?: any) => {
-        return this.workflowService.renderer(options);
+    newRenderer = async (options?: any) => {
+        const m = await this.workflowService.renderer(options);
+        runInAction(() => {
+            this.modeler = m;
+        });
+        return m;
     };
 
     //  setRenderer = async (renderer: any) => {
@@ -83,9 +105,9 @@ export class WorkflowStore {
         this.activeElement = element;
     };
 
-    get workflowId() {
+    get workflowId(): string {
         if (!this.currentWorkflow) {
-            return;
+            return "";
         }
         const parser = new DOMParser();
         // Parse the currentWorkflow string into an XML document
@@ -94,10 +116,10 @@ export class WorkflowStore {
             "application/xml"
         );
         // Use querySelector to find the bpmn:process element
-        const processElement = xmlDoc.querySelector(`bpmn\\:process`);
+        const processElement = xmlDoc.getElementsByTagNameNS("*", "process")[0];
 
         // Return the id attribute of the bpmn:process element, or null if not found
-        return processElement ? processElement.getAttribute("id") : undefined;
+        return processElement ? processElement.getAttribute("id") ?? "" : "";
     }
 
     launchWorkflow = async (): Promise<[string, boolean]> => {
@@ -120,19 +142,22 @@ export class WorkflowStore {
             base64EncodedVariables
         );
         if (response[1]) {
-            return ["Workflow launched successfully", true];
+            return ["Workflow Started", true];
         }
 
-        return ["Failed to launch workflow", false];
+        return ["Service Unavailable", false];
     };
 
-    fetchWorkflow = async (workflowId: string): Promise<[any, boolean]> => {
+    fetchWorkflow = async (workflowId: string): Promise<any> => {
         if (workflowId === "default") {
-            return [defaultXml, true];
+            runInAction(() => {
+                this.currentWorkflow = defaultXml;
+            });
+            return defaultXml;
         }
         // TODO: Implement fetchWorkflow
         //const response = await this.workflowService.get(`/workflow/${workflowId}`);
         //return response.data;
-        return ["", false];
+        throw new Error("Not implemented");
     };
 }

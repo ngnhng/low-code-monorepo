@@ -21,55 +21,9 @@ import { toast } from "sonner";
 import useSWR from "swr";
 
 export default function Page() {
-    const {
-        workflow: { setCurrentWorkflow, launchWorkflow, fetchWorkflow },
-    } = useMobxStore();
-
-    const {
-        data: xml,
-        isLoading,
-        error,
-    } = useSWR("workflow", () => {
-        return fetchWorkflow("default").then(([data, ok]) => {
-            if (ok) {
-				console.log(data);
-                return data;
-            } else {
-                throw new Error("Failed to fetch workflow");
-            }
-        });
-    });
-
-    useEffect(() => {
-        if (xml) {
-            setCurrentWorkflow(xml);
-        }
-    }, [xml]);
-
-    if (isLoading || error) return <div>Loading...</div>;
-
-    const handleLaunchWorkflow = async () => {
-        const ok = await launchWorkflow();
-        if (!ok) {
-            toast.error("Failed to launch workflow");
-        }
-        toast.success("Workflow launched successfully");
-    };
-
     return (
         <div className="flex-1 flex flex-col gap-2.5 overflow-hidden">
-            <div className="w-full border-2 border-slate-300 rounded-md flex gap-2.5 items-center justify-between p-2 box-border">
-                <Button className="flex gap-2.5" onClick={handleLaunchWorkflow}>
-                    <PlayIcon /> Execute Workflow
-                </Button>
-                <div className="font-medium p-2">
-                    {/* Showing current node of workflow */}
-                    Workflow Status:{" "}
-                    <span className="text-green-500 font-bold">
-                        Activity_Test
-                    </span>
-                </div>
-            </div>
+            <Controls />
             <Modeler />
         </div>
     );
@@ -77,37 +31,41 @@ export default function Page() {
 
 const Modeler = observer(() => {
     const {
-        workflow: { currentWorkflow, newRenderer, modeler, setModeler },
+        workflow: {
+            currentWorkflow,
+            fetchWorkflow,
+            newRenderer,
+            modeler,
+            getModeler,
+        },
     } = useMobxStore();
+
+    const { isLoading, error } = useSWR("workflow", () =>
+        fetchWorkflow("default")
+    );
 
     const containerRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
 
-    // eslint-disable-next-line unicorn/no-null
-    //  const [modeler, setModeler] = useState(null);
-
     useEffect(() => {
         const initializeModeler = async () => {
-            if (containerRef.current) {
-                const modeler = await newRenderer({
+            if (containerRef.current && currentWorkflow) {
+                await newRenderer({
                     container: containerRef.current,
-                    //  propertiesPanel: {
-                    //    parent: sidebarRef.current,
-                    //  },
                     keyboard: {
                         bindTo: document,
                     },
                 });
-                await modeler.importXML(currentWorkflow);
-
-                setModeler(modeler);
+                if (getModeler()) {
+                    await getModeler().importXML(currentWorkflow);
+                }
             }
         };
 
-        initializeModeler();
-    }, [currentWorkflow]);
+        setTimeout(initializeModeler, 0);
+    }, [containerRef, currentWorkflow]);
 
-    if (!currentWorkflow) {
+    if (isLoading || error || !currentWorkflow) {
         return <div>Loading Modeler...</div>;
     }
 
@@ -148,10 +106,6 @@ const Modeler = observer(() => {
                                 </div>
                             </ScrollArea>
                         </ResizablePanel>
-                        {/*<ResizableHandle withHandle />
-              <ResizablePanel defaultSize={25} className="overflow-auto">
-                <div>{modeler !== null && <DebugXML modeler={modeler} />}</div>
-              </ResizablePanel>*/}
                     </ResizablePanelGroup>
                 </ResizablePanel>
             </ResizablePanelGroup>
@@ -180,3 +134,40 @@ const DebugXML: FC<{ modeler: any }> = ({ modeler }) => {
         </div>
     );
 };
+
+const Controls = observer(() => {
+    const {
+        workflow: { launchWorkflow, workflowId },
+    } = useMobxStore();
+
+    const handleLaunchWorkflow = async () => {
+        const [result, ok] = await launchWorkflow();
+        ok
+            ? toast.success("Workflow launched successfully: " + result)
+            : toast.error("Failed to launch workflow: " + result);
+    };
+
+    return (
+        <div className="w-full border-2 border-slate-300 rounded-md flex gap-2.5 items-center justify-between p-2 box-border">
+            <Button className="flex gap-2.5" onClick={handleLaunchWorkflow}>
+                <PlayIcon /> Execute Workflow
+            </Button>
+            <div className="flex flex-row">
+                <div className="font-medium p-2">
+                    {/* Showing current workflow id */}
+                    Workflow ID:{" "}
+                    <span className="text-green-500 font-bold">
+                        {workflowId}
+                    </span>
+                </div>
+                <div className="font-medium p-2">
+                    {/* Showing current node of workflow */}
+                    Workflow Status:{" "}
+                    <span className="text-green-500 font-bold">
+                        Activity_Test
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+});
