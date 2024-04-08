@@ -125,14 +125,7 @@ export function ElementProperties({ element, modeler }) {
 
         const moddle = modeler.get("moddle");
         const modeling = modeler.get("modeling");
-        const extensionElements =
-            bObject.extensionElements ||
-            moddle.create("bpmn:ExtensionElements");
-
-        const formDefinition = moddle.create("yalc:FormDefinition", {
-            formId: "",
-        });
-
+        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
         const ioMapping = moddle.create("yalc:IoMapping");
         const output = moddle.create("yalc:Output", {
             source: "",
@@ -141,7 +134,7 @@ export function ElementProperties({ element, modeler }) {
 
         ioMapping.get("output").push(output);
 
-        extensionElements.get("values").push(formDefinition, ioMapping);
+        extensionElements.get("values").push(ioMapping);
 
         modeling.updateProperties(element, {
             extensionElements,
