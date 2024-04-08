@@ -23,6 +23,7 @@ export default function UserTaskProps({ element, modeler }) {
     // eslint-disable-next-line no-unused-vars
     const [inputs, setInputs] = useState<any>([]);
     const [output, setOutput] = useState<any>();
+    const [formDef, setFormDef] = useState<any>();
 
     const getFormsList = async () => {
         // Do somekind of fetching here
@@ -47,21 +48,22 @@ export default function UserTaskProps({ element, modeler }) {
         const extensionElements = bObject.extensionElements;
         setExtensionElements(extensionElements);
 
-        const { formId } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:FormDefinition");
+        const formDefinition = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:FormDefinition");
         const { input, output } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
 
-        setFormId(formId);
+        setFormId(formDefinition.formId);
         setInputs(input ?? []);
         setOutput(output[0]);
+        setFormDef(formDefinition);
 
         getFormsList();
     }, []);
 
-    const setInputTarget = (value: string, input: any, type: "source" | "target") => {
+    const setInputSource = (value: string, input: any) => {
         const modeling = modeler.get("modeling");
 
         if (!input) return;
-        input[type] = value;
+        input.source = value;
 
         modeling.updateProperties(element, {
             extensionElements,
@@ -80,7 +82,29 @@ export default function UserTaskProps({ element, modeler }) {
     };
 
     const setForm = (value: string) => {
+        const modeling = modeler.get("modeling");
+
         setFormId(value);
+        formDef.formId = value;
+
+        const ioMapping = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
+        ioMapping.get("input").length = 0;
+
+        const moddle = modeler.get("moddle");
+        ioMapping.get("input").push(
+            ...Object.keys(formsList[value]).map((key) =>
+                moddle.create("yalc:Input", {
+                    source: formsList[value][key],
+                    target: key,
+                })
+            )
+        );
+
+        modeling.updateProperties(element, {
+            extensionElements,
+        });
+
+        setInputs(ioMapping.input ?? []);
         return;
     };
 
@@ -112,14 +136,12 @@ export default function UserTaskProps({ element, modeler }) {
                 <div className="w-full flex flex-col gap-5 p-5 bg-slate-100 rounded-md">
                     {inputs.map((input: any) => {
                         return (
-                            <div className="flex gap-2.5 items-center" key={input.source}>
-                                <Label className="w-32">{input.source}</Label>
+                            <div className="flex gap-2.5 items-center" key={`${formId}/${input.target}`}>
+                                <Label className="w-32">{input.target}</Label>
                                 <Input
-                                    onBlur={(event) => {
-                                        setInputTarget(event.target.value, input, "target");
-                                    }}
+                                    onBlur={(event) => setInputSource(event.target.value, input)}
                                     placeholder="Expression"
-                                    defaultValue={input.target}
+                                    defaultValue={input.source}
                                 />
                             </div>
                         );
