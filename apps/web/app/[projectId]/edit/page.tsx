@@ -8,8 +8,7 @@ import "@measured/puck/puck.css";
 
 import { useState } from "react";
 import config, { initialData } from "./_config";
-import Icon from "components/icons/icon";
-import { useMobxStore } from "lib/mobx/store-provider";
+import { Switch, Label } from "@repo/ui";
 
 const isBrowser = typeof window !== "undefined";
 

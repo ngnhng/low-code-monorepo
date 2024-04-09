@@ -2,12 +2,14 @@
 
 import "./style.css";
 
-import React, { useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 import Sidebar from "components/menus/sidebar/sidebar";
 import Header from "components/header/header";
 import { NavigationMenuProps as NavigationMenuProperties } from "../../types/navigation";
 import { UserAuthWrapper } from "lib/wrappers/user-auth-wrapper";
 import { useMobxStore } from "lib/mobx/store-provider";
+import { Brush, Database, Settings2, Workflow } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 function useNavigation(params: { projectId: string }) {
   return useMemo(
@@ -56,7 +58,7 @@ export default function Layout({
   }
   return (
     <UserAuthWrapper>
-      {renderContent(useNavigation(params), projectId, children)}
+      {renderContent(useNavigation(params), children)}
     </UserAuthWrapper>
   );
 }

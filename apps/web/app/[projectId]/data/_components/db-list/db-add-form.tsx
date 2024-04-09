@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { Button, Textarea, Input, Switch } from '@repo/ui';
+import { Button, Textarea, Input, Switch } from "@repo/ui";
 import {
   Form,
   FormControl,
@@ -41,7 +41,6 @@ const formSchema = z.object({
   }),
 });
 export function DBAddForm() {
-export function DBAddForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {},
@@ -52,7 +51,7 @@ export function DBAddForm() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       // TODO: axios data
-      toast.success('Event has been created.', {
+      toast.success("Event has been created.", {
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
             <code className="text-white">
@@ -62,7 +61,7 @@ export function DBAddForm() {
         ),
       });
     } catch {
-      toast.error('Something went wrong');
+      toast.error("Something went wrong");
     }
   }
 
@@ -158,7 +157,6 @@ export function DBAddForm() {
         <FormField
           control={form.control}
           name="ssl"
-          render={() => (
           render={() => (
             <FormItem>
               <div className="flex items-center space-x-2">

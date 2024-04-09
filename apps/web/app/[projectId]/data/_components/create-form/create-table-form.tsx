@@ -35,7 +35,6 @@ interface CreateTableFormProps {
   projectId: string;
 }
 
-const typeValues = ["date", "text", "number", "boolean"] as const;
 // const typeValues = ["date", "text", "number", "boolean"] as const;
 
 const requiredFieldsSchema = z.object({

@@ -223,9 +223,9 @@ export const TableEditor = ({
 const TitleDataSheet = ({
   column,
   // eslint-disable-next-line no-unused-vars
-  handleSortClickAsc,
+  // handleSortClickAsc,
   // eslint-disable-next-line no-unused-vars
-  handleSortClickDesc,
+  // handleSortClickDesc,
 }: TitleDataSheetProps) => {
   return (
     <div className="flex items-center justify-between">

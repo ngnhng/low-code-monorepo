@@ -116,7 +116,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
       render: ({ value, onChange }) => {
         // eslint-disable-next-line no-unused-vars
         const [chartData, setChartData] = useState<any[]>();
-        // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
         const [isLoading, setIsLoading] = useState(false);
         const [importType, setImportType] = useState<string>("provider");
         const [checkedArray, setCheckedArray] = useState<string[]>([]);
@@ -277,7 +277,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
                     clone.datasets = [];
 
                     if (e.currentTarget.value === "database") {
-                      clone.url = `http://localhost:3000/api/mock/trollface/data/all`;
+                      clone.url = `http://localhost:3001/api/mock/trollface/data/all`;
                     }
 
                     onChange(clone);
@@ -370,7 +370,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
       console.log("Fetching chart data ...");
       const urlToFetch =
         config.importType === "database"
-          ? `http://localhost:3000/api/mock/trollface/data/${config.tableId}/rows`
+          ? `http://localhost:3001/api/mock/trollface/data/${config.tableId}/rows`
           : config.url;
 
       setIsLoading(true);

@@ -9,7 +9,19 @@ import path from "node:path";
 //   role?: string,
 // } }
 
-export async function GET(
+// export async function GET (
+//    request: Request,
+//    { params }:  { params: {projectId: string, tableId: string}}
+// ) {
+//    const databasePath = path.join(
+//       process.cwd(),
+//       `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`,
+//    );
+
+//    const database = await fs.readFile(databasePath);
+// }
+
+export async function POST(
   request: Request
   // { params }:  { params: {projectId: string, tableId: string}}
 ) {
@@ -56,8 +68,8 @@ export async function GET(
 // DELETE /api/mock/[projectId]/data/[tableId]/columns :delete column
 // body: { columnId: string }
 export async function DELETE(
-  request: Request,
-  { params }: { params: { projectId: string; tableId: string } }
+  request: Request
+  // { params }:  { params: {projectId: string, tableId: string}}
 ) {
   const databasePath = path.join(
     process.cwd(),

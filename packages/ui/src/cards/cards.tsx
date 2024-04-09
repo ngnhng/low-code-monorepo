@@ -102,5 +102,4 @@ export {
   CardDescription,
   CardContent,
   CardButtonWithIcon,
-  CardButtonWithIcon,
 };

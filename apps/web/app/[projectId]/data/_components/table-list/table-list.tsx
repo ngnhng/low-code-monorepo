@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 // import { useEffect } from 'react';
 
 import { TableItem } from "types/table-data";
+import { useEffect } from "react";
 
 interface DataTableProps<TableItem, TValue> {
   columns: ColumnDef<TableItem, TValue>[];
@@ -83,7 +84,7 @@ export function DataTable<TableItem, TValue>({
   });
 
   useEffect(() => {
-    console.log("Table: ", table.getHeaderGroups());
+    console.log("Table:", table.getHeaderGroups());
   }, []);
 
   return (

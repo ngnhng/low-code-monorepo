@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 import {
   Button,
@@ -8,10 +8,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@repo/ui';
+} from "@repo/ui";
 
-import { RelationRecordsType } from './relation-records';
-import { X } from 'lucide-react';
+import { RelationRecordsType } from "./relation-records";
+import { X } from "lucide-react";
 
 interface DetailedRecordProps {
   record: RelationRecordsType;
@@ -29,7 +29,7 @@ export const DetailedRecord = ({ record }: DetailedRecordProps) => {
           <div>
             {objectToArray(record).map((r, index) => {
               return (
-                r.key !== 'linkedState' && (
+                r.key !== "linkedState" && (
                   <div key={index} className="mb-4">
                     <div className="space-y-1">
                       <p className="text-sm font-medium leading-none">
@@ -55,7 +55,7 @@ export const DetailedRecord = ({ record }: DetailedRecordProps) => {
 
 // eslint-disable-next-line no-unused-vars
 function objectToArray(obj: any) {
-  let result: any[] = [];
+  const result: any[] = [];
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
       // result += `${key}: ${obj[key]}`;

@@ -39,7 +39,7 @@ interface QueryBuilderListProps {
   tableId: string;
 }
 
-// eslint-disable-next-line no-unused-vars
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
   const [query, setQuery] = useState(initialQuery);
   const [groupby, setGroupBy] = useState<string>();
@@ -67,6 +67,7 @@ const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
 
   const queryFields: Field[] = transformData.flat();
 
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   const onSelect = (event: Event) => {
     event.preventDefault();
   };

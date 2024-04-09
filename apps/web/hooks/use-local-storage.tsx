@@ -3,26 +3,28 @@
 import { useState } from "react";
 import { getLocalStorage, setLocalStorage } from "lib/local-storage";
 
-export const useLocalStorage = <T,>(key: string, initialValue: T) => {
-  const [storedValue, setStoredValue] = useState<T>(() => {
+export const useLocalStorage = (key: string, initialValue: any) => {
+  const [storedValue, setStoredValue] = useState(() => {
     try {
       const item = getLocalStorage(key);
-      return item ? (JSON.parse(item) as T) : initialValue;
+      if (!item) {
+        return initialValue;
+      }
+      return isJsonString(item) ? JSON.parse(item) : item;
     } catch (error) {
       console.log(error);
       return initialValue;
     }
   });
 
-  //  eslint-disable-next-line no-unused-vars
-  const setValue = (value: T | ((val: T) => T)) => {
+  const setValue = (value: any) => {
     try {
       const valueToStore =
-        typeof value === "function" ? (value as Function)(storedValue) : value;
+        typeof value === "function" ? value(storedValue) : value;
 
       setStoredValue(valueToStore);
 
-      setLocalStorage(key, JSON.stringify(valueToStore));
+      setLocalStorage(key, valueToStore);
     } catch (error) {
       console.log(error);
     }
@@ -31,11 +33,11 @@ export const useLocalStorage = <T,>(key: string, initialValue: T) => {
   return [storedValue, setValue];
 };
 
-// function isJsonString(str: string) {
-//   try {
-//     JSON.parse(str);
-//   } catch {
-//     return false;
-//   }
-//   return true;
-// }
+function isJsonString(str: string) {
+  try {
+    JSON.parse(str);
+  } catch {
+    return false;
+  }
+  return true;
+}
