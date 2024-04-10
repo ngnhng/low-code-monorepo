@@ -1,38 +1,42 @@
-import styles from "./style.module.css";
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
-import { ComponentConfig } from "@measured/puck";
 import { getClassNameFactory } from "lib";
-import { Type, ChevronDown } from "react-feather";
 
 import "chart.js/auto";
-import { Chart } from "react-chartjs-2";
 import { ChartTypeRegistry } from "chart.js/auto";
-import axios, { CancelTokenSource } from "axios";
+import { Chart } from "react-chartjs-2";
+import styles from "./style.module.css";
+
+import { ComponentConfig } from "@measured/puck";
+import { Type, ChevronDown } from "react-feather";
 import Loading from "./loading";
+
+import axios, { CancelTokenSource } from "axios";
 import { RowDef } from "types/table-data";
+import { useMobxStore } from "lib/mobx/store-provider";
+import { ComponentsService } from "services/components.service";
+import useSWR from "swr";
 
 const getClassNameInput = getClassNameFactory("Input", styles);
 
 export type ChartsProps = {
   config: {
-    url: string;
+    // UI Chart Props
     title: string;
-    chartType: string;
+    chartType: ChartType;
     width: string;
     height: string;
-    // ----
-    visibleColumns: string[];
-    importType: "provider" | "database" | "";
+
+    // Chart Data
+    selectedTableFields: string[];
     tableId: string;
-    // ---
-    labels: string;
+    unitX: string;
     datasets: any[];
-    selectedTableFields: any[];
+    // Chart axis properties
   };
 };
 
-export type DataFormat = {
+export type AxisProps = {
   labels: string[];
   datasets: any[];
   options?: any;
@@ -48,6 +52,13 @@ const chartTypes = [
   "scatter",
   "bubble",
 ];
+
+type ChartType = (typeof chartTypes)[number];
+
+export const REFRESH_INTERVAL_TIME = 15_000;
+
+const cssValueCheck = (value: string) =>
+  /\d+(\.\d+)?(%|px|em|rem|(d|s|l)v(w|h))/g.test(value);
 
 /**
 Transforms the given row data into a format that can be used by charts.
@@ -98,59 +109,30 @@ function transformDataset(rowData: RowDef[], labels: string, y: string[]) {
       };
 }
 
-// function generateLabels(data) {
-//   return data.map();
-// }
-
-// function generateDatasets() {}
-
-const cssValueCheck = (value: string) =>
-  /\d+(\.\d+)?(%|px|em|rem|(d|s|l)v(w|h))/g.test(value);
-
-const importTypes = ["provider", "database"];
-
 export const Charts: ComponentConfig<ChartsProps> = {
   fields: {
     config: {
       type: "custom",
       render: ({ value, onChange }) => {
-        // eslint-disable-next-line no-unused-vars
-        const [chartData, setChartData] = useState<any[]>();
-        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-        const [isLoading, setIsLoading] = useState(false);
-        const [importType, setImportType] = useState<string>("provider");
+        const {
+          projectData: { currentProjectId },
+        } = useMobxStore();
+
+        const componentsService = new ComponentsService();
+        // const [chartData, setChartData] = useState();
         const [checkedArray, setCheckedArray] = useState<string[]>([]);
 
-        const fetchChartData = async (source: CancelTokenSource) => {
-          setIsLoading(true);
-
-          try {
-            const response = await axios.get(value.url, {
-              cancelToken: source.token,
-            });
-
-            const data = response.data;
-
-            setIsLoading(false);
-            setChartData(data);
-          } catch (error) {
-            console.log(error);
+        const { data, isLoading } = useSWR(
+          "TABLE_DATA-${currentProjectId}-all",
+          () => componentsService.importTables({ projectId: currentProjectId }),
+          {
+            refreshInterval: REFRESH_INTERVAL_TIME,
           }
-        };
+        );
 
-        useEffect(() => {
-          if (value.importType === "" || value.importType === "provider")
-            return;
-
-          if (value.url === "") return;
-
-          const source = axios.CancelToken.source();
-          fetchChartData(source);
-
-          return () => {
-            source.cancel();
-          };
-        }, [value.url]);
+        // if (!data || isLoading) {
+        //   return <Loading />;
+        // }
 
         const Select = ({ prop, name, selectOptions }) => {
           return (
@@ -250,78 +232,40 @@ export const Charts: ComponentConfig<ChartsProps> = {
 
         return (
           <div>
-            <Input prop="title" name="Title" type="text" />
-            <Select
-              prop="chartType"
-              name="Chart Type"
-              selectOptions={chartTypes}
-            />
-            <div>
-              <label className={getClassNameInput()}>
-                <div className={getClassNameInput("label")}>
-                  <div className={getClassNameInput("labelIcon")}>
-                    <ChevronDown size={16} />
-                  </div>
-                  Import Type
-                </div>
-                <select
-                  className={getClassNameInput("input")}
-                  onChange={(e) => {
-                    setChartData(undefined);
-                    setImportType(e.currentTarget.value);
-                    const clone = structuredClone(value);
-                    clone.importType = e.currentTarget.value;
-                    clone.url = "";
-                    clone.selectedTableFields = [];
-                    clone.labels = "";
-                    clone.datasets = [];
-
-                    if (e.currentTarget.value === "database") {
-                      clone.url = `http://localhost:3001/api/mock/trollface/data/all`;
-                    }
-
-                    onChange(clone);
-                  }}
-                  value={importType}
-                >
-                  {importTypes.map((type) => (
-                    <option key={type} label={type} value={type} />
-                  ))}
-                </select>
-              </label>
-            </div>
+            <Input prop="title" name="Chart Title" type="text" />
             <Input
               prop="width"
-              name="Width (in %, px, em, etc)"
+              name="Width (css units)"
               checkCallback={cssValueCheck}
               type="text"
             />
             <Input
               prop="height"
-              name="Height (in %, px, em, etc)"
+              name="Height (css units)"
               checkCallback={cssValueCheck}
               type="text"
             />
-            {importType === "provider" ? (
-              <Input prop="url" name="Data source URL" type="text" />
-            ) : // eslint-disable-next-line unicorn/no-nested-ternary
-            chartData ? (
-              <Select
-                name="Choose Table"
-                prop="tableId"
-                selectOptions={chartData.map((table) => table.id)}
-              />
-            ) : (
+            <Select
+              prop="chartType"
+              name="Chart Type"
+              selectOptions={chartTypes}
+            />
+            {!data || isLoading ? (
               <Loading />
+            ) : (
+              <Select
+                prop="tableId"
+                name="Select Table"
+                selectOptions={data.data.map((table) => table.id)}
+              />
             )}
             {value.selectedTableFields.length > 0 && (
               <>
                 <Select
-                  name="Choose Label Columns"
-                  prop="labels"
+                  name="X Axis"
+                  prop="unitX"
                   selectOptions={value.selectedTableFields}
                 />
-
                 <div>
                   <p>Choose Datasets Columns</p>
                   <ul>
@@ -347,70 +291,52 @@ export const Charts: ComponentConfig<ChartsProps> = {
   },
   defaultProps: {
     config: {
-      url: "",
       title: "Sample Chart",
       chartType: "bar",
       width: "100%",
       height: "600px",
-      visibleColumns: [],
-      importType: "provider",
       tableId: "",
-      labels: "",
-      datasets: [],
+      unitX: "",
       selectedTableFields: [],
+      datasets: [],
     },
   },
   render: ({ config }) => {
-    // eslint-disable-next-line no-unused-vars
-    const [chartData, setChartData] = useState<RowDef[]>();
-    // eslint-disable-next-line no-unused-vars
-    const [isLoading, setIsLoading] = useState(false);
+    const {
+      projectData: { currentProjectId },
+    } = useMobxStore();
 
-    const fetchChartData = async (source: CancelTokenSource) => {
-      console.log("Fetching chart data ...");
-      const urlToFetch =
-        config.importType === "database"
-          ? `http://localhost:3001/api/mock/trollface/data/${config.tableId}/rows`
-          : config.url;
+    const componentsService = new ComponentsService();
 
-      setIsLoading(true);
-
-      try {
-        const response = await axios.get(urlToFetch, {
-          cancelToken: source.token,
-        });
-
-        const data = response.data;
-
-        console.log("chart data", data);
-
-        setIsLoading(false);
-        setChartData(data);
-        config.selectedTableFields = Object.keys(data[0]);
-        // config.labels = config.selectedTableFields[0];
-      } catch (error) {
-        console.log(error);
+    const { data, isLoading } = useSWR(
+      config.tableId
+        ? `TABLE_DATA-${currentProjectId}-${config.tableId}-rows`
+        : undefined,
+      () =>
+        componentsService.importTableDataRows({
+          projectId: currentProjectId,
+          tableId: config.tableId,
+        }),
+      {
+        refreshInterval: REFRESH_INTERVAL_TIME,
       }
-    };
+    );
 
     useEffect(() => {
-      if (config.importType === "") return;
+      if (!data) {
+        return;
+      }
+      console.log("[Data]:", data);
+      config.selectedTableFields = Object.keys(data.data[0]);
+    }, [data, config.tableId]);
 
-      if (config.importType === "database" && config.tableId === "") return;
+    // if (!config.selectedTableFields) {}
 
-      if (config.url === "") return;
+    if (config.tableId && (!data || isLoading)) {
+      return <Loading />;
+    }
 
-      const source = axios.CancelToken.source();
-      fetchChartData(source);
-
-      return () => {
-        source.cancel();
-      };
-    }, [config.url, config.tableId]);
-
-    return isLoading ? (
-      <Loading />
-    ) : (
+    return (
       <div
         style={{
           width: "100%",
@@ -431,17 +357,13 @@ export const Charts: ComponentConfig<ChartsProps> = {
         >
           <Chart
             type={config.chartType as keyof ChartTypeRegistry}
-            // data={{
-            //   labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple'],
-            //   datasets: [
-            //     {
-            //       label: '# of Votes',
-            //       data: ['ae', 19, 3, 5, 2, 3],
-            //       borderWidth: 1,
-            //     },
-            //   ],
-            // }}
-            data={transformDataset(chartData!, config.labels, config.datasets)!}
+            data={
+              transformDataset(
+                data ? data.data : undefined,
+                config.unitX,
+                config.datasets
+              )!
+            }
             options={{
               maintainAspectRatio: false,
             }}

@@ -24,7 +24,7 @@ export default function Page({
     tableData: { fetchTableData, fetchAppliedQueries },
   } = useMobxStore();
 
-  const { data, isLoading } = useSWR<DataTable>(
+  const { data, isLoading, mutate } = useSWR<DataTable>(
     `TABLE_DATA-${params.projectId}-${params.tableId}`,
     () =>
       fetchTableData({
@@ -42,7 +42,6 @@ export default function Page({
     localData: RowDef[],
     deletedRowIds: Set<number>,
     newReferenceTable
-    // eslint-disable-next-line unicorn/consistent-function-scoping
   ) => {
     const filteredData =
       deletedRowIds.size > 0
@@ -70,8 +69,9 @@ export default function Page({
           ),
         }
       );
-    } catch {
-      console.error("Something went wrong when committing");
+      mutate();
+    } catch (error) {
+      console.error("Something went wrong when committing", error);
     }
 
     console.log("handleCommit");

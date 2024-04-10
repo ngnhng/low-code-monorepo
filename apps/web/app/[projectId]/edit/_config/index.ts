@@ -1,26 +1,26 @@
-import type { Config, Data } from '@measured/puck';
+import type { Config, Data } from "@measured/puck";
 import {
   ButtonGroup,
   ButtonGroupProps,
-} from '../_components/blocks/ButtonGroup';
-import { Card, CardProps } from '../_components/blocks/Card';
-import { Columns, ColumnsProps } from '../_components/blocks/Columns';
-import { Flex, FlexProps } from '../_components/blocks/Flex';
-import { Logos, LogosProps } from '../_components/blocks/Logos';
-import { Stats, StatsProps } from '../_components/blocks/Stats';
-import { Text, TextProps } from '../_components/blocks/Text';
+} from "../_components/blocks/ButtonGroup";
+import { Card, CardProps } from "../_components/blocks/Card";
+import { Columns, ColumnsProps } from "../_components/blocks/Columns";
+import { Flex, FlexProps } from "../_components/blocks/Flex";
+import { Logos, LogosProps } from "../_components/blocks/Logos";
+import { Stats, StatsProps } from "../_components/blocks/Stats";
+import { Text, TextProps } from "../_components/blocks/Text";
 import {
   VerticalSpace,
   VerticalSpaceProps,
-} from '../_components/blocks/VerticalSpace';
-import type { RootProps } from './root';
-import Root from './root';
-import type { TableProps } from '../_components/blocks/Table';
-import { Table } from '../_components/blocks/Table';
-import { Kanban, KanbanProps } from '../_components/blocks/Kanban';
-import { Charts, ChartsProps } from '../_components/blocks/Chart';
+} from "../_components/blocks/VerticalSpace";
+import type { RootProps } from "./root";
+import Root from "./root";
+import type { TableProps } from "../_components/blocks/Table";
+import { Table } from "../_components/blocks/Table";
+import { Kanban, KanbanProps } from "../_components/blocks/Kanban";
+import { Charts, ChartsProps } from "../_components/blocks/Chart";
 
-export type { RootProps } from './root';
+export type { RootProps } from "./root";
 
 type CProps = {
   Table: TableProps;
@@ -39,13 +39,13 @@ type CProps = {
 export type UserConfig = Config<
   CProps,
   RootProps,
-  'layout' | 'typography' | 'interactive'
+  "layout" | "typography" | "interactive"
 >;
 
 export const conf: Config<
   CProps,
   RootProps,
-  'layout' | 'typography' | 'interactive'
+  "layout" | "typography" | "interactive"
 > = {
   root: {
     render: Root,
@@ -53,19 +53,19 @@ export const conf: Config<
   categories: {
     layout: {
       components: [
-        'Table',
-        'Kanban',
-        'Charts',
-        'Columns',
-        'Flex',
-        'VerticalSpace',
+        "Table",
+        "Kanban",
+        "Charts",
+        "Columns",
+        "Flex",
+        "VerticalSpace",
       ],
     },
     typography: {
-      components: ['Text'],
+      components: ["Text"],
     },
     interactive: {
-      title: 'Actions',
+      title: "Actions",
       components: [],
     },
   },
@@ -85,18 +85,18 @@ export const conf: Config<
 };
 
 export const initialData: Record<string, Data> = {
-  '/': {
+  "/": {
     content: [],
-    root: { props: { title: 'Test' } },
+    root: { props: { title: "Test" } },
     zones: {},
   },
-  '/pricing': {
+  "/pricing": {
     content: [],
-    root: { props: { title: 'Pricing' } },
+    root: { props: { title: "Pricing" } },
   },
-  '/about': {
+  "/about": {
     content: [],
-    root: { props: { title: 'About' } },
+    root: { props: { title: "About" } },
   },
 };
 

@@ -1,78 +1,98 @@
 [
-    {
-        "id": "users",
-        "name": "Users",
-        "source": "Source 1",
-        "created": "2021-08-01",
-        "updated": "2021-08-01",
-        "status": "Active",
-        "columns": [
-            {
-                "id": "username",
-                "label": "Username",
-                "type": "text",
-                "isActive": true,
-                "isPrimaryKey": false,
-                "isForeignKey": false,
-                "foreignKeyId": ""
-            },
-            {
-                "id": "phone",
-                "label": "Phone",
-                "type": "text",
-                "isActive": true,
-                "isPrimaryKey": false,
-                "isForeignKey": false,
-                "foreignKeyId": ""
-            },
-            {
-                "id": "website",
-                "label": "Website",
-                "type": "text",
-                "isActive": true,
-                "isPrimaryKey": false,
-                "isForeignKey": false,
-                "foreignKeyId": ""
-            },
-            {
-                "id": "number",
-                "label": "Number",
-                "type": "number",
-                "isActive": true,
-                "isPrimaryKey": false,
-                "isForeignKey": false,
-                "foreignKeyId": ""
-            }
-        ],
-        "referenceTables": []
-    },
-    {
-        "id": "posts",
-        "name": "Posts",
-        "source": "Source 1",
-        "created": "2021-08-01",
-        "updated": "2021-08-01",
-        "status": "Active",
-        "columns": [
-            {
-                "id": "title",
-                "label": "Title",
-                "type": "text",
-                "isActive": true,
-                "isPrimaryKey": false,
-                "isForeignKey": false,
-                "foreignKeyId": ""
-            },
-            {
-                "id": "likes",
-                "label": "Likes",
-                "type": "text",
-                "isActive": true,
-                "isPrimaryKey": false,
-                "isForeignKey": false,
-                "foreignKeyId": ""
-            }
-        ],
-        "referenceTables": []
-    }
+  {
+    "id": "users",
+    "name": "Users",
+    "source": "Source 1",
+    "created": "2021-08-01",
+    "updated": "2021-08-01",
+    "status": "Active",
+    "columns": [
+      {
+        "id": "username",
+        "label": "Username",
+        "type": "text",
+        "isActive": true,
+        "isPrimaryKey": false,
+        "isForeignKey": false,
+        "foreignKeyId": ""
+      },
+      {
+        "id": "phone",
+        "label": "Phone",
+        "type": "text",
+        "isActive": true,
+        "isPrimaryKey": false,
+        "isForeignKey": false,
+        "foreignKeyId": ""
+      },
+      {
+        "id": "website",
+        "label": "Website",
+        "type": "text",
+        "isActive": true,
+        "isPrimaryKey": false,
+        "isForeignKey": false,
+        "foreignKeyId": ""
+      },
+      {
+        "id": "number",
+        "label": "Number",
+        "type": "number",
+        "isActive": true,
+        "isPrimaryKey": false,
+        "isForeignKey": false,
+        "foreignKeyId": ""
+      }
+    ],
+    "referenceTables": []
+  },
+  {
+    "id": "posts",
+    "name": "Posts",
+    "source": "Source 1",
+    "created": "2021-08-01",
+    "updated": "2021-08-01",
+    "status": "Active",
+    "columns": [
+      {
+        "id": "title",
+        "label": "Title",
+        "type": "text",
+        "isActive": true,
+        "isPrimaryKey": false,
+        "isForeignKey": false,
+        "foreignKeyId": ""
+      },
+      {
+        "id": "likes",
+        "label": "Likes",
+        "type": "text",
+        "isActive": true,
+        "isPrimaryKey": false,
+        "isForeignKey": false,
+        "foreignKeyId": ""
+      }
+    ],
+    "referenceTables": []
+  },
+  {
+    "id": "testtable2",
+    "name": "Test Table 2",
+    "source": "Source 1",
+    "created": "2021-08-01",
+    "updated": "2021-08-01",
+    "status": "Active",
+    "columns": [],
+    "referenceTables": []
+  },
+  {
+    "id": "referencetable",
+    "name": "Reference Table",
+    "source": "Source 1",
+    "created": "2021-08-01",
+    "updated": "2021-08-01",
+    "status": "Active",
+    "columns": [],
+    "referenceTables": []
+  }
 ]

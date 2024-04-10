@@ -1,24 +1,48 @@
-import type { Config, Data } from '@measured/puck';
+import type { Config, Data } from "@measured/puck";
 import {
   ButtonGroup,
   ButtonGroupProps,
-} from '../app/[projectId]/edit/_components/blocks/ButtonGroup';
-import { Card, CardProps } from '../app/[projectId]/edit/_components/blocks/Card';
-import { Columns, ColumnsProps } from '../app/[projectId]/edit/_components/blocks/Columns';
-import { Flex, FlexProps } from '../app/[projectId]/edit/_components/blocks/Flex';
-import { Logos, LogosProps } from '../app/[projectId]/edit/_components/blocks/Logos';
-import { Stats, StatsProps } from '../app/[projectId]/edit/_components/blocks/Stats';
-import { Text, TextProps } from '../app/[projectId]/edit/_components/blocks/Text';
+} from "../app/[projectId]/edit/_components/blocks/ButtonGroup";
+import {
+  Card,
+  CardProps,
+} from "../app/[projectId]/edit/_components/blocks/Card";
+import {
+  Columns,
+  ColumnsProps,
+} from "../app/[projectId]/edit/_components/blocks/Columns";
+import {
+  Flex,
+  FlexProps,
+} from "../app/[projectId]/edit/_components/blocks/Flex";
+import {
+  Logos,
+  LogosProps,
+} from "../app/[projectId]/edit/_components/blocks/Logos";
+import {
+  Stats,
+  StatsProps,
+} from "../app/[projectId]/edit/_components/blocks/Stats";
+import {
+  Text,
+  TextProps,
+} from "../app/[projectId]/edit/_components/blocks/Text";
 import {
   VerticalSpace,
   VerticalSpaceProps,
-} from '../app/[projectId]/edit/_components/blocks/VerticalSpace';
-import type { RootProps } from './root';
-import Root from './root';
-import type { TableProps } from '../app/[projectId]/edit/_components/blocks/Table';
-import { Table } from '../app/[projectId]/edit/_components/blocks/Table';
-import { Kanban, KanbanProps } from '../app/[projectId]/edit/_components/blocks/Kanban';
-import { Charts, ChartsProps } from '../app/[projectId]/edit/_components/blocks/Chart';
+} from "../app/[projectId]/edit/_components/blocks/VerticalSpace";
+import type { RootProps } from "./root";
+import Root from "./root";
+import type { TableProps } from "../app/[projectId]/edit/_components/blocks/Table";
+import { Table } from "../app/[projectId]/edit/_components/blocks/Table";
+import {
+  Kanban,
+  KanbanProps,
+} from "../app/[projectId]/edit/_components/blocks/Kanban";
+import {
+  Charts,
+  ChartsProps,
+} from "../app/[projectId]/edit/_components/blocks/Chart";
 
 interface CProps {
   Table: TableProps;
@@ -55,7 +79,7 @@ export const conf: Config<CProps, RootProps> = {
 };
 
 export const initialData: Record<string, Data> = {
-  '/': {
+  "/": {
     content: [
       //  {
       //    //type: 'Charts',
@@ -71,16 +95,16 @@ export const initialData: Record<string, Data> = {
       //    //},
       //  },
     ],
-    root: { props: { title: 'Test' } },
+    root: { props: { title: "Test" } },
     zones: {},
   },
-  '/pricing': {
+  "/pricing": {
     content: [],
-    root: { props: { title: 'Pricing' } },
+    root: { props: { title: "Pricing" } },
   },
-  '/about': {
+  "/about": {
     content: [],
-    root: { props: { title: 'About' } },
+    root: { props: { title: "About" } },
   },
 };
 
