@@ -41,10 +41,10 @@ const PropertiesView = ({ modeler }) => {
                 <ElementProperties modeler={modeler} element={activeElement} />
             )}
             {selectedElements.length === 0 && (
-                <span>Please select an element.</span>
+                <div className="p-5">Please select an element.</div>
             )}
             {selectedElements.length > 1 && (
-                <span>Please select a single element.</span>
+                <div className="p-5">Please select a single element.</div>
             )}
         </>
     );

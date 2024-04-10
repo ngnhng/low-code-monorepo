@@ -9,13 +9,7 @@ import React, { useEffect, useRef, FC, useState } from "react";
 import { useMobxStore } from "lib/mobx/store-provider";
 import { observer } from "mobx-react-lite";
 import PropertiesPanel from "./_components/modeler-panel";
-import {
-    ResizableHandle,
-    ResizablePanel,
-    ResizablePanelGroup,
-    ScrollArea,
-    Button,
-} from "@repo/ui";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup, ScrollArea, Button } from "@repo/ui";
 import { PlayIcon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
 import useSWR from "swr";
@@ -31,18 +25,10 @@ export default function Page() {
 
 const Modeler = observer(() => {
     const {
-        workflow: {
-            currentWorkflow,
-            fetchWorkflow,
-            newRenderer,
-            modeler,
-            getModeler,
-        },
+        workflow: { currentWorkflow, fetchWorkflow, newRenderer, modeler, getModeler },
     } = useMobxStore();
 
-    const { isLoading, error } = useSWR("workflow", () =>
-        fetchWorkflow("default")
-    );
+    const { isLoading, error } = useSWR("workflow", () => fetchWorkflow("default"));
 
     const containerRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
@@ -71,10 +57,7 @@ const Modeler = observer(() => {
 
     return (
         <div className="flex-1 flex overflow-hidden">
-            <ResizablePanelGroup
-                direction="horizontal"
-                className="h-full rounded-md border"
-            >
+            <ResizablePanelGroup direction="horizontal" className="h-full rounded-md border">
                 <ResizablePanel defaultSize={50}>
                     <div className="h-full max-w-full">
                         <div ref={containerRef} className="h-full"></div>
@@ -86,24 +69,13 @@ const Modeler = observer(() => {
                         <ResizablePanel defaultSize={35}>
                             <ScrollArea className="h-[calc(100%)]">
                                 {/*<div ref={sidebarRef} className="bg-gray-200 h-full"></div>*/}
-                                <div className="h-full">
-                                    {modeler !== null && (
-                                        <DebugXML modeler={modeler} />
-                                    )}
-                                </div>
+                                <div className="h-full">{modeler !== null && <DebugXML modeler={modeler} />}</div>
                             </ScrollArea>
                         </ResizablePanel>
                         <ResizableHandle withHandle />
                         <ResizablePanel defaultSize={65}>
                             <ScrollArea className="h-[calc(100%)]">
-                                <div className="h-full">
-                                    {modeler !== null && (
-                                        <PropertiesPanel
-                                            modeler={modeler}
-                                            container={panelRef}
-                                        />
-                                    )}
-                                </div>
+                                <div className="h-full">{modeler !== null && <PropertiesPanel modeler={modeler} container={panelRef} />}</div>
                             </ScrollArea>
                         </ResizablePanel>
                     </ResizablePanelGroup>
@@ -142,9 +114,7 @@ const Controls = observer(() => {
 
     const handleLaunchWorkflow = async () => {
         const [result, ok] = await launchWorkflow();
-        ok
-            ? toast.success("Workflow launched successfully: " + result)
-            : toast.error("Failed to launch workflow: " + result);
+        ok ? toast.success("Workflow launched successfully: " + result) : toast.error("Failed to launch workflow: " + result);
     };
 
     return (
@@ -155,17 +125,11 @@ const Controls = observer(() => {
             <div className="flex flex-row">
                 <div className="font-medium p-2">
                     {/* Showing current workflow id */}
-                    Workflow ID:{" "}
-                    <span className="text-green-500 font-bold">
-                        {workflowId}
-                    </span>
+                    Workflow ID: <span className="text-green-500 font-bold">{workflowId}</span>
                 </div>
                 <div className="font-medium p-2">
                     {/* Showing current node of workflow */}
-                    Workflow Status:{" "}
-                    <span className="text-green-500 font-bold">
-                        Activity_Test
-                    </span>
+                    Workflow Status: <span className="text-green-500 font-bold">Activity_Test</span>
                 </div>
             </div>
         </div>
