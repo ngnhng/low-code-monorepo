@@ -4,7 +4,7 @@ import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 import "@bpmn-io/properties-panel/assets/properties-panel.css";
 
-import React, { useEffect, useRef, FC, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useMobxStore } from "lib/mobx/store-provider";
 import { observer } from "mobx-react-lite";
@@ -15,10 +15,20 @@ import {
     ResizablePanelGroup,
     ScrollArea,
     Button,
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+    Command,
+    CommandInput,
+    CommandEmpty,
+    CommandGroup,
+    CommandItem,
 } from "@repo/ui";
 import { PlayIcon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
 import useSWR from "swr";
+import { Check } from "lucide-react";
+import { cn } from "../../../lib/shadcn/utils";
 
 export default function Page() {
     return (
@@ -32,38 +42,55 @@ export default function Page() {
 const Modeler = observer(() => {
     const {
         workflow: {
+            workflowName,
             currentWorkflow,
             fetchWorkflow,
             newRenderer,
             modeler,
-            getModeler,
         },
     } = useMobxStore();
 
-    const { isLoading, error } = useSWR("workflow", () =>
-        fetchWorkflow("default")
+    console.log("Modeler component rendered", workflowName);
+
+    const { isLoading, error, mutate } = useSWR("workflow", () =>
+        fetchWorkflow()
     );
 
     const containerRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        let isCancelled = false;
+
         const initializeModeler = async () => {
-            if (containerRef.current && currentWorkflow) {
+            console.log("initializeModeler", currentWorkflow);
+            if (containerRef.current && currentWorkflow && !isCancelled) {
                 await newRenderer({
                     container: containerRef.current,
                     keyboard: {
                         bindTo: document,
                     },
                 });
-                if (getModeler()) {
-                    await getModeler().importXML(currentWorkflow);
-                }
             }
         };
 
-        setTimeout(initializeModeler, 0);
+        const timeoutId = setTimeout(initializeModeler, 0);
+
+        return () => {
+            isCancelled = true;
+            clearTimeout(timeoutId);
+        };
     }, [containerRef, currentWorkflow]);
+
+    useEffect(() => {
+        mutate();
+    }, [workflowName]);
+
+	useEffect(() => {
+		if (modeler && currentWorkflow) {
+			modeler.importXML(currentWorkflow);
+		}
+	}, [modeler, currentWorkflow]);
 
     if (isLoading || error || !currentWorkflow) {
         return <div>Loading Modeler...</div>;
@@ -87,9 +114,7 @@ const Modeler = observer(() => {
                             <ScrollArea className="h-[calc(100%)]">
                                 {/*<div ref={sidebarRef} className="bg-gray-200 h-full"></div>*/}
                                 <div className="h-full">
-                                    {modeler !== null && (
-                                        <DebugXML modeler={modeler} />
-                                    )}
+                                    {modeler !== null && <DebugXML />}
                                 </div>
                             </ScrollArea>
                         </ResizablePanel>
@@ -98,10 +123,7 @@ const Modeler = observer(() => {
                             <ScrollArea className="h-[calc(100%)]">
                                 <div className="h-full">
                                     {modeler !== null && (
-                                        <PropertiesPanel
-                                            modeler={modeler}
-                                            container={panelRef}
-                                        />
+                                        <PropertiesPanel container={panelRef} />
                                     )}
                                 </div>
                             </ScrollArea>
@@ -113,8 +135,13 @@ const Modeler = observer(() => {
     );
 });
 
-const DebugXML: FC<{ modeler: any }> = ({ modeler }) => {
+const DebugXML = observer(() => {
+    const {
+        workflow: { modeler },
+    } = useMobxStore();
+
     const [xml, setXml] = useState("");
+
     useEffect(() => {
         const update = () => {
             modeler.saveXML({ format: true }).then(({ xml }) => {
@@ -126,18 +153,18 @@ const DebugXML: FC<{ modeler: any }> = ({ modeler }) => {
         return () => {
             modeler.off("commandStack.changed", update);
         };
-    }, [modeler]);
+    }, []);
 
     return (
         <div className="overflow-auto p-5">
             <pre className="w-full whitespace-pre-wrap">{xml}</pre>
         </div>
     );
-};
+});
 
 const Controls = observer(() => {
     const {
-        workflow: { launchWorkflow, workflowId },
+        workflow: { launchWorkflow },
     } = useMobxStore();
 
     const handleLaunchWorkflow = async () => {
@@ -152,14 +179,9 @@ const Controls = observer(() => {
             <Button className="flex gap-2.5" onClick={handleLaunchWorkflow}>
                 <PlayIcon /> Execute Workflow
             </Button>
-            <div className="flex flex-row">
-                <div className="font-medium p-2">
-                    {/* Showing current workflow id */}
-                    Workflow ID:{" "}
-                    <span className="text-green-500 font-bold">
-                        {workflowId}
-                    </span>
-                </div>
+            <div className="flex flex-row items-center gap-x-4">
+                <WorkflowSelector />
+
                 <div className="font-medium p-2">
                     {/* Showing current node of workflow */}
                     Workflow Status:{" "}
@@ -169,5 +191,69 @@ const Controls = observer(() => {
                 </div>
             </div>
         </div>
+    );
+});
+
+const WorkflowSelector = observer(() => {
+    const [open, setOpen] = useState(false);
+
+    const {
+        workflow: {
+            workflowName,
+            workflowNameList,
+            setWorkflowName,
+            fetchWorkflowNameList,
+        },
+    } = useMobxStore();
+
+    const { isLoading, error } = useSWR("workflow-selector", () =>
+        fetchWorkflowNameList()
+    );
+
+    if (isLoading || error) {
+        return <>Loading</>;
+    }
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+                <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-[200px] justify-between"
+                >
+                    {workflowNameList ? workflowName : "Select a workflow"}
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent>
+                <Command>
+                    <CommandInput placeholder="Select Workflow" />
+                    <CommandEmpty> No workflow found</CommandEmpty>
+                    <CommandGroup>
+                        {[...workflowNameList].map((name) => (
+                            <CommandItem
+                                key={name}
+                                value={name}
+                                onSelect={(val) => {
+                                    setWorkflowName(val);
+                                    setOpen(false);
+                                }}
+                            >
+                                <Check
+                                    className={cn(
+                                        "mr-2 h-4 w-4",
+                                        workflowName === name
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                    )}
+                                />
+                                {name}
+                            </CommandItem>
+                        ))}
+                    </CommandGroup>
+                </Command>
+            </PopoverContent>
+        </Popover>
     );
 });
