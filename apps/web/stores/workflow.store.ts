@@ -9,11 +9,14 @@ import {
 } from "mobx";
 import { RootStore } from "./root";
 import { BpmnWorkflowService } from "services/bpmn-workflow.service";
-import defaultXml from "../app/[projectId]/workflow/default-xml";
+import defaultXml from "../app/[projectId]/workflow/_testdata/default-xml";
+import googleSheetXml from "../app/[projectId]/workflow/_testdata/google-sheet-xml";
 
 export interface IWorkflowStore {
     newRenderer: (options?: any) => Promise<any> | any;
     //  setRenderer: (renderer: any) => void;
+
+    workflowNameList: Set<string>;
 
     currentWorkflow: any;
     modeler: any;
@@ -24,18 +27,24 @@ export interface IWorkflowStore {
     currentExecutingStatus: string;
 
     setCurrentWorkflow: (workflow: any) => void;
+    getCurrentWorkflow: () => any;
     setModeler: (modeler: any) => void;
     getModeler: () => any;
     setActiveElement: (element: any) => void;
+    setWorkflowName: (workflowName: string) => void;
 
     launchWorkflow: () => Promise<[string, boolean]>;
-    fetchWorkflow: (workflowId: string) => Promise<any>;
+    fetchWorkflow: () => Promise<any>;
+    fetchWorkflowNameList: () => Promise<Set<string>>;
 
-    workflowId: string;
+    // per user set names of the bpmn workflows
+    workflowName: string;
 }
 
 export class WorkflowStore {
     //observables
+    workflowName = "default";
+    workflowNameList: Set<string>;
     currentWorkflow: any;
     modeler: any;
     activeElement: any;
@@ -56,6 +65,8 @@ export class WorkflowStore {
             currentWorkflow: observable,
             modeler: observable.ref,
             activeElement: observable.ref,
+            workflowName: observable,
+            workflowNameList: observable,
             // js strings are immutable, so we can use observable instead of observable.ref
             currentExecutingWorkflowId: observable,
             currentExecutingElementId: observable,
@@ -64,6 +75,8 @@ export class WorkflowStore {
             //  setRenderer: action,
             setCurrentWorkflow: action,
             setModeler: action,
+            setActiveElement: action,
+            setWorkflowName: action,
             //  fetchWorkflow: action,
             //  fetchWorkflowList: action,
             //computed
@@ -75,14 +88,20 @@ export class WorkflowStore {
         // eslint-disable-next-line unicorn/no-null
         this.modeler = null;
         this.workflowService = new BpmnWorkflowService();
+        this.workflowNameList = new Set();
     }
 
     newRenderer = async (options?: any) => {
-        const m = await this.workflowService.renderer(options);
-        runInAction(() => {
-            this.modeler = m;
-        });
-        return m;
+        console.log("newRenderer");
+        if (!this.modeler) {
+            const m = await this.workflowService.renderer(options);
+            await m.importXML(this.currentWorkflow);
+            runInAction(() => {
+                this.modeler = m;
+            });
+            return m;
+        }
+        return this.modeler;
     };
 
     //  setRenderer = async (renderer: any) => {
@@ -91,6 +110,10 @@ export class WorkflowStore {
 
     setCurrentWorkflow = (workflow: any) => {
         this.currentWorkflow = workflow;
+    };
+
+    getCurrentWorkflow = () => {
+        return this.currentWorkflow;
     };
 
     setModeler = (modeler: any) => {
@@ -148,16 +171,46 @@ export class WorkflowStore {
         return ["Service Unavailable", false];
     };
 
-    fetchWorkflow = async (workflowId: string): Promise<any> => {
-        if (workflowId === "default") {
-            runInAction(() => {
-                this.currentWorkflow = defaultXml;
-            });
-            return defaultXml;
+    setWorkflowName = (workflowName: string) => {
+        runInAction(() => {
+            this.workflowName = workflowName;
+        });
+    };
+
+    fetchWorkflow = async (): Promise<any> => {
+        console.log(
+            "fetchWorkflowByName",
+            this.workflowName,
+            this.workflowName == "google-sheet-example"
+        );
+
+        switch (this.workflowName) {
+            case "default": {
+                runInAction(() => {
+                    this.currentWorkflow = defaultXml;
+                });
+                return defaultXml;
+            }
+            case "google-sheet-example": {
+                runInAction(() => {
+                    this.currentWorkflow = googleSheetXml;
+                });
+                return googleSheetXml;
+            }
+            default: {
+                // TODO: Implement fetchWorkflow
+                //const response = await this.workflowService.get(`/workflow/${workflowId}`);
+                //return response.data;
+                throw new Error("Not implemented");
+            }
         }
-        // TODO: Implement fetchWorkflow
-        //const response = await this.workflowService.get(`/workflow/${workflowId}`);
-        //return response.data;
-        throw new Error("Not implemented");
+    };
+
+    fetchWorkflowNameList = async (): Promise<Set<string>> => {
+        const response = await this.workflowService.fetchWorkflowNameList();
+        runInAction(() => {
+            this.workflowNameList = response;
+        });
+        return response;
     };
 }
