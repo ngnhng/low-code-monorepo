@@ -4,11 +4,12 @@
 import React, { useState, useEffect } from "react";
 import { ElementProperties } from "./element-properties";
 import { useMobxStore } from "lib/mobx/store-provider";
+import { observer } from "mobx-react-lite";
 
-const PropertiesView = ({ modeler }) => {
+const PropertiesView = observer(() => {
     const [selectedElements, setSelectedElements] = useState([]);
     const {
-        workflow: { activeElement, setActiveElement },
+        workflow: { modeler, activeElement, setActiveElement },
     } = useMobxStore();
 
     useEffect(() => {
@@ -48,6 +49,6 @@ const PropertiesView = ({ modeler }) => {
             )}
         </>
     );
-};
+});
 
 export default PropertiesView;

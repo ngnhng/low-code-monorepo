@@ -52,4 +52,15 @@ export class BpmnWorkflowService extends APIService {
             return ["Error requesting launch", false];
         }
     }
+
+    async fetchWorkflowNameList(): Promise<Set<string>> {
+        try {
+            const response = await this.get(`/api/workflow`);
+            return response.status === 200
+                ? new Set(response.data.ids)
+                : new Set();
+        } catch {
+            throw new Error("Error calling service");
+        }
+    }
 }
