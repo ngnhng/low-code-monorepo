@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { getClassNameFactory } from "lib";
 
@@ -11,11 +10,19 @@ import { ComponentConfig } from "@measured/puck";
 import { Type, ChevronDown } from "react-feather";
 import Loading from "./loading";
 
-import axios, { CancelTokenSource } from "axios";
 import { RowDef } from "types/table-data";
 import { useMobxStore } from "lib/mobx/store-provider";
 import { ComponentsService } from "services/components.service";
 import useSWR from "swr";
+import {
+  Checkbox,
+  Label,
+  SelectContent,
+  SelectItem,
+  Select as SelectShadCn,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui";
 
 const getClassNameInput = getClassNameFactory("Input", styles);
 
@@ -119,7 +126,6 @@ export const Charts: ComponentConfig<ChartsProps> = {
         } = useMobxStore();
 
         const componentsService = new ComponentsService();
-        // const [chartData, setChartData] = useState();
         const [checkedArray, setCheckedArray] = useState<string[]>([]);
 
         const { data, isLoading } = useSWR(
@@ -130,10 +136,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
           }
         );
 
-        // if (!data || isLoading) {
-        //   return <Loading />;
-        // }
-
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const Select = ({ prop, name, selectOptions }) => {
           return (
             <label className={getClassNameInput()}>
@@ -245,42 +248,57 @@ export const Charts: ComponentConfig<ChartsProps> = {
               checkCallback={cssValueCheck}
               type="text"
             />
-            <Select
-              prop="chartType"
+            <EdittedSelect
               name="Chart Type"
               selectOptions={chartTypes}
+              prop="chartType"
+              updateProp={onChange}
+              configProps={value}
             />
             {!data || isLoading ? (
               <Loading />
             ) : (
-              <Select
+              <EdittedSelect
                 prop="tableId"
                 name="Select Table"
                 selectOptions={data.data.map((table) => table.id)}
+                updateProp={onChange}
+                configProps={value}
               />
             )}
             {value.selectedTableFields.length > 0 && (
               <>
-                <Select
+                <EdittedSelect
                   name="X Axis"
                   prop="unitX"
                   selectOptions={value.selectedTableFields}
+                  configProps={value}
+                  updateProp={onChange}
                 />
                 <div>
-                  <p>Choose Datasets Columns</p>
-                  <ul>
-                    {value.selectedTableFields.map((field, index) => (
-                      <li key={index}>
-                        <input
-                          type="checkbox"
-                          id={field}
-                          checked={checkedArray.includes(field)}
-                          onChange={() => handleChangeChecked(field)}
-                        />
-                        <label htmlFor={field}>{field}</label>
-                      </li>
-                    ))}
-                  </ul>
+                  <label className={getClassNameInput()}>
+                    <div className={getClassNameInput("label")}>
+                      <div className={getClassNameInput("labelIcon")}>
+                        <ChevronDown size={16} />
+                      </div>
+                      Datasets Columns
+                    </div>
+                    <ul>
+                      {value.selectedTableFields.map((field, index) => (
+                        <li
+                          key={index}
+                          className="space-x-2 flex items-center justify-start"
+                        >
+                          <Checkbox
+                            id={field}
+                            checked={checkedArray.includes(field)}
+                            onCheckedChange={() => handleChangeChecked(field)}
+                          />
+                          <label htmlFor={field}>{field}</label>
+                        </li>
+                      ))}
+                    </ul>
+                  </label>
                 </div>
               </>
             )}
@@ -379,4 +397,56 @@ export const Charts: ComponentConfig<ChartsProps> = {
       </div>
     );
   },
+};
+
+const EdittedSelect = ({
+  name,
+  selectOptions,
+  prop,
+  updateProp,
+  configProps,
+}: {
+  name: string;
+  selectOptions: any[];
+  prop: string;
+  updateProp: any;
+  configProps: any;
+}) => {
+  return (
+    <label className={getClassNameInput()}>
+      <Label className="flex items-center justify-start mb-2">
+        <div className="mr-1">
+          <ChevronDown size={16} />
+        </div>
+        {name}
+      </Label>
+      <SelectShadCn
+        onValueChange={(v) => {
+          const clone = structuredClone(configProps);
+          clone[prop] = v;
+
+          // resolve for only tableId change -> must reset datasets and x-axis
+          if (prop === "tableId") {
+            clone.datasets = [];
+            clone.unitX = "";
+          }
+
+          updateProp(clone);
+          console.log("Clone:", clone);
+        }}
+        // defaultValue={defaultValue === "" ? "" : defaultValue}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder={`Select ${name}`} />
+        </SelectTrigger>
+        <SelectContent>
+          {selectOptions.map((option, index) => (
+            <SelectItem key={index} value={option}>
+              {option.toUpperCase()}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </SelectShadCn>
+    </label>
+  );
 };
