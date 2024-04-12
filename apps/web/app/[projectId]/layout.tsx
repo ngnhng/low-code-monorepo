@@ -75,7 +75,7 @@ function renderContent(
       <div className="flex-1 flex w-full overflow-hidden">
         <div className="w-full h-full flex px-[50px] py-[20px] gap-2.5">
           <Sidebar navigation={navigations} selectedPage={pathName ?? ""} />
-          <div className="flex-1 overflow-auto">{children}</div>
+          <div className="flex-1 flex overflow-auto">{children}</div>
         </div>
       </div>
     </div>
