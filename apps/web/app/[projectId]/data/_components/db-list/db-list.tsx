@@ -63,7 +63,7 @@ const DBList = () => {
           key={instance.name}
           name={instance.name}
           img={instance.img}
-          requiredFields={instance.requiredFields}
+          // requiredFields={instance.requiredFields}
         ></DBCard>
       ))}
     </div>
