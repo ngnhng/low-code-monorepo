@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 	"yalc/bpmn-engine/domain"
 	apiservice "yalc/bpmn-engine/modules/api-service"
@@ -20,42 +21,110 @@ import (
 	"go.uber.org/fx"
 )
 
-var GoogleSheetFn func(
-	ctx context.Context,
-	cl client.JobClient,
-	vars model.Vars,
-) (model.Vars, error)
+var (
+	GoogleSheetWriteAppendFn func(
+		ctx context.Context,
+		cl client.JobClient,
+		vars model.Vars,
+	) (model.Vars, error)
 
-var GoogleSheetFnAssign = func(gsf func(
+	GoogleSheetWriteAppendFnAssign = func(gsf func(
+		ctx context.Context,
+		cl client.JobClient,
+		vars model.Vars,
+	) (model.Vars, error)) {
+		// Save the function with its dependencies injected
+		GoogleSheetWriteAppendFn = gsf
+	}
+)
+
+func NewGoogleSheetWriteAppendFn(uc *GoogleSheetUseCase) func(
 	ctx context.Context,
 	cl client.JobClient,
 	vars model.Vars,
-) (model.Vars, error)) {
-	// Save the function with its dependencies injected
-	GoogleSheetFn = gsf
+) (model.Vars, error) {
+	return func(ctx context.Context, cl client.JobClient, vars model.Vars) (model.Vars, error) {
+
+		// get the sheet id and range from the vars
+		uc.Logger.Debug("Getting sheet data", vars)
+		sheetId, range_, email, data, err := validateGoogleSheetWriteAppendVars(vars)
+		if err != nil {
+			return nil, err
+		}
+
+		// set the context
+		ctx = context.WithValue(ctx, domain.UserKey, email)
+
+		// transform to a single cell in a row [][]string{{"data"}}
+		// convert string of formar [["abc", "abc"], ["abc"]] to [][]interface{}
+		data = strings.Replace(data, `'`, `"`, -1)
+		values := make([][]interface{}, len(data))
+		err = json.Unmarshal([]byte(data), &values)
+		if err != nil {
+			uc.Logger.Error("Error unmarshalling sheet data", "err", err)
+			return nil, err
+		}
+
+		err = uc.AppendData(ctx, sheetId, range_, values)
+		if err != nil {
+			uc.Logger.Error("Error appending data to sheet", "err", err)
+			return nil, err
+		}
+
+		return vars, nil
+	}
 }
 
+func validateGoogleSheetWriteAppendVars(vars model.Vars) (sheetId string, range_ string, user string, data string, err error) {
+	sheetId, ok := vars["sheetId"].(string)
+	if !ok {
+		return "", "", "", "", fmt.Errorf("expected string for key 'sheetId', got %T", vars["sheetId"])
+	}
+	range_, ok = vars["range"].(string)
+	if !ok {
+		return "", "", "", "", fmt.Errorf("expected string for key 'range', got %T", vars["range"])
+	}
+	user, ok = vars["_localContext_user"].(string)
+	if !ok {
+		return "", "", "", "", fmt.Errorf("expected string for key '_localContext_user', got %T", vars["_localContext_user"])
+	}
+	data, ok = vars["sheetData"].(string)
+	if !ok {
+		return "", "", "", "", fmt.Errorf("expected string for key 'sheetData', got %T", vars["sheetData"])
+	}
+
+	return
+}
+
+var (
+	GoogleSheetReadSingleRangeFn func(
+		ctx context.Context,
+		cl client.JobClient,
+		vars model.Vars,
+	) (model.Vars, error)
+
+	GoogleSheetReadSingleRangeFnAssign = func(gsf func(
+		ctx context.Context,
+		cl client.JobClient,
+		vars model.Vars,
+	) (model.Vars, error)) {
+		// Save the function with its dependencies injected
+		GoogleSheetReadSingleRangeFn = gsf
+	}
+)
+
 // TODO: output mapping
-func NewGoogleSheetFn(uc *GoogleSheetUseCase) func(
+func NewGoogleSheetReadSingleRangeFn(uc *GoogleSheetUseCase) func(
 	ctx context.Context,
 	cl client.JobClient,
 	vars model.Vars,
 ) (model.Vars, error) {
 	return func(ctx context.Context, cl client.JobClient, vars model.Vars) (model.Vars, error) {
 		// get the sheet id and range from the vars
-		uc.Logger.Debug("Context", "ctx", ctx)
-		uc.Logger.Debug("Getting sheet data", "vars", vars)
-		sheetId, ok := vars["sheetId"].(string)
-		if !ok {
-			return nil, errors.New("sheetId not found in vars")
-		}
-		range_, ok := vars["range"].(string)
-		if !ok {
-			return nil, errors.New("range not found in vars")
-		}
-		email, ok := vars["_localContext_user"].(string)
-		if !ok {
-			return nil, errors.New("user not found in vars")
+		uc.Logger.Debug("Getting sheet data", vars)
+		sheetId, range_, email, err := validateGoogleSheetReadSingleRangeVars(vars)
+		if err != nil {
+			return nil, err
 		}
 
 		// set the context
@@ -68,6 +137,8 @@ func NewGoogleSheetFn(uc *GoogleSheetUseCase) func(
 			return nil, err
 		}
 
+		uc.Logger.Debug("Raw sheet data", "data", rawData)
+
 		// Convert rawData to string
 		data := fmt.Sprintf("%v", rawData)
 
@@ -78,6 +149,23 @@ func NewGoogleSheetFn(uc *GoogleSheetUseCase) func(
 
 		return vars, nil
 	}
+}
+
+func validateGoogleSheetReadSingleRangeVars(vars model.Vars) (sheetId string, range_ string, user string, err error) {
+
+	sheetId, ok := vars["sheetId"].(string)
+	if !ok {
+		return "", "", "", fmt.Errorf("expected string for key 'sheetId', got %T", vars["sheetId"])
+	}
+	range_, ok = vars["range"].(string)
+	if !ok {
+		return "", "", "", fmt.Errorf("expected string for key 'range', got %T", vars["range"])
+	}
+	user, ok = vars["_localContext_user"].(string)
+	if !ok {
+		return "", "", "", fmt.Errorf("expected string for key '_localContext_user', got %T", vars["_localContext_user"])
+	}
+	return
 }
 
 type (
@@ -167,4 +255,62 @@ func (uc *GoogleSheetUseCase) GetSheetData(ctx context.Context, sheetId string, 
 
 	return gs.GetSheetData(ctx, sheetId, range_)
 
+}
+
+// AppendData appends the data to the given Google Sheet
+func (uc *GoogleSheetUseCase) AppendData(ctx context.Context, sheetId string, range_ string, data [][]interface{}) error {
+	// get the email from context user and generate a token to request to internal api
+	email, ok := ctx.Value(domain.UserKey).(string)
+	if !ok {
+		return errors.New("user not found in context")
+	}
+
+	// get the access token from the internal api
+	// first generate the token and set as the header
+	atk := jwt.New(jwt.SigningMethodHS256)
+	atk.Claims = jwt.MapClaims{
+		"email": email,
+		"exp":   time.Now().Add(time.Minute * 5).Unix(),
+	}
+
+	at, err := atk.SignedString([]byte(uc.Config.GetJwtSecret()))
+	if err != nil {
+		return err
+	}
+
+	uc.ApiService.SetBearerToken(at)
+
+	// get the access token from the internal api
+	resp, err := uc.ApiService.Get("/api/v1/access_token/google")
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("internal api error")
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	// extract the token from the response, "access_token": "..."
+	var atResp struct {
+		AccessToken string `json:"access_token"`
+	}
+	err = json.Unmarshal(body, &atResp)
+	if err != nil {
+		return err
+	}
+
+	// get the data from the google sheet
+	gs, err := googlesheet.NewGoogleSheetServiceWithToken(atResp.AccessToken)
+	if err != nil {
+		return err
+	}
+
+	return gs.AppendSheetData(ctx, sheetId, range_, data)
 }

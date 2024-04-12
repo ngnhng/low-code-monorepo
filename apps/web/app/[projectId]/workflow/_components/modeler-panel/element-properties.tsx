@@ -51,7 +51,14 @@ function reducer(state, action) {
             return { ...state, isQA: action.payload };
         }
         case "disableAll": {
-            return { ...state, isQA: false, isGS: false, isStartEvent: false, isSequenceFlow: false, isUserTask: false };
+            return {
+                ...state,
+                isQA: false,
+                isGS: false,
+                isStartEvent: false,
+                isSequenceFlow: false,
+                isUserTask: false,
+            };
         }
         case "setIsGS": {
             return { ...state, isGS: action.payload };
@@ -105,7 +112,7 @@ export function ElementProperties({ element, modeler }) {
         } else if (isGoogleSheet) {
             handleGoogleSheet(bObject);
         } else if (isGateway) {
-            handleSequenceFlow(bObject);
+            handleSequenceFlow();
         } else if (isUserTask) {
             handleUserTask(bObject);
         }
@@ -118,10 +125,12 @@ export function ElementProperties({ element, modeler }) {
 
         const moddle = modeler.get("moddle");
         const modeling = modeler.get("modeling");
-        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
+        const extensionElements =
+            bObject.extensionElements ||
+            moddle.create("bpmn:ExtensionElements");
 
         const formDefinition = moddle.create("yalc:FormDefinition", {
-            formId: ""
+            formId: "",
         });
 
         const ioMapping = moddle.create("yalc:IoMapping");
@@ -139,25 +148,25 @@ export function ElementProperties({ element, modeler }) {
         });
     };
 
-    const handleSequenceFlow = (bObject: any) => {
+    const handleSequenceFlow = () => {
         dispatch({ type: "setIsSequenceFlow", payload: true });
 
-        if (bObject.extensionElements) return;
+        //if (bObject.extensionElements) return;
 
-        const moddle = modeler.get("moddle");
-        const modeling = modeler.get("modeling");
-        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
+        //const moddle = modeler.get("moddle");
+        //const modeling = modeler.get("modeling");
+        //const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
 
-        const condition = moddle.create("yalc:ConditionExpression", {
-            // expression: ""
-            text: "",
-        });
+        ////const condition = moddle.create("yalc:ConditionExpression", {
+        ////    // expression: ""
+        ////    text: "",
+        ////});
 
-        extensionElements.get("values").push(condition);
+        ////extensionElements.get("values").push(condition);
 
-        modeling.updateProperties(element, {
-            extensionElements,
-        });
+        //modeling.updateProperties(element, {
+        //    extensionElements,
+        //});
     };
 
     const handleStartEvent = (bObject) => {
@@ -167,7 +176,9 @@ export function ElementProperties({ element, modeler }) {
 
         const moddle = modeler.get("moddle");
         const modeling = modeler.get("modeling");
-        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
+        const extensionElements =
+            bObject.extensionElements ||
+            moddle.create("bpmn:ExtensionElements");
 
         const ioMapping = moddle.create("yalc:IoMapping");
         extensionElements.get("values").push(ioMapping);
@@ -188,7 +199,9 @@ export function ElementProperties({ element, modeler }) {
 
         const moddle = modeler.get("moddle");
         const modeling = modeler.get("modeling");
-        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
+        const extensionElements =
+            bObject.extensionElements ||
+            moddle.create("bpmn:ExtensionElements");
 
         // Name of the handle function
         const taskDefinition = moddle.create("yalc:TaskDefinition", {
@@ -205,7 +218,7 @@ export function ElementProperties({ element, modeler }) {
             target: "",
         });
         const sheetDataInput = moddle.create("yalc:Input", {
-            source: "sheetData",
+            source: "=sheetData",
             target: "",
         });
         const rangeInput = moddle.create("yalc:Input", {
@@ -216,7 +229,9 @@ export function ElementProperties({ element, modeler }) {
             source: "sheetData",
             target: "",
         });
-        ioMapping.get("input").push(defaultInput, sheetIdInput, sheetDataInput, rangeInput);
+        ioMapping
+            .get("input")
+            .push(defaultInput, sheetIdInput, sheetDataInput, rangeInput);
         ioMapping.get("output").push(output);
 
         extensionElements.get("values").push(taskDefinition, ioMapping);
@@ -280,7 +295,9 @@ export function ElementProperties({ element, modeler }) {
 
     const isTimeoutConfigured = (element) => {
         const attachers = element.attachers || [];
-        return attachers.some((e) => hasDefinition(e, "bpmn:TimerEventDefinition"));
+        return attachers.some((e) =>
+            hasDefinition(e, "bpmn:TimerEventDefinition")
+        );
     };
 
     const append = (element, attrs) => {
@@ -298,9 +315,15 @@ export function ElementProperties({ element, modeler }) {
                     <AccordionContent>
                         <div className="flex flex-row justify-between">
                             <div>
-                                <h2 className="text-xl font-bold">{getElementType(element)}</h2>
-                                <p className="text-sm text-gray-500">{getElementName(element)}</p>
-                                <p className="text-sm text-gray-500">{element.id}</p>
+                                <h2 className="text-xl font-bold">
+                                    {getElementType(element)}
+                                </h2>
+                                <p className="text-sm text-gray-500">
+                                    {getElementName(element)}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                    {element.id}
+                                </p>
                             </div>
                         </div>
                     </AccordionContent>
@@ -309,39 +332,73 @@ export function ElementProperties({ element, modeler }) {
                     <AccordionItem value="qa">
                         <AccordionTrigger>QA</AccordionTrigger>
                         <AccordionContent>
-                            <QAElementProperties element={element} modeler={modeler} />
+                            <QAElementProperties
+                                element={element}
+                                modeler={modeler}
+                            />
                         </AccordionContent>
                     </AccordionItem>
                 )}
-                {state.isGS ? <GoogleSheetProps element={element} modeler={modeler} /> : ""}
+                {state.isGS ? (
+                    <GoogleSheetProps element={element} modeler={modeler} />
+                ) : (
+                    ""
+                )}
                 {state.isStartEvent && (
                     <AccordionItem value="startEvent">
                         <AccordionTrigger>I/O</AccordionTrigger>
                         <AccordionContent>
-                            <OutputProperties element={element} modeler={modeler} />
+                            <OutputProperties
+                                element={element}
+                                modeler={modeler}
+                            />
                         </AccordionContent>
                     </AccordionItem>
                 )}
-                {state.isSequenceFlow ? <GatewayProps element={element} modeler={modeler} /> : ""}
-                {state.isUserTask ? <UserTaskProps element={element} modeler={modeler} /> : ""}
+                {state.isSequenceFlow ? (
+                    <GatewayProps element={element} modeler={modeler} />
+                ) : (
+                    ""
+                )}
+                {state.isUserTask ? (
+                    <UserTaskProps element={element} modeler={modeler} />
+                ) : (
+                    ""
+                )}
                 <AccordionItem value="actions">
                     <AccordionTrigger>Actions</AccordionTrigger>
                     <AccordionContent>
                         <div className="flex flex-col gap-1">
-                            {is(element, "bpmn:Task") && !is(element, "bpmn:ServiceTask") && (
-                                <Button onClick={makeServiceTask}>Make Service Task</Button>
-                            )}
-                            {is(element, "bpmn:Event") && !hasDefinition(element, "bpmn:MessageEventDefinition") && (
-                                <Button onClick={makeMessageEvent}>Make Message Event</Button>
-                            )}
+                            {is(element, "bpmn:Task") &&
+                                !is(element, "bpmn:ServiceTask") && (
+                                    <Button onClick={makeServiceTask}>
+                                        Make Service Task
+                                    </Button>
+                                )}
+                            {is(element, "bpmn:Event") &&
+                                !hasDefinition(
+                                    element,
+                                    "bpmn:MessageEventDefinition"
+                                ) && (
+                                    <Button onClick={makeMessageEvent}>
+                                        Make Message Event
+                                    </Button>
+                                )}
 
-                            {is(element, "bpmn:Task") && !isTimeoutConfigured(element) && <Button onClick={attachTimeout}>Attach Timeout</Button>}
+                            {is(element, "bpmn:Task") &&
+                                !isTimeoutConfigured(element) && (
+                                    <Button onClick={attachTimeout}>
+                                        Attach Timeout
+                                    </Button>
+                                )}
                         </div>
                     </AccordionContent>
                 </AccordionItem>
                 {is(element, "bpmn:Event") ? (
                     <AccordionItem value="link">
-                        <AccordionTrigger>Behaviour Definition</AccordionTrigger>
+                        <AccordionTrigger>
+                            Behaviour Definition
+                        </AccordionTrigger>
                         <AccordionContent>
                             <div className="flex flex-col gap-5 p-5">
                                 <Label>Choose a UI element to listen to:</Label>
@@ -351,8 +408,12 @@ export function ElementProperties({ element, modeler }) {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectItem value="one">ID #1</SelectItem>
-                                            <SelectItem value="two">ID #2</SelectItem>
+                                            <SelectItem value="one">
+                                                ID #1
+                                            </SelectItem>
+                                            <SelectItem value="two">
+                                                ID #2
+                                            </SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
@@ -444,17 +505,25 @@ const OutputProperties = ({ element, modeler }) => {
                     <h3>Outputs</h3>
                     <ul className="space-y-2">
                         {outputs.map((output, index) => (
-                            <li key={index} className="flex items-center justify-between p-2 bg-gray-100 rounded shadow">
+                            <li
+                                key={index}
+                                className="flex items-center justify-between p-2 bg-gray-100 rounded shadow"
+                            >
                                 <div className="flex items-center gap-2">
-                                    <span className="font-medium text-gray-700">{output.source}</span>
+                                    <span className="font-medium text-gray-700">
+                                        {output.source}
+                                    </span>
                                     <MoveRight />
-                                    <span className="text-gray-500">{output.target}</span>
+                                    <span className="text-gray-500">
+                                        {output.target}
+                                    </span>
                                 </div>
                                 <button
                                     onClick={() => handleRemove(index)}
                                     className="p-2 rounded hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50"
                                 >
-                                    <Trash color="#f54254" size={18} /> {/* Trash bin icon */}
+                                    <Trash color="#f54254" size={18} />{" "}
+                                    {/* Trash bin icon */}
                                 </button>
                             </li>
                         ))}
@@ -485,7 +554,11 @@ const OutputForm = ({ onSubmit }) => {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5" autoComplete="off">
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col gap-5"
+                autoComplete="off"
+            >
                 <FormField
                     control={form.control}
                     name="source"
@@ -495,7 +568,9 @@ const OutputForm = ({ onSubmit }) => {
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
-                            <FormDescription>Source of the output</FormDescription>
+                            <FormDescription>
+                                Source of the output
+                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}
@@ -509,7 +584,9 @@ const OutputForm = ({ onSubmit }) => {
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
-                            <FormDescription>Target of the output</FormDescription>
+                            <FormDescription>
+                                Target of the output
+                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}

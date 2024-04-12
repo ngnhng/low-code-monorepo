@@ -155,7 +155,8 @@ export class WorkflowStore {
         ).toString("base64");
         const base64EncodedVariables = Buffer.from(
             JSON.stringify({
-                _globalContext_user: this.rootStore.user.currentUser?.email,
+                _globalContext_user:
+                    this.rootStore.user.currentUser?.email || "none",
             })
         ).toString("base64");
 

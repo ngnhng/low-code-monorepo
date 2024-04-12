@@ -5,7 +5,7 @@ const baseURL = process.env.NEXT_PUBLIC_WORKFLOW_API_URL;
 
 export async function POST(req: Request) {
     const { headers, json } = req;
-    const { workflow_id, process_definition, variables } = await json();
+    const { workflow_id, process_definition, variable_mapping } = await json();
 
     // extract the Bearer Token from the request headers
     const token = headers.get("Authorization")?.split(" ")[1];
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
             {
                 workflow_id,
                 process_definition,
-                variables,
+                variable_mapping,
             },
             axiosConfig
         );
