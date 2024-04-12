@@ -64,7 +64,7 @@ const HorizontalList = ({ children, ...props }) => (
   </ul>
 );
 
-export function DatabaseTabs({ data, columns, projectId }) {
+const DatabaseTabs = ({ data, columns, projectId }) => {
   // const tableRef = useRef<ReactComponentElement>(null);
 
   return (
@@ -144,4 +144,4 @@ export function DatabaseTabs({ data, columns, projectId }) {
       <TabsContent value="sources">Comming Soon</TabsContent>
     </Tabs>
   );
-}
+};
