@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 // import fs from 'fs';
 import fsa from "node:fs/promises";
 import path from "node:path";
-import { columns, addresses, posts } from "../[tableId]/route";
+import { columns, addresses, posts } from "../[tableId]/_utils/utils";
 
 import { TableItem } from "types/table-data";
 

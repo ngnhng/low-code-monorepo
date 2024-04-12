@@ -2,178 +2,12 @@
 import fs from "node:fs";
 import fsa from "node:fs/promises";
 import path from "node:path";
-import { faker } from "@faker-js/faker";
 import { NextRequest } from "next/server";
 import { ColumnDef, TableItem } from "types/table-data";
 import { NextResponse } from "next/server";
 // import * as _ from 'lodash';
 
 // * User Column
-export const columns: ColumnDef[] = [
-  {
-    id: "id",
-    label: "ID",
-    type: "number",
-    isActive: true,
-    isPrimaryKey: true,
-    isForeignKey: false,
-    foreignKeyId: "",
-  },
-  {
-    id: "name",
-    label: "Name",
-    type: "text",
-    isActive: true,
-    isPrimaryKey: false,
-    isForeignKey: false,
-    foreignKeyId: "",
-  },
-  {
-    id: "username",
-    label: "Username",
-    type: "text",
-    isActive: true,
-    isPrimaryKey: false,
-    isForeignKey: false,
-    foreignKeyId: "",
-  },
-  {
-    id: "phone",
-    label: "Phone",
-    type: "text",
-    isActive: true,
-    isPrimaryKey: false,
-    isForeignKey: false,
-    foreignKeyId: "",
-  },
-  {
-    id: "website",
-    label: "Website",
-    type: "text",
-    isActive: true,
-    isPrimaryKey: false,
-    isForeignKey: false,
-    foreignKeyId: "",
-  },
-];
-
-export const addresses: ColumnDef[] = [
-  {
-    id: "id",
-    label: "ID",
-    type: "number",
-    isActive: true,
-    isPrimaryKey: true,
-    isForeignKey: false,
-    foreignKeyId: "",
-  },
-  {
-    id: "city",
-    label: "City",
-    type: "text",
-    isActive: true,
-    isPrimaryKey: false,
-    isForeignKey: true,
-    foreignKeyId: "",
-  },
-  {
-    id: "country",
-    label: "Country",
-    type: "text",
-    isActive: true,
-    isPrimaryKey: false,
-    isForeignKey: false,
-    foreignKeyId: "",
-  },
-  {
-    id: "userID",
-    label: "User",
-    type: "number",
-    isActive: true,
-    isPrimaryKey: false,
-    isForeignKey: true,
-    foreignKeyId: "id",
-  },
-];
-
-export const posts: ColumnDef[] = [
-  {
-    id: "id",
-    label: "ID",
-    type: "number",
-    isActive: true,
-    isPrimaryKey: true,
-    isForeignKey: false,
-    foreignKeyId: "",
-  },
-  {
-    id: "title",
-    label: "Title",
-    type: "text",
-    isActive: true,
-    isPrimaryKey: false,
-    isForeignKey: false,
-    foreignKeyId: "",
-  },
-];
-
-export function createRandomAddresses() {
-  return {
-    city: faker.location.city(),
-    country: faker.location.country(),
-  };
-}
-
-export function createRandomPosts() {
-  return {
-    title: faker.lorem.sentence(),
-  };
-}
-
-export function createRandomUser() {
-  return {
-    name: faker.person.fullName(),
-    username: faker.person.lastName(),
-    phone: faker.phone.number(),
-    website: faker.internet.domainName(),
-  };
-}
-
-export function generateMockAddresses(size: number) {
-  const data: any = [];
-  for (let i = 1; i < size; i++) {
-    data.push({
-      id: i,
-      ...createRandomAddresses(),
-    });
-  }
-
-  return data;
-}
-
-export function generateMockPosts(size: number) {
-  const data: any = [];
-  for (let i = 1; i < size; i++) {
-    data.push({
-      id: i,
-      ...createRandomPosts(),
-    });
-  }
-
-  return data;
-}
-
-export function generateMockData(size: number): any[] {
-  const data: any = [];
-  for (let i = 1; i < size; i++) {
-    data.push({
-      id: i,
-      ...createRandomUser(),
-    });
-  }
-
-  return data;
-}
 
 // NEW GET WHEN POST PUT GO TRUE
 export async function GET(
@@ -216,7 +50,7 @@ export async function GET(
   }
 }
 
-export const translateData = (data): TableItem => {
+const translateData = (data): TableItem => {
   const tableId = data.tablename.replaceAll(/\s/g, "").toLowerCase();
   const referenceTables: string[] = [];
   const columns = data.requiredFields.map((item) => {
@@ -502,194 +336,194 @@ export async function PUT(
   });
 }
 
-export async function OLD_POST(
-  request: Request,
-  { params }: { params: { projectId: string; tableId: string } }
-) {
-  const databasePath = path.join(
-    process.cwd(),
-    `app/api/mock/[projectId]/data/all/${params.projectId}.json`
-  );
+// export async function OLD_POST(
+//   request: Request,
+//   { params }: { params: { projectId: string; tableId: string } }
+// ) {
+//   const databasePath = path.join(
+//     process.cwd(),
+//     `app/api/mock/[projectId]/data/all/${params.projectId}.json`
+//   );
 
-  console.error(databasePath);
+//   console.error(databasePath);
 
-  const { data } = await request.json();
-  const realData = translateData(data);
+//   const { data } = await request.json();
+//   const realData = translateData(data);
 
-  try {
-    const initData = await fsa.readFile(databasePath, "utf8");
+//   try {
+//     const initData = await fsa.readFile(databasePath, "utf8");
 
-    const projectTables = JSON.parse(initData);
+//     const projectTables = JSON.parse(initData);
 
-    for (const column of data.requiredFields) {
-      if (column.referenceTable) {
-        const referenceTable = projectTables.find(
-          (table) => table.id === column.referenceTable
-        );
+//     for (const column of data.requiredFields) {
+//       if (column.referenceTable) {
+//         const referenceTable = projectTables.find(
+//           (table) => table.id === column.referenceTable
+//         );
 
-        if (referenceTable) {
-          referenceTable.columns.push({
-            id: `${realData.id}-${referenceTable.id}`,
-            label: `${realData.id}-${referenceTable.id}`,
-            type: column.type,
-            isActive: true,
-            isPrimaryKey: false,
-            isForeignKey: true,
-            foreignKeyId: `${realData.id}-${referenceTable.id}`,
-            referenceTable: params.tableId,
-          });
+//         if (referenceTable) {
+//           referenceTable.columns.push({
+//             id: `${realData.id}-${referenceTable.id}`,
+//             label: `${realData.id}-${referenceTable.id}`,
+//             type: column.type,
+//             isActive: true,
+//             isPrimaryKey: false,
+//             isForeignKey: true,
+//             foreignKeyId: `${realData.id}-${referenceTable.id}`,
+//             referenceTable: params.tableId,
+//           });
 
-          referenceTable.referenceTables.push(realData.id);
-        }
-      }
-    }
+//           referenceTable.referenceTables.push(realData.id);
+//         }
+//       }
+//     }
 
-    // data.requiredFields.forEach((column) => {
-    //   if (column.referenceTable) {
-    //     const referenceTable = projectTables.find(table => table.id === column.referenceTable)
+// data.requiredFields.forEach((column) => {
+//   if (column.referenceTable) {
+//     const referenceTable = projectTables.find(table => table.id === column.referenceTable)
 
-    //     if (referenceTable) {
-    //       referenceTable.columns.push({
-    //         id: `${realData.id}-${referenceTable.id}`,
-    //         label: `${realData.id}-${referenceTable.id}`,
-    //         type: 'text',
-    //         isActive: true,
-    //         isPrimaryKey: false,
-    //         isForeignKey: true,
-    //         foreignKeyId: `${realData.id}-${referenceTable.id}`,
-    //       })
+//     if (referenceTable) {
+//       referenceTable.columns.push({
+//         id: `${realData.id}-${referenceTable.id}`,
+//         label: `${realData.id}-${referenceTable.id}`,
+//         type: 'text',
+//         isActive: true,
+//         isPrimaryKey: false,
+//         isForeignKey: true,
+//         foreignKeyId: `${realData.id}-${referenceTable.id}`,
+//       })
 
-    //       referenceTable.referenceTables.push(realData.id);
-    //     }
-    //   }
-    // })
+//       referenceTable.referenceTables.push(realData.id);
+//     }
+//   }
+// })
 
-    projectTables.push(realData);
+//   projectTables.push(realData);
 
-    const dataToWrite = JSON.stringify(projectTables);
+//   const dataToWrite = JSON.stringify(projectTables);
 
-    fs.writeFile(databasePath, dataToWrite, (err) => {
-      if (err) {
-        console.log("Error writing file:", err);
-      } else {
-        console.log("Successfully wrote file");
-      }
-    });
+//   fs.writeFile(databasePath, dataToWrite, (err) => {
+//     if (err) {
+//       console.log("Error writing file:", err);
+//     } else {
+//       console.log("Successfully wrote file");
+//     }
+//   });
 
-    return NextResponse.json(dataToWrite, { status: 200 });
-  } catch (error) {
-    console.log(error);
-    return new NextResponse("", { status: 500 });
-  }
+//   return NextResponse.json(dataToWrite, { status: 200 });
+// } catch (error) {
+//   console.log(error);
+//   return new NextResponse("", { status: 500 });
+// }
 
-  // try {
-  //   const dataToWrite = JSON.stringify(initObject);
+// try {
+//   const dataToWrite = JSON.stringify(initObject);
 
-  //   fs.writeFile(databasePath, dataToWrite, (err) => {
-  //     if (err) {
-  //         console.log('Error writing file:', err);
-  //     } else {
-  //         console.log('Successfully wrote file');
-  //     }
-  //   });
+//   fs.writeFile(databasePath, dataToWrite, (err) => {
+//     if (err) {
+//         console.log('Error writing file:', err);
+//     } else {
+//         console.log('Successfully wrote file');
+//     }
+//   });
 
-  //   return NextResponse.json(dataToWrite);
-  // } catch (err) {
-  //   return new NextResponse("Error in posting data!", {
-  //     status: 500,
-  //   });
-  // }
-}
-export async function OLD_GET(
-  request: NextRequest,
-  { params }: { params: { projectId: string; tableId: string } }
-) {
-  const searchParams = request.nextUrl.searchParams;
-  const page = searchParams.get("page") || 0;
-  const limit = searchParams.get("limit") || 10;
+//   return NextResponse.json(dataToWrite);
+// } catch (err) {
+//   return new NextResponse("Error in posting data!", {
+//     status: 500,
+//   });
+// }
+// }
+// export async function OLD_GET(
+//   request: NextRequest,
+//   { params }: { params: { projectId: string; tableId: string } }
+// ) {
+//   const searchParams = request.nextUrl.searchParams;
+//   const page = searchParams.get("page") || 0;
+//   const limit = searchParams.get("limit") || 10;
 
-  const databasePath = path.join(
-    process.cwd(),
-    `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`
-  );
+//   const databasePath = path.join(
+//     process.cwd(),
+//     `app/api/mock/[projectId]/data/[tableId]/${params.projectId}-${params.tableId}.json`
+//   );
 
-  if (!fs.existsSync(databasePath)) {
-    try {
-      const dbPath = path.join(
-        process.cwd(),
-        `app/api/mock/[projectId]/data/all/${params.projectId}.json`
-      );
+//   if (!fs.existsSync(databasePath)) {
+//     try {
+//       const dbPath = path.join(
+//         process.cwd(),
+//         `app/api/mock/[projectId]/data/all/${params.projectId}.json`
+//       );
 
-      const data: TableItem[] = JSON.parse(await fsa.readFile(dbPath, "utf8"));
+//       const data: TableItem[] = JSON.parse(await fsa.readFile(dbPath, "utf8"));
 
-      const tableData = data.find((table) => table.id === params.tableId);
+//       const tableData = data.find((table) => table.id === params.tableId);
 
-      if (!tableData) {
-        return new NextResponse("NO TABLE FOUND", {
-          status: 404,
-        });
-      }
+//       if (!tableData) {
+//         return new NextResponse("NO TABLE FOUND", {
+//           status: 404,
+//         });
+//       }
 
-      const response = {
-        data: {
-          columns: tableData.columns,
-          rows: [],
-          maxIndex: 0,
-        },
-        meta: {
-          page,
-          pageSize: limit,
-          totalPage: 10,
-        },
-      };
-      return new Response(JSON.stringify(response), {
-        headers: { "content-type": "application/json" },
-      });
-    } catch (error) {
-      console.log(error);
-      return new NextResponse("", { status: 500 });
-    }
-  }
+//       const response = {
+//         data: {
+//           columns: tableData.columns,
+//           rows: [],
+//           maxIndex: 0,
+//         },
+//         meta: {
+//           page,
+//           pageSize: limit,
+//           totalPage: 10,
+//         },
+//       };
+//       return new Response(JSON.stringify(response), {
+//         headers: { "content-type": "application/json" },
+//       });
+//     } catch (error) {
+//       console.log(error);
+//       return new NextResponse("", { status: 500 });
+//     }
+//   }
 
-  try {
-    const data = JSON.parse(await fsa.readFile(databasePath, "utf8"));
+//   try {
+//     const data = JSON.parse(await fsa.readFile(databasePath, "utf8"));
 
-    const dbPath = path.join(
-      process.cwd(),
-      `app/api/mock/[projectId]/data/all/${params.projectId}.json`
-    );
+//     const dbPath = path.join(
+//       process.cwd(),
+//       `app/api/mock/[projectId]/data/all/${params.projectId}.json`
+//     );
 
-    const projectTables = JSON.parse(await fsa.readFile(dbPath, "utf8"));
+//     const projectTables = JSON.parse(await fsa.readFile(dbPath, "utf8"));
 
-    const requestTable = projectTables.find(
-      (table) => table.id === params.tableId
-    );
+//     const requestTable = projectTables.find(
+//       (table) => table.id === params.tableId
+//     );
 
-    const response = {
-      data: {
-        columns: requestTable
-          ? // eslint-disable-next-line unicorn/no-nested-ternary
-            requestTable.columns.length > data.columns.length
-            ? requestTable.columns
-            : data.columns
-          : data.columns,
-        rows:
-          data.rows.length > 30
-            ? data.rows.slice(Number(page) * Number(limit), Number(limit))
-            : data.rows,
-        maxIndex: data.rows.length,
-      },
-      meta: {
-        page,
-        pageSize: limit,
-        totalPage: 10,
-      },
-    };
-    return new Response(JSON.stringify(response), {
-      headers: { "content-type": "application/json" },
-    });
-  } catch (error) {
-    console.log(error);
-    return new NextResponse("", { status: 500 });
-  }
-}
+//     const response = {
+//       data: {
+//         columns: requestTable
+//           ? // eslint-disable-next-line unicorn/no-nested-ternary
+//             requestTable.columns.length > data.columns.length
+//             ? requestTable.columns
+//             : data.columns
+//           : data.columns,
+//         rows:
+//           data.rows.length > 30
+//             ? data.rows.slice(Number(page) * Number(limit), Number(limit))
+//             : data.rows,
+//         maxIndex: data.rows.length,
+//       },
+//       meta: {
+//         page,
+//         pageSize: limit,
+//         totalPage: 10,
+//       },
+//     };
+//     return new Response(JSON.stringify(response), {
+//       headers: { "content-type": "application/json" },
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     return new NextResponse("", { status: 500 });
+//   }
+// }
