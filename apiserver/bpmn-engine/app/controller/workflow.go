@@ -60,8 +60,7 @@ func (ctrl *WorkflowController) Execute(c echo.Context) (err error) {
 		return c.JSON(domain_error.BadRequestError("Malformed Request", "MALFORMED_REQUEST"))
 	}
 
-	//ctrl.logger.Debug("Request received: ", req)
-	ctrl.logger.Debug("Check nil of LaunchWorkflowUseCase: ", ctrl.LaunchWorkflowUseCase)
+	ctrl.logger.Debug("Request received: ", req)
 
 	// execute the use case
 	ctrl.logger.Debug("Controller Context:", c)

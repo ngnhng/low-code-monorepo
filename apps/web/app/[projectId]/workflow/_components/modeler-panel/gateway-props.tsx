@@ -1,46 +1,60 @@
 "use client";
 
-import { AccordionItem, AccordionTrigger, AccordionContent, Label, Input } from "@repo/ui";
+import {
+    AccordionItem,
+    AccordionTrigger,
+    AccordionContent,
+    Label,
+    Input,
+} from "@repo/ui";
 import { getBusinessObject } from "bpmn-js/lib/util/ModelUtil";
 import { useEffect, useState } from "react";
 
 export default function GatewayProps({ element, modeler }) {
-    const [extensionElements, setExtensionElements] = useState<any>();
     // eslint-disable-next-line no-unused-vars
-    const [condition, setCondition] = useState<any>();
+    const [expression, setExpression] = useState<any>();
 
     useEffect(() => {
+        // check if element already has expression condition set
         const bObject = getBusinessObject(element);
-        if (!bObject.extensionElements) return;
+        console.log(bObject);
+        if (!bObject.conditionExpression) return;
 
-        const extensionElements = bObject.extensionElements;
-        setExtensionElements(extensionElements);
-
-        console.log(extensionElements.get("values"));
-
-        const expression = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:ConditionExpression");
-        setCondition(expression);
+        // set the expression
+        setExpression(bObject.conditionExpression.body);
     }, []);
 
-    const setExpression = (value: string) => {
+    const handleInputExpression = (value: string) => {
         const modeling = modeler.get("modeling");
-
-        if (!condition) return;
-        condition.text = value;
-
+        if (!value || value === "") {
+			setExpression(undefined);
+            modeling.updateProperties(element, {
+                conditionExpression: undefined,
+            });
+            return;
+        }
+        const moddle = modeler.get("moddle");
+        const expr = moddle.create("bpmn:FormalExpression", { body: value });
+		setExpression(value);
         modeling.updateProperties(element, {
-            extensionElements,
+            conditionExpression: expr,
         });
     };
 
     return (
         <AccordionItem value="sequenceFlow">
-            <AccordionTrigger>SequenceFlow Properties</AccordionTrigger>
+            <AccordionTrigger>Sequence Flow Properties</AccordionTrigger>
             <AccordionContent className="flex flex-col p-5 gap-5">
                 <Label>Conditions</Label>
                 <div className="flex gap-2.5 items-center p-5 bg-slate-100 rounded-md">
-                    <Label className="w-32">Target</Label>
-                    <Input onBlur={(event) => setExpression(event.target.value)} placeholder="Expression" defaultValue={condition?.text ?? ""} />
+                    <Label className="w-32">Condition</Label>
+                    <Input
+                        onBlur={(event) =>
+                            handleInputExpression(event.target.value)
+                        }
+                        placeholder="Expression"
+                        defaultValue={expression ?? ""}
+                    />
                 </div>
             </AccordionContent>
         </AccordionItem>

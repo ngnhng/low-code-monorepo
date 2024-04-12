@@ -2,12 +2,13 @@ package parser
 
 import (
 	"fmt"
+	"regexp"
+
 	"gitlab.com/shar-workflow/shar/common/element"
 	"gitlab.com/shar-workflow/shar/common/expression"
 	"gitlab.com/shar-workflow/shar/common/linter"
 	"gitlab.com/shar-workflow/shar/model"
 	errors2 "gitlab.com/shar-workflow/shar/server/errors"
-	"regexp"
 )
 
 func validModel(workflow *model.Workflow) error {
@@ -65,7 +66,7 @@ func checkVariables(process *model.Process) error {
 			for exp := range e.OutputTransform {
 				v2, err := expression.GetVariables("=" + exp)
 				if err != nil {
-					return fmt.Errorf("get output transform variables: %w", err)
+					return fmt.Errorf("get output transform variables: %v, %w", exp, err)
 				}
 				for k := range v2 {
 					outputVars[k] = struct{}{}
