@@ -1,0 +1,261 @@
+{
+  "columns": [
+    {
+      "id": "id",
+      "label": "ID",
+      "type": "number",
+      "isActive": true,
+      "isPrimaryKey": true,
+      "isForeignKey": false,
+      "foreignKeyId": ""
+    },
+    {
+      "id": "name",
+      "label": "Name",
+      "type": "text",
+      "isActive": true,
+      "isPrimaryKey": false,
+      "isForeignKey": false,
+      "foreignKeyId": ""
+    },
+    {
+      "id": "username",
+      "label": "Username",
+      "type": "text",
+      "isActive": true,
+      "isPrimaryKey": false,
+      "isForeignKey": false,
+      "foreignKeyId": ""
+    },
+    {
+      "id": "phone",
+      "label": "Phone",
+      "type": "text",
+      "isActive": true,
+      "isPrimaryKey": false,
+      "isForeignKey": false,
+      "foreignKeyId": ""
+    },
+    {
+      "id": "website",
+      "label": "Website",
+      "type": "text",
+      "isActive": true,
+      "isPrimaryKey": false,
+      "isForeignKey": false,
+      "foreignKeyId": ""
+    }
+  ],
+  "rows": [
+    {
+      "id": 1,
+      "name": "Kristen Schultz-Littel",
+      "username": "Stoltenberg",
+      "phone": "786.574.3174 x042",
+      "website": "false-conclusion.com"
+    },
+    {
+      "id": 2,
+      "name": "Milton Kerluke MD",
+      "username": "Rath",
+      "phone": "324.743.7152 x772",
+      "website": "evil-sundae.org"
+    },
+    {
+      "id": 3,
+      "name": "Kristen Schultz",
+      "username": "Feest",
+      "phone": "(608) 638-0172 x7860",
+      "website": "jam-packed-fencing.biz"
+    },
+    {
+      "id": 4,
+      "name": "Kari Cassin",
+      "username": "Hegmann",
+      "phone": "(270) 488-9943 x2640",
+      "website": "staid-linkage.biz"
+    },
+    {
+      "id": 5,
+      "name": "Harry White",
+      "username": "Kris",
+      "phone": "935.489.2276 x56135",
+      "website": "harsh-edition.name"
+    },
+    {
+      "id": 6,
+      "name": "Otis Labadie",
+      "username": "Hermiston",
+      "phone": "912-495-4142",
+      "website": "meager-initialise.info"
+    },
+    {
+      "id": 7,
+      "name": "Henrietta Funk",
+      "username": "Grant",
+      "phone": "1-997-525-2678 x09234",
+      "website": "fond-put.net"
+    },
+    {
+      "id": 8,
+      "name": "Gerald Kling",
+      "username": "O'Conner",
+      "phone": "473.426.1136 x78517",
+      "website": "twin-thrush.com"
+    },
+    {
+      "id": 9,
+      "name": "Phyllis Sanford",
+      "username": "Ledner",
+      "phone": "(297) 822-8055 x3906",
+      "website": "adorable-mine.net"
+    },
+    {
+      "id": 10,
+      "name": "Bert Quitzon PhD",
+      "username": "Weimann",
+      "phone": "1-986-924-7477",
+      "website": "mixed-branch.net"
+    },
+    {
+      "id": 11,
+      "name": "Dr. Ryan Beatty",
+      "username": "Schumm",
+      "phone": "(314) 886-1113 x763",
+      "website": "thin-paw.biz"
+    },
+    {
+      "id": 12,
+      "name": "Ricky Wilkinson",
+      "username": "Bergstrom",
+      "phone": "393.597.6881",
+      "website": "pushy-chorus.info"
+    },
+    {
+      "id": 13,
+      "name": "Jean Medhurst",
+      "username": "Conroy",
+      "phone": "1-875-218-0733 x738",
+      "website": "horrible-diadem.info"
+    },
+    {
+      "id": 14,
+      "name": "Chad Glover",
+      "username": "Bergnaum-White",
+      "phone": "1-755-316-0279 x9294",
+      "website": "repentant-baggy.net"
+    },
+    {
+      "id": 15,
+      "name": "Rosemarie Johnston",
+      "username": "Rempel",
+      "phone": "908.517.5962 x740",
+      "website": "which-waterbed.org"
+    },
+    {
+      "id": 16,
+      "name": "Kellie Grimes",
+      "username": "Murphy",
+      "phone": "(933) 453-1353 x915",
+      "website": "personal-critic.org"
+    },
+    {
+      "id": 17,
+      "name": "Ebony Braun",
+      "username": "Kuhic",
+      "phone": "424.245.6677 x369",
+      "website": "able-fob.name"
+    },
+    {
+      "id": 18,
+      "name": "Dr. Oliver Abernathy",
+      "username": "King",
+      "phone": "(744) 564-7847 x57949",
+      "website": "front-scrutiny.name"
+    },
+    {
+      "id": 19,
+      "name": "Lorraine Lang",
+      "username": "Douglas",
+      "phone": "(669) 705-3961 x24515",
+      "website": "flimsy-pince-nez.org"
+    },
+    {
+      "id": 20,
+      "name": "Mandy Botsford",
+      "username": "West",
+      "phone": "760-558-8872 x865",
+      "website": "light-council.info"
+    },
+    {
+      "id": 21,
+      "name": "Ms. Becky Hills",
+      "username": "Green",
+      "phone": "(225) 939-2524 x14785",
+      "website": "unnatural-stock-in-trade.biz"
+    },
+    {
+      "id": 22,
+      "name": "Benny Kuhn Jr.",
+      "username": "Gerhold",
+      "phone": "805-936-1246 x15773",
+      "website": "paltry-incidence.org"
+    },
+    {
+      "id": 23,
+      "name": "Guy Carter",
+      "username": "Hand",
+      "phone": "1-681-563-9131 x9099",
+      "website": "those-pillar.name"
+    },
+    {
+      "id": 24,
+      "name": "Georgia Swift",
+      "username": "Kunze",
+      "phone": "1-234-321-5030",
+      "website": "fickle-dogwood.com"
+    },
+    {
+      "id": 25,
+      "name": "Laurie Boehm",
+      "username": "Cummerata",
+      "phone": "1-495-390-1214 x07122",
+      "website": "optimistic-nest.net"
+    },
+    {
+      "id": 26,
+      "name": "Lori Treutel",
+      "username": "Bradtke",
+      "phone": "807-801-4437 x25252",
+      "website": "potable-exception.info"
+    },
+    {
+      "id": 27,
+      "name": "Alonzo Franecki",
+      "username": "Schmeler",
+      "phone": "(211) 856-4320 x25698",
+      "website": "runny-cover.biz"
+    },
+    {
+      "id": 28,
+      "name": "Carrie Greenholt",
+      "username": "Bode",
+      "phone": "665.507.5793 x66884",
+      "website": "fatherly-sandbar.name"
+    },
+    {
+      "id": 29,
+      "name": "Shelia Roberts",
+      "username": "Labadie",
+      "phone": "1-300-503-5557 x980",
+      "website": "harmonious-coffin.org"
+    },
+    {
+      "id": 30,
+      "name": "Mrs. Elsie Zemlak",
+      "username": "Wilderman",
+      "phone": "231.679.5315 x78396",
+      "website": "lawful-infection.name"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "columns": [
+    {
+      "id": "id",
+      "label": "ID",
+      "type": "number"
+    },
+    {
+      "id": "title",
+      "label": "Title",
+      "type": "text",
+      "isActive": true,
+      "isPrimaryKey": false,
+      "isForeignKey": false,
+      "foreignKeyId": ""
+    },
+    {
+      "id": "likes",
+      "label": "Likes",
+      "type": "text",
+      "isActive": true,
+      "isPrimaryKey": false,
+      "isForeignKey": false,
+      "foreignKeyId": ""
+    },
+    {
+      "id": "comments",
+      "label": "Comments",
+      "type": "text",
+      "isActive": true,
+      "isPrimaryKey": false,
+      "isForeignKey": false,
+      "foreignKeyId": ""
+    }
+  ],
+  "rows": [
+    {
+      "title": "See Not Beneath After I By Through Make",
+      "likes": "29619",
+      "id": 1,
+      "comments": "13545"
+    },
+    {
+      "title": "Mystery Adventure On Like Be Before Ten",
+      "likes": "17992",
+      "id": 2,
+      "comments": "8036"
+    },
+    {
+      "title": "Captivating Historical Fiction Unearthed",
+      "likes": "12413",
+      "id": 3,
+      "comments": "4271"
+    },
+    {
+      "title": "Intriguing Science Fiction That Warps Reality",
+      "likes": "6782",
+      "id": 4,
+      "comments": "2918"
+    },
+    {
+      "title": "Lighthearted Romance That Melts Your Heart",
+      "likes": "21974",
+      "id": 5,
+      "comments": "9843"
+    },
+    {
+      "title": "Gripping Thriller That Keeps You Guessing",
+      "likes": "19387",
+      "id": 6,
+      "comments": "7124"
+    },
+    {
+      "title": "Hilarious Comedy That Makes You Laugh Out Loud",
+      "likes": "25129",
+      "id": 7,
+      "comments": "11472"
+    },
+    {
+      "title": "Inspiring Self-Help That Changes Your Life",
+      "likes": "14891",
+      "id": 8,
+      "comments": "5329"
+    },
+    {
+      "title": "Mouthwatering Cookbook That Makes You Drool",
+      "likes": "18245",
+      "id": 9,
+      "comments": "6417"
+    },
+    {
+      "title": "Beautiful Poetry Collection That Touches Your Soul",
+      "likes": "9734",
+      "id": 10,
+      "comments": "3512"
+    }
+  ]
+}

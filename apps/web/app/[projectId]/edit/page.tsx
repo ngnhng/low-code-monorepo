@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import './style.css';
+import "./style.css";
 
-import type { Data } from '@measured/puck';
-import { Render, Puck } from '@measured/puck';
-import '@measured/puck/puck.css';
+import type { Data } from "@measured/puck";
+import { Render, Puck } from "@measured/puck";
+import "@measured/puck/puck.css";
 
-import { useState } from 'react';
-import config, { initialData } from './_config';
-import { Switch, Label } from '@repo/ui';
+import { useState } from "react";
+import config, { initialData } from "./_config";
+import { Switch, Label } from "@repo/ui";
 
-const isBrowser = typeof window !== 'undefined';
+const isBrowser = typeof window !== "undefined";
 
 export default function Page() {
-  const path = '/';
+  const path = "/";
   const componentKey = Buffer.from(
-    Object.keys(config.components).join('-'),
-  ).toString('base64');
+    Object.keys(config.components).join("-")
+  ).toString("base64");
   const key = `puck-demo:${componentKey}:${path}`;
 
   const [data, setData] = useState<Data>(() => {
@@ -40,7 +40,7 @@ export default function Page() {
   const editSwitch = <SwitchGroup handleToggle={handleToggle} isOn={isEdit} />;
 
   const toolbarItems = [
-    { key: 'edit', icon: '/edit.png', component: editSwitch },
+    { key: "edit", icon: "/edit.png", component: editSwitch },
   ];
 
   return (
@@ -48,9 +48,9 @@ export default function Page() {
       <Toolbar items={toolbarItems} />
       <div
         className={`${
-          isEdit ? 'flex' : 'border-2 border-slate-300 rounded-md'
+          isEdit ? "flex" : "border-2 border-slate-300 rounded-md"
         } flex-1 box-border puckContainer ${
-          isEdit ? 'overflow-hidden' : 'overflow-auto'
+          isEdit ? "overflow-hidden" : "overflow-auto"
         }`}
       >
         {isEdit ? (
@@ -84,7 +84,7 @@ export default function Page() {
                 data={
                   data ?? {
                     content: [],
-                    root: { props: { title: 'Test' } },
+                    root: { props: { title: "Test" } },
                     zones: {},
                   }
                 }

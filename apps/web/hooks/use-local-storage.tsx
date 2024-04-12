@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { getLocalStorage, setLocalStorage } from 'lib/local-storage';
+import { useState } from "react";
+import { getLocalStorage, setLocalStorage } from "lib/local-storage";
 
 export const useLocalStorage = (key: string, initialValue: any) => {
   const [storedValue, setStoredValue] = useState(() => {
     try {
       const item = getLocalStorage(key);
-	  if (!item) {
-		return initialValue;
-	  }
+      if (!item) {
+        return initialValue;
+      }
       return isJsonString(item) ? JSON.parse(item) : item;
     } catch (error) {
       console.log(error);
@@ -20,7 +20,7 @@ export const useLocalStorage = (key: string, initialValue: any) => {
   const setValue = (value: any) => {
     try {
       const valueToStore =
-        typeof value === 'function' ? value(storedValue) : value;
+        typeof value === "function" ? value(storedValue) : value;
 
       setStoredValue(valueToStore);
 
