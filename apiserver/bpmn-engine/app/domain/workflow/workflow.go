@@ -50,6 +50,7 @@ func (w *WorkflowLaunchRequest) Validate() error {
 	return validation.ValidateStruct(w,
 		validation.Field(&w.WorkflowID, validation.Required),
 		validation.Field(&w.ProcessDefinition, validation.Required),
+		validation.Field(&w.VariableMapping, validation.Required),
 	)
 }
 

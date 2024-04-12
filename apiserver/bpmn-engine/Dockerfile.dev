@@ -29,6 +29,7 @@ ENV ENVIRONMENT=development
 
 EXPOSE 3000
 
-CMD ["./server"]
+# sleep for 3 secs as a fast workaround to wait for the engine to start
+CMD ["sh", "-c", "sleep 3 && ./server"]
 
 

@@ -115,8 +115,12 @@ func (s *SharClient) errorChanHandler() {
 	s.logger.Error(err)
 }
 
-func (s *SharClient) LoadServiceTaskSpec(ctx context.Context, path string, f client.ServiceFn) error {
+func (s *SharClient) LoadServiceTaskSpecFromFile(ctx context.Context, path string, f client.ServiceFn) error {
 	return taskutil.RegisterTaskYamlFile(ctx, s.client, path, f)
+}
+
+func (s *SharClient) LoadServiceTaskSpec(ctx context.Context, taskYaml []byte, f client.ServiceFn) error {
+	return taskutil.RegisterTaskYaml(ctx, s.client, taskYaml, f)
 }
 
 //func (s *SharClient) loadServiceFunctions() error {

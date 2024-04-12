@@ -11,6 +11,7 @@ import (
 	"yalc/bpmn-engine/modules/echo"
 	"yalc/bpmn-engine/modules/logger"
 	"yalc/bpmn-engine/router"
+	servicetasks "yalc/bpmn-engine/service-tasks"
 	"yalc/bpmn-engine/usecase"
 
 	"go.uber.org/fx"
@@ -35,10 +36,17 @@ func main() {
 		fx.Invoke(
 			func(uc *usecase.GoogleSheetUseCase) {
 				// Create a new function with the GoogleSheetUseCase as its dependency
-				gsf := usecase.NewGoogleSheetFn(uc)
+				gsf := usecase.NewGoogleSheetReadSingleRangeFn(uc)
 
 				// Assign the function to GoogleSheetFn
-				usecase.GoogleSheetFnAssign(gsf)
+				usecase.GoogleSheetReadSingleRangeFnAssign(gsf)
+			},
+			func(uc *usecase.GoogleSheetUseCase) {
+				// Create a new function with the GoogleSheetUseCase as its dependency
+				gsf := usecase.NewGoogleSheetWriteAppendFn(uc)
+
+				// Assign the function to GoogleSheetFn
+				usecase.GoogleSheetWriteAppendFnAssign(gsf)
 			},
 		),
 
@@ -73,10 +81,19 @@ func connectAndLoadSpec(client *bpmn.SharClient, logger logger.Logger, rootDir s
 		return fmt.Errorf("error connecting to SHAR: %w", err)
 	}
 
-	err := client.LoadServiceTaskSpec(
+	err := client.LoadServiceTaskSpecFromFile(
 		client.GetConnCtx(),
-		filepath.Join(rootDir, "service-tasks/google-sheet.task.yaml"),
-		usecase.GoogleSheetFn,
+		filepath.Join(rootDir, "service-tasks/google-sheet-read-single-range.task.yaml"),
+		usecase.GoogleSheetReadSingleRangeFn,
+	)
+	if err != nil {
+		return fmt.Errorf("error loading service task spec: %w", err)
+	}
+
+	err = client.LoadServiceTaskSpecFromFile(
+		client.GetConnCtx(),
+		filepath.Join(rootDir, "service-tasks/test-log.task.yaml"),
+		bpmn.TestLogServiceFn,
 	)
 	if err != nil {
 		return fmt.Errorf("error loading service task spec: %w", err)
@@ -84,9 +101,10 @@ func connectAndLoadSpec(client *bpmn.SharClient, logger logger.Logger, rootDir s
 
 	err = client.LoadServiceTaskSpec(
 		client.GetConnCtx(),
-		filepath.Join(rootDir, "service-tasks/test-log.task.yaml"),
-		bpmn.TestLogServiceFn,
+		servicetasks.GoogleSheetWriteAppendTaskSpec,
+		usecase.GoogleSheetWriteAppendFn,
 	)
+
 	if err != nil {
 		return fmt.Errorf("error loading service task spec: %w", err)
 	}
