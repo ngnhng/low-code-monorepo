@@ -1,50 +1,49 @@
-'use client';
+"use client";
 
-import { FC, ReactNode, useEffect } from 'react';
-import { observer } from 'mobx-react-lite';
-import { useMobxStore } from '../mobx/store-provider';
-import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
+import { FC, ReactNode, useEffect } from "react";
+import { observer } from "mobx-react-lite";
+import { useMobxStore } from "../mobx/store-provider";
+import { useRouter } from "next/navigation";
+import useSWR from "swr";
 
 export interface IUserAuthWrapper {
-  children: ReactNode;
+    children: ReactNode;
 }
 
 export const UserAuthWrapper: FC<IUserAuthWrapper> = observer((properties) => {
-  const { children } = properties;
+    const { children } = properties;
 
-  const router = useRouter();
+    const router = useRouter();
 
-  //store
-  const {
-    user: { fetchCurrentUser, signOut },
-  } = useMobxStore();
+    const {
+        user: { fetchCurrentUser, signOut },
+    } = useMobxStore();
 
-  const {
-    data: user,
-    isLoading,
-    error,
-  } = useSWR('CURRENT_USER_DETAILS', () => fetchCurrentUser(), {
-    refreshInterval: 0,
-    shouldRetryOnError: true,
-    revalidateOnFocus: false,
-  });
-
-  useEffect(() => {
-    if (error !== undefined || (!user && !isLoading)) {
-      signOut();
-      router.push('/auth/login?error=unauthorized');
-    }
-  }, [error, user]);
-
-  if (isLoading) {
-    // TODO: show loading indicator
-    return (
-      <>
-        <div>Loading...</div>
-      </>
+    const { data: user, isLoading } = useSWR(
+        "USER_AUTH",
+        () => fetchCurrentUser(),
+        {
+            refreshInterval: 0,
+            shouldRetryOnError: true,
+            revalidateOnFocus: false,
+        }
     );
-  }
 
-  return <>{children}</>;
+    useEffect(() => {
+        if (!user && !isLoading) {
+            signOut();
+            router.push("/auth/login?error=unauthorized");
+        }
+    }, [user, isLoading]);
+
+    if (isLoading) {
+        // TODO: show loading indicator
+        return (
+            <>
+                <div>Loading...</div>
+            </>
+        );
+    }
+
+    return <>{children}</>;
 });
