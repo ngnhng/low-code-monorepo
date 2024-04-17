@@ -65,13 +65,13 @@ export default function Page() {
             }}
           >
             <div className="gap-2.5 flex-1 overflow-hidden flex">
-              <div className="bg-slate-100 rounded-md border-2 border-slate-300 w-52">
+              <div className="bg-slate-100 rounded-md border-2 border-slate-300 w-52 overflow-auto">
                 <Puck.Fields />
               </div>
               <div className="h-full flex-1 border-2 border-slate-300 rounded-md p-2.5 overflow-auto">
                 <Puck.Preview />
               </div>
-              <div className="bg-slate-100 p-2.5 rounded-md border-2 border-slate-300 w-52">
+              <div className="bg-slate-100 p-2.5 rounded-md border-2 border-slate-300 w-52 overflow-auto">
                 <Puck.Components />
               </div>
             </div>
