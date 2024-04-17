@@ -16,7 +16,6 @@ import {
 
 import { getBusinessObject } from "bpmn-js/lib/util/ModelUtil";
 import { useEffect, useState } from "react";
-import { Plus } from "react-feather";
 import { Trash } from "react-feather";
 
 export default function UserTaskProps({ element, modeler }) {
