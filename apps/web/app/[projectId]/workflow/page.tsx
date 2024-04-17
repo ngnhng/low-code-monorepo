@@ -167,6 +167,7 @@ const Controls = observer(() => {
     const handleLaunchWorkflow = async () => {
         const [result, ok] = await launchWorkflow();
         ok ? toast.success("Workflow launched successfully: " + result) : toast.error("Failed to launch workflow: " + result);
+        ok ? toast.success("Workflow launched successfully: " + result) : toast.error("Failed to launch workflow: " + result);
     };
 
     return (
@@ -179,6 +180,7 @@ const Controls = observer(() => {
 
                 <div className="font-medium p-2">
                     {/* Showing current node of workflow */}
+                    Workflow Status: <span className="text-green-500 font-bold">Activity_Test</span>
                     Workflow Status: <span className="text-green-500 font-bold">Activity_Test</span>
                 </div>
             </div>
