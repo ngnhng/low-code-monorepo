@@ -1,6 +1,19 @@
 "use client";
 
-import { AccordionItem, AccordionTrigger, AccordionContent, Label, Input } from "@repo/ui";
+import {
+    AccordionItem,
+    AccordionTrigger,
+    AccordionContent,
+    Label,
+    Input,
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@repo/ui";
+
 import { getBusinessObject } from "bpmn-js/lib/util/ModelUtil";
 import { useEffect, useState } from "react";
 import { Plus } from "react-feather";
@@ -11,8 +24,11 @@ export default function UserTaskProps({ element, modeler }) {
     // eslint-disable-next-line no-unused-vars
     const [inputs, setInputs] = useState<any>([]);
     const [output, setOutput] = useState<any>();
+    const [formsList, setFormsList] = useState<any>([]);
 
     useEffect(() => {
+        getFormsList();
+
         const bObject = getBusinessObject(element);
         if (!bObject.extensionElements) return;
 
@@ -24,6 +40,22 @@ export default function UserTaskProps({ element, modeler }) {
         setInputs(input ?? []);
         setOutput(output[0]);
     }, []);
+
+    const getFormsList = async () => {
+        // Do somekind of fetching here
+        setFormsList({
+            id_1: {
+                field_1: "",
+                field_2: 1,
+                field_3: true,
+            },
+            id_2: {
+                field_4: "",
+                field_5: 1,
+                field_6: true,
+            },
+        });
+    };
 
     const setInputData = (value: string, input: any, type: "source" | "target") => {
         const modeling = modeler.get("modeling");
@@ -47,24 +79,28 @@ export default function UserTaskProps({ element, modeler }) {
         });
     };
 
-    const addInput = () => {
-        const moddle = modeler.get("moddle");
+    const setForm = (value: string) => {
         const modeling = modeler.get("modeling");
 
         const ioMapping = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
+        ioMapping.get("input").length = 0;
 
-        const input = moddle.create("yalc:Input", {
-            source: "",
-            target: "",
-        });
-        ioMapping.get("input").push(input);
+        const moddle = modeler.get("moddle");
+        ioMapping.get("input").push(
+            ...Object.keys(formsList[value]).map((key) =>
+                moddle.create("yalc:Input", {
+                    source: key,
+                    target: "",
+                })
+            )
+        );
 
         modeling.updateProperties(element, {
             extensionElements,
         });
 
-        console.log(ioMapping.input);
-        setInputs([...(ioMapping.input ?? [])]);
+        setInputs([...ioMapping.input] ?? []);
+        return;
     };
 
     const removeInput = (idx: number) => {
@@ -84,23 +120,33 @@ export default function UserTaskProps({ element, modeler }) {
         <AccordionItem value="userTask">
             <AccordionTrigger>User Task Properties</AccordionTrigger>
             <AccordionContent className="flex flex-col p-5 gap-5">
-                <div className="flex justify-between">
-                    <Label>Inputs</Label>
-                    <button onClick={() => addInput()}>
-                        <Plus />
-                    </button>
-                </div>
+                <Label>Select Form to get data from</Label>
+                <Select
+                    onValueChange={(value) => {
+                        setForm(value);
+                    }}
+                >
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select an action" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            {Object.keys(formsList).map((id) => (
+                                <SelectItem value={id}>{id}</SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+                <Label>Inputs</Label>
                 <div className="w-full flex flex-col gap-5 p-5 bg-slate-100 rounded-md">
                     {inputs.map((input: any, idx: number) => {
                         console.log(idx);
                         return (
                             <div className="flex gap-2.5 items-center" key={`${input.source}-${idx}`}>
-                                <Label className="w-32">Source</Label>
-                                <Input
-                                    onBlur={(event) => setInputData(event.target.value, input, "source")}
-                                    placeholder="Expression"
-                                    defaultValue={input.source}
-                                />
+                                <div className="flex gap-2.5 w-[60%] items-center">
+                                    <Label>Source</Label>
+                                    <div className="p-2.5 bg-slate-200 rounded-md flex-1">{input.source}</div>
+                                </div>
                                 <Label className="w-32">Target</Label>
                                 <Input
                                     onBlur={(event) => setInputData(event.target.value, input, "target")}
