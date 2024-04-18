@@ -399,7 +399,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
   },
 };
 
-const EdittedSelect = ({
+export const EdittedSelect = ({
   name,
   selectOptions,
   prop,
