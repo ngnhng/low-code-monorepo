@@ -41,13 +41,18 @@ func (p *Pgx) ExecTx(ctx context.Context, f func(*Pgx) error) error {
 }
 
 // AcquireConn acquires a connection from the pool
-func (p *Pgx) AcquireConn(ctx context.Context) (*pgxpool.Conn, error) {
+func (p *Pgx) acquireConn(ctx context.Context) (*pgxpool.Conn, error) {
 	conn, err := p.ConnPool.Acquire(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return conn, nil
+}
+
+// ReleaseConn releases a connection back to the pool
+func (p *Pgx) releaseConn(conn *pgxpool.Conn) {
+	conn.Release()
 }
 
 // WithAcquire returns a copy of the parent context which acquires a connection
@@ -77,28 +82,36 @@ func (db *Pgx) Release(ctx context.Context) {
 	}
 }
 
-// Query executes sql with args. If there is an error the returned Rows will be returned in an error state. So it is
-// allowed to ignore the error returned from Query and handle it in Rows.
-//
-// For extra control over how the query is executed, the types QuerySimpleProtocol, QueryResultFormats, and
-// QueryResultFormatsByOID may be used as the first args to control exactly how the query is executed. This is rarely
-// needed. See the documentation for those types for details.
-//func (p *Pgx) Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error) {
+// GetTablesInfo returns the tables info from the database
+func (p *Pgx) GetTablesInfo(ctx context.Context) (interface{}, error) {
+	// acquire a connection from the pool
+	conn, err := p.acquireConn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer p.releaseConn(conn)
 
-//}
+	// get the tables info from the database
+	// Query executes sql with args. If there is an error the returned Rows will be returned in an error state. So it is
+	// allowed to ignore the error returned from Query and handle it in Rows.
+	//
+	// For extra control over how the query is executed, the types QuerySimpleProtocol, QueryResultFormats, and
+	// QueryResultFormatsByOID may be used as the first args to control exactly how the query is executed. This is rarely
+	// needed. See the documentation for those types for details.
+	rows, err := conn.Query(ctx, `SELECT * FROM pg_catalog.pg_tables WHERE schemaname = 'public';`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-//// QueryFunc executes sql with args. For each row returned by the query the values will scanned into the elements of
-//// scans and f will be called. If any row fails to scan or f returns an error the query will be aborted and the error
-//// will be returned.
-//QueryFunc(
-//	ctx context.Context,
-//	sql string,
-//	args []any,
-//	scans []any,
-//	f func(pgx.QueryFuncRow) error,
-//) (pgconn.CommandTag, error)
+	var tables []string
+	for rows.Next() {
+		var table string
+		if err := rows.Scan(&table); err != nil {
+			return nil, err
+		}
+		tables = append(tables, table)
+	}
 
-//// QueryRow is a convenience wrapper over Query. Any error that occurs while
-//// querying is deferred until calling Scan on the returned Row. That Row will
-//// error with ErrNoRows if no rows are returned.
-//QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+	return tables, nil
+}

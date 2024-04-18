@@ -12,7 +12,7 @@ type zapLogger struct {
 	level       string
 	sugarLogger *zap.SugaredLogger
 	logger      *zap.Logger
-	logOptions  config.Config
+	logOptions  *config.Config
 }
 
 type ZapLogger interface {
@@ -23,6 +23,8 @@ type ZapLogger interface {
 	DPanicf(template string, args ...interface{})
 	Sync() error
 }
+
+var _ ZapLogger = (*zapLogger)(nil)
 
 // For mapping config logger
 var loggerLevelMap = map[string]zapcore.Level{
@@ -35,7 +37,7 @@ var loggerLevelMap = map[string]zapcore.Level{
 }
 
 // NewZapLogger create new zap logger
-func NewZapLogger(cfg config.Config) ZapLogger {
+func NewZapLogger(cfg *config.Config) ZapLogger {
 	zapLogger := &zapLogger{level: cfg.LogLevel, logOptions: cfg}
 	zapLogger.initLogger(os.Getenv(cfg.Env))
 	return zapLogger

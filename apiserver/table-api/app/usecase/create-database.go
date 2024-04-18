@@ -5,6 +5,8 @@ import (
 	"yalc/dbms/modules/logger"
 	neonclient "yalc/dbms/modules/neon-client"
 	"yalc/dbms/shared"
+
+	"go.uber.org/fx"
 )
 
 type (
@@ -16,6 +18,8 @@ type (
 	}
 
 	CreateDatabaseUseCaseParams struct {
+		fx.In
+
 		Config *config.Config
 		Logger logger.Logger
 

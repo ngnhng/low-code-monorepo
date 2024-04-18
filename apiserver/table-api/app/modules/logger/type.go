@@ -45,4 +45,4 @@ type Logger interface {
 	//)
 }
 
-var _ ZapLogger = &zapLogger{}
+var _ Logger = (*zapLogger)(nil)

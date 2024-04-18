@@ -9,7 +9,7 @@ import (
 
 var Module = fx.Module("echo-http",
 	fx.Provide(
-		New,
+		NewEchoServer,
 	),
 	fx.Options(fx.Invoke(registerHooks)),
 )
