@@ -4,7 +4,6 @@ import { PlusSquare, XCircle } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
-// import { uuid } from 'uuidv4';
 import axios from "axios";
 
 import { Sheet, SheetContent, SheetTrigger } from "@repo/ui";
@@ -29,7 +28,6 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useMobxStore } from "lib/mobx/store-provider";
 import useSWR from "swr";
-// import { TableItem } from 'types/table-data'
 
 interface CreateTableFormProps {
   projectId: string;
@@ -89,7 +87,6 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
     fields: requiredFields,
     append: requiredFieldsAppend,
     remove: requiredFieldsRemove,
-    // register
   } = useFieldArray({
     control: form.control,
     name: "requiredFields",
@@ -99,6 +96,14 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      const idColumn = {
+        id: "id",
+        type: "text",
+        referenceTable: "",
+      };
+
+      values.requiredFields.unshift(idColumn);
+
       await axios.post(
         `/api/mock/${projectId}/data/${values.tablename
           .replaceAll(/\s/g, "")
@@ -107,6 +112,7 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
           data: values,
         }
       );
+
       toast.success("Table has been created.", {
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
@@ -118,7 +124,6 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
       });
       mutate();
       router.refresh();
-      // router.push(`/${projectId}/data/${values.tablename}`)
     } catch {
       toast.error("Something went wrong");
     }
@@ -234,14 +239,6 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
                         </Select>
                         {/* <FormMessage /> */}
                       </FormItem>
-
-                      {/* <FormItem>
-                        <FormLabel>Default</FormLabel>
-                        <FormControl>
-                          <Input {...form.register(`requiredFields.${index}.defaultValue`)} placeholder="Default" className='w-[13rem] mr-2'/>
-                        </FormControl>
-                      </FormItem> */}
-                      {/* <FormMessage /> */}
                       <XCircle
                         size={24}
                         onClick={() => requiredFieldsRemove(index)}
