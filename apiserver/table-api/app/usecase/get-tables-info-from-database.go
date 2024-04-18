@@ -36,36 +36,37 @@ func NewGetTablesInfoFromDatabaseUseCase(p GetTablesInfoFromDatabaseUseCaseParam
 }
 
 func (uc *GetTablesInfoFromDatabaseUseCase) Execute(c shared.RequestContext, projectId string) (interface{}, error) {
-	// get user id from claims
+	// Get user id from claims
 	userId := c.GetUserId()
 
+	// Format the database name
 	db := fmt.Sprintf("%s_%s", userId, projectId)
 
-	// try to get a conn from pool cache
-	connPool, ok := uc.Pgx.ConnPoolMap.Get(db)
-	// if conn pool doesn't exist, create a new one
-	if !ok {
-		_, err := uc.Pgx.NewPgxPool(db)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// get the conn pool from cache
-	connPool, _ = uc.Pgx.ConnPoolMap.Get(db)
-
-	// acquire a connection from the pool
-	ctx := c.GetContext()
-	conn, err := connPool.AcquireConn(ctx)
+	// Get a connection pool of the database
+	connPool, err := uc.getConnPool(db)
 	if err != nil {
 		return nil, err
 	}
 
-	// release the connection back to the pool
-	defer connPool.ReleaseConn(conn)
-
-	// get the tables info from the database
-	tables, err := conn.GetTablesInfo(ctx)
+	ctx := c.GetContext()
+	tables, err := connPool.GetTablesInfo(ctx)
 
 	return tables, err
+}
+
+func (uc *GetTablesInfoFromDatabaseUseCase) getConnPool(db string) (*pgx.Pgx, error) {
+	// Try to get a conn from pool cache
+	connPool, err := uc.Pgx.GetPgxPool(db)
+	if err != nil {
+		uc.Logger.Debugf("conn pool not found in cache, creating a new one for db: %s", db)
+		// Create a new conn pool
+		connPool, err = uc.Pgx.NewPgxPool(db)
+		if err != nil {
+			uc.Logger.Errorf("failed to create a new conn pool for db: %s", db)
+			return nil, err
+		}
+		uc.Logger.Debugf("new conn pool created for db: %s", db)
+	}
+
+	return connPool, nil
 }

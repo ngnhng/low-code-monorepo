@@ -2,27 +2,32 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"go.uber.org/fx"
 
 	env "github.com/caarlos0/env/v10"
+	dotenv "github.com/joho/godotenv"
 )
 
 var Module = fx.Module(
 	"config",
-	fx.Options(
-		fx.Provide(NewConfig),
-	),
+	fx.Provide(NewConfig),
 )
 
-func NewConfig() (Config, error) {
+func NewConfig() (*Config, error) {
+	err := dotenv.Load(os.Getenv("YALC_ENV_FILE"))
+	if err != nil {
+		panic(err)
+	}
 
 	cfg := &Config{}
 	if err := env.ParseWithOptions(cfg, env.Options{
-		Prefix: Prefix,
+		Prefix:          Prefix,
+		RequiredIfNoDef: true,
 	}); err != nil {
-		return Config{}, err
+		panic(err)
 	}
-	fmt.Print(cfg)
-	return *cfg, nil
+	fmt.Println(cfg)
+	return cfg, nil
 }

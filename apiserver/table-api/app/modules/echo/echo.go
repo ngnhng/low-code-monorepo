@@ -23,7 +23,7 @@ type (
 	Params struct {
 		fx.In
 
-		Config config.Config
+		Config *config.Config
 		Logger logger.Logger
 	}
 
@@ -57,7 +57,7 @@ func (cv *CustomValidator) Validate(i any) error {
 }
 
 // New creates a new EchoHTTPServer
-func New(p Params) *EchoHTTPServer {
+func NewEchoServer(p Params) *EchoHTTPServer {
 	e := echo.New()
 	e.Validator = &CustomValidator{}
 

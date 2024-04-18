@@ -47,20 +47,27 @@ func (ec *EchoController) CreateDatabase(args ...interface{}) error {
 		return errors.New("first argument is not of type echo.Context")
 	}
 
-	cc, ok := c.(*echo.EchoContext)
-	if !ok {
-		return errors.New("context is not of type *echo.EchoContext")
+	cc := &echo.EchoContext{
+		Context: c,
 	}
 
-	dbName := c.QueryParam("name")
+	// TODO: move to domain and add validation
+	var body struct {
+		Name string `json:"name"`
+	}
+
+	// get database name from request body
+	if err := c.Bind(&body); err != nil {
+		return err
+	}
 
 	// call usecase
-	err := ec.CreateDatabaseUC.Execute(cc, dbName)
+	err := ec.CreateDatabaseUC.Execute(cc, body.Name)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(200, "Database created")
+	return c.JSON(201, "Database created")
 }
 
 func (ec *EchoController) ListTables(args ...interface{}) error {
@@ -73,9 +80,8 @@ func (ec *EchoController) ListTables(args ...interface{}) error {
 		return errors.New("first argument is not of type echo.Context")
 	}
 
-	cc, ok := c.(*echo.EchoContext)
-	if !ok {
-		return errors.New("context is not of type *echo.EchoContext")
+	cc := &echo.EchoContext{
+		Context: c,
 	}
 
 	projectId := c.Param("projectId")
