@@ -28,7 +28,7 @@ type (
 )
 
 func NewRedisClient(p Param) Result {
-	dbConfig := p.Config.GetRedisDatabase()
+	dbConfig := p.Config.GetConfig().RedisDatabase
 	return Result{
 		RedisClient: &RedisClient{
 			Client: redis.NewClient(&redis.Options{

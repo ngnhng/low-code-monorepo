@@ -33,15 +33,15 @@ func GetModule() fx.Option {
 
 // NewGoogleProvider creates a new GoogleProvider with the specified client ID and secret.
 func NewGoogleProvider(p Params) (Result, error) {
-	if p.Config.OAuth2.Provider.Google.ClientID == "" ||
-		p.Config.OAuth2.Provider.Google.ClientSecret == "" ||
-		p.Config.OAuth2.Provider.Google.RedirectURL == "" {
+	if p.Config.OAuth.Google.ClientID == "" ||
+		p.Config.OAuth.Google.ClientSecret == "" ||
+		p.Config.OAuth.Google.RedirectURL == "" {
 		return Result{}, errors.New("missing google oauth2 provider configuration")
 	}
 
-	clientID := p.Config.OAuth2.Provider.Google.ClientID
-	clientSecret := p.Config.OAuth2.Provider.Google.ClientSecret
-	redirectURL := p.Config.OAuth2.Provider.Google.RedirectURL
+	clientID := p.Config.OAuth.Google.ClientID
+	clientSecret := p.Config.OAuth.Google.ClientSecret
+	redirectURL := p.Config.OAuth.Google.RedirectURL
 
 	config := &oauth2.Config{
 		ClientID:     clientID,

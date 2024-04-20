@@ -26,7 +26,9 @@ import { ApiConfigService } from './shared/services/api-config.service';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      ...(process.env.YALC_ENV_FILE
+        ? { envFilePath: process.env.YALC_ENV_FILE }
+        : {}),
     }),
     SharedModule,
     UserModule,

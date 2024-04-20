@@ -4,8 +4,11 @@ export interface Configuration {
 }
 
 export interface DatabaseConfig {
+  user: string;
+  password: string;
   host: string;
   port: number;
+  dbName: string;
   uri: string;
 }
 
@@ -36,8 +39,8 @@ export interface PASETO {
 
 export interface AuthConfig {
   strategy: string;
-  jwt: JWT;
-  paseto: PASETO;
+  jwt?: JWT;
+  paseto?: PASETO;
 }
 
 export interface AppConfig {
