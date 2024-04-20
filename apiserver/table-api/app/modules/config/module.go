@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	"go.uber.org/fx"
@@ -16,10 +15,7 @@ var Module = fx.Module(
 )
 
 func NewConfig() (*Config, error) {
-	err := dotenv.Load(os.Getenv("YALC_ENV_FILE"))
-	if err != nil {
-		panic(err)
-	}
+	dotenv.Load(os.Getenv("YALC_ENV_FILE"))
 
 	cfg := &Config{}
 	if err := env.ParseWithOptions(cfg, env.Options{
@@ -28,6 +24,5 @@ func NewConfig() (*Config, error) {
 	}); err != nil {
 		panic(err)
 	}
-	fmt.Println(cfg)
 	return cfg, nil
 }

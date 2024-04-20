@@ -40,6 +40,5 @@ type (
 		Password string `env:"PASSWORD"`
 		Host     string `env:"HOST"`
 		Port     string `env:"PORT"`
-		DBName   string `env:"DB"`
 	}
 )

@@ -193,7 +193,7 @@ func NewGoogleSheetUseCase(p GoogleSheetParams) *GoogleSheetUseCase {
 		Logger: p.Logger,
 		Config: p.Config,
 		ApiService: apiservice.NewApiService(apiservice.ApiServiceConfig{
-			BaseUrl: p.Config.GetApiConfig().AuthApiBaseUrl,
+			BaseUrl: p.Config.GetConfig().ApiConfig.AuthApiBaseUrl,
 		}),
 	}
 }
@@ -214,7 +214,7 @@ func (uc *GoogleSheetUseCase) GetSheetData(ctx context.Context, sheetId string, 
 		"exp":   time.Now().Add(time.Minute * 5).Unix(),
 	}
 
-	at, err := atk.SignedString([]byte(uc.Config.GetJwtSecret()))
+	at, err := atk.SignedString([]byte(uc.Config.GetConfig().JwtSecret))
 	if err != nil {
 		return nil, err
 	}
@@ -273,7 +273,7 @@ func (uc *GoogleSheetUseCase) AppendData(ctx context.Context, sheetId string, ra
 		"exp":   time.Now().Add(time.Minute * 5).Unix(),
 	}
 
-	at, err := atk.SignedString([]byte(uc.Config.GetJwtSecret()))
+	at, err := atk.SignedString([]byte(uc.Config.GetConfig().JwtSecret))
 	if err != nil {
 		return err
 	}

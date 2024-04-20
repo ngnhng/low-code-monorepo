@@ -45,7 +45,7 @@ type (
 func NewExecutionLogger(p Params) (*ExecutionLogger, error) {
 	ctx := context.Background()
 
-	conn, err := nats.Connect(p.Config.GetNatsURL())
+	conn, err := nats.Connect(p.Config.GetConfig().NatsURL)
 	if err != nil {
 		return nil, err
 	}

@@ -53,65 +53,78 @@ export class ApiConfigService {
 
   get app(): AppConfig {
     return {
-      port: this.getNumber('PORT'),
-      clientUrl: this.getString('CLIENT_URL'),
+      port: this.getNumber('YALC_APP_SERVICE_HTTP_PORT'),
+      clientUrl: this.getString('YALC_APP_FRONTEND_BASE_URL'),
     };
   }
 
   get database(): DatabaseConfig {
     return {
-      host: this.getString('DATABASE_HOST'),
-      port: this.getNumber('DATABASE_PORT'),
-      uri: this.getString('DATABASE_URI'),
+      user: this.getString('YALC_DATABASE_POSTGRES_USER'),
+      password: this.getString('YALC_DATABASE_POSTGRES_PASSWORD'),
+      host: this.getString('YALC_DATABASE_POSTGRES_HOST'),
+      port: this.getNumber('YALC_DATABASE_POSTGRES_PORT'),
+      dbName: this.getString('YALC_DATABASE_POSTGRES_USER_DB'),
+      uri: `postgres://${this.getString(
+        'YALC_DATABASE_POSTGRES_USER',
+      )}:${this.getString('YALC_DATABASE_POSTGRES_PASSWORD')}@${this.getString(
+        'YALC_DATABASE_POSTGRES_HOST',
+      )}:${this.getNumber('YALC_DATABASE_POSTGRES_PORT')}/${this.getString(
+        'YALC_DATABASE_POSTGRES_USER_DB',
+      )}`,
     };
   }
 
   get oauth(): OAuth {
     return {
-      clientUrl: this.getString('CLIENT_URL'),
+      clientUrl: this.getString('YALC_APP_FRONTEND_BASE_URL'),
       google: this.getOAuthGoogle(),
     };
   }
 
   get jwt(): JWT {
     return {
-      secret: this.getString('JWT_SECRET'),
-      expiresIn: this.getString('JWT_EXPIRES_IN'),
-      accessTokenExpiresIn: this.getString('JWT_ACCESS_TOKEN_EXPIRES_IN'),
-      refreshTokenExpiresIn: this.getString('JWT_REFRESH_TOKEN_EXPIRES_IN'),
+      secret: this.getString('YALC_AUTH_JWT_SECRET_AT_KEY'),
+      expiresIn: this.getString('YALC_AUTH_JWT_SECRET_AT_EXPIRATION'),
+      accessTokenExpiresIn: this.getString(
+        'YALC_AUTH_JWT_SECRET_AT_EXPIRATION',
+      ),
+      refreshTokenExpiresIn: this.getString(
+        'YALC_AUTH_JWT_SECRET_RT_EXPIRATION',
+      ),
     };
   }
 
-  get paseto(): PASETO {
-    const secret = this.getString('PASETO_SECRET');
+  //  get paseto(): PASETO {
+  //    const secret = this.getString('PASETO_SECRET');
 
-    if (!this.is32BytesSymmetricKey(secret)) {
-      throw new Error(
-        'PASETO_SECRET environment variable must be a 32 bytes long base64 string',
-      );
-    }
+  //    if (!this.is32BytesSymmetricKey(secret)) {
+  //      throw new Error(
+  //        'PASETO_SECRET environment variable must be a 32 bytes long base64 string',
+  //      );
+  //    }
 
-    return {
-      secret,
-      expiresIn: this.getString('PASETO_EXPIRES_IN'),
-      accessTokenExpiresIn: this.getString('PASETO_ACCESS_TOKEN_EXPIRES_IN'),
-      refreshTokenExpiresIn: this.getString('PASETO_REFRESH_TOKEN_EXPIRES_IN'),
-    };
-  }
+  //    return {
+  //      secret,
+  //      expiresIn: this.getString('PASETO_EXPIRES_IN'),
+  //      accessTokenExpiresIn: this.getString('PASETO_ACCESS_TOKEN_EXPIRES_IN'),
+  //      refreshTokenExpiresIn: this.getString('PASETO_REFRESH_TOKEN_EXPIRES_IN'),
+  //    };
+  //  }
 
   get authConfig(): AuthConfig {
     return {
-      strategy: this.getString('AUTH_STRATEGY'),
+      strategy: this.getString('YALC_AUTH_STRATEGY'),
       jwt: this.jwt,
-      paseto: this.paseto,
+      //  paseto: this.paseto,
     };
   }
 
   private getOAuthGoogle(): OAuthGoogle {
     return {
-      clientId: this.getString('GOOGLE_CLIENT_ID'),
-      clientSecret: this.getString('GOOGLE_CLIENT_SECRET'),
-      redirectUri: this.getString('GOOGLE_REDIRECT_URI'),
+      clientId: this.getString('YALC_OAUTH_GOOGLE_CLIENT_ID'),
+      clientSecret: this.getString('YALC_OAUTH_GOOGLE_CLIENT_SECRET'),
+      redirectUri: this.getString('YALC_OAUTH_GOOGLE_REDIRECT_URI'),
     };
   }
 
