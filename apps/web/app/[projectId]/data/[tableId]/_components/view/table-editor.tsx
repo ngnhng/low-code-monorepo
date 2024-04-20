@@ -6,9 +6,10 @@ import {
   textColumn,
   keyColumn,
   intColumn,
-  dateColumn,
+  // dateColumn,
   DynamicDataSheetGrid,
   AddRowsComponentProps,
+  isoDateColumn,
 } from "react-datasheet-grid";
 import "react-datasheet-grid/dist/style.css";
 import { Operation } from "react-datasheet-grid/dist/types";
@@ -318,7 +319,7 @@ const colTypeMapper = (
       return LinkColumnCell(columnData, tableId);
     }
     case "date": {
-      return dateColumn;
+      return isoDateColumn;
     }
     default: {
       return textColumn;
