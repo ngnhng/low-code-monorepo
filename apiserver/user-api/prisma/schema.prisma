@@ -3,6 +3,7 @@
 // * [NOTE]: To migrate to database, run `npx prisma migrate dev` - maybe can be added to script to run with docker up/down
 // * [NOTE]: To view database, run `npx prisma studio`
 
+// 
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,120 +15,97 @@ datasource db {
 }
 
 model User {
-  id        Int    @id @default(autoincrement())
-  uuid      String @unique @default(uuid())
-  lastName  String
-  firstName String
+  id   Int    @id @default(autoincrement())
+  uuid String @unique @default(uuid())
+
   email     String @unique
+  firstName String
+  lastName  String
 
-  // provider ThirdParty?
+  projects  Project[]
+  workflows Workflow[]
+  tables    Table[]
 
-  projects Project[]
-  // businessProcesses BusinessProcess[]
-  // connections       ConnectionConfiguration[]
-
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
-// model ThirdParty {
-//   id                   Int      @id @default(autoincrement())
-//   provider             String
-//   provider_id          String   @unique @default(uuid()) // consider remove
-//   accessToken          String
-//   user                 User     @relation(fields: [userId], references: [uuid])
-//   userId               String   @unique
-//   accessTokenExpiredAt DateTime
-// }
 
 model Project {
-  id    Int    @id @default(autoincrement())
+  id  Int    @id @default(autoincrement())
+  pid String @unique
+
   title String
-  view  Json
 
-  user   User   @relation(fields: [userId], references: [uuid])
-  userId String
+  views     View[]
+  tables    Table[]
+  workflows Workflow[]
 
-  // businessProcesses ProcessesOfProjects[]
-  // connections       ConnectionsOnProjects[]
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
-// model BusinessProcess {
-//   id    Int    @id @default(autoincrement())
-//   title String
-//   view  Json
+model Workflow {
+  id  Int    @id @default(autoincrement())
+  wid String @unique
 
-//   user   User   @relation(fields: [userId], references: [uuid])
-//   userId String
+  title String
 
-//   projects ProcessesOfProjects[]
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId Int?
 
-//   createAt DateTime @default(now())
-//   updateAt DateTime @updatedAt
-// }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-// model ProcessesOfProjects {
-//   project   Project         @relation(fields: [projectId], references: [id])
-//   projectId Int
-//   process   BusinessProcess @relation(fields: [processId], references: [id])
-//   processId Int
+  @@index([userId])
+  @@index([projectId])
+}
 
-//   @@id([projectId, processId])
-// }
+model View {
+  id Int @id @default(autoincrement())
 
-// model ExternalDatasource {
-//   id           Int    @id @default(autoincrement())
-//   databaseName String
+  uiData Json
 
-//   connections ConnectionConfiguration[]
-// }
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId Int
 
-// model ConnectionConfiguration {
-//   id   Int    @id @default(autoincrement())
-//   name String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-//   type String
+  @@index([projectId])
+}
 
-//   // as localhost/etc
-//   host         String
-//   port         String
-//   DatabaseName String
-//   Username     String
-//   Password     String
+model Table {
+  id  Int    @id @default(autoincrement())
+  tid String @unique
 
-//   // other
-//   connectionString String
+  tableName String
+  tableData Json
 
-//   permission String
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId Int?
 
-//   user                User                    @relation(fields: [userId], references: [uuid])
-//   userId              String
-//   exeternalDatasource ExternalDatasource      @relation(fields: [exDatasourceId], references: [id])
-//   exDatasourceId      Int
-//   projects            ConnectionsOnProjects[]
-// }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-// model ConnectionsOnProjects {
-//   project      Project                 @relation(fields: [projectId], references: [id])
-//   projectId    Int
-//   connection   ConnectionConfiguration @relation(fields: [connectionId], references: [id])
-//   connectionId Int
+  @@index([userId])
+  @@index([projectId])
+}
 
-//   @@id([projectId, connectionId])
-// }
+model DataIntegration {
+  id Int @id @default(autoincrement())
 
-// ! Consider models
-// model Component {
+  datasourceType String
+  datasourceMetadata Json
 
-// }
-
-// model BusinessLogic {
-
-// }
-
-// model Configuration {
-
-// }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
