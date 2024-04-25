@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import axios from "axios";
+import moment from "moment";
+import path from "node:path";
+import fs from "node:fs";
+import fsa from "node:fs/promises";
+
+// import { fromExcelDate } from "js-excel-date-convert";
+
 import { NextRequest, NextResponse } from "next/server";
-import { ColumnDef, RowDef } from "types/table-data";
+import { ColumnDef, ColumnType, RowDef } from "types/table-data";
 
 export async function POST(request: NextRequest) {
   const bearerToken = getBearerToken(
@@ -29,7 +36,7 @@ export async function POST(request: NextRequest) {
   console.log("Google AT:", atRes.data);
 
   const sheetData = await axios.get(
-    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetsId}/values/${sheetRange}`,
+    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetsId}/values/${sheetRange}?majorDimension=COLUMNS&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`,
     {
       headers: {
         Authorization: `Bearer ${atRes.data.access_token}`,
@@ -37,9 +44,13 @@ export async function POST(request: NextRequest) {
     }
   );
 
+  console.log("Raw Sheet:", sheetData.data.values);
+
   console.log(
-    "Google Sheet:",
-    temporaryFormatGoogleSheetData(sheetData.data.values, spreadsheetsId)
+    "Transform Sheet:",
+    formatSheetData(sheetData.data.values, sheetRange, {
+      headerTitle: true,
+    })
   );
 
   return NextResponse.json(sheetData.data.values);
@@ -59,59 +70,133 @@ function getBearerToken(authorizationHeader: string): string | undefined {
   return parts[1];
 }
 
-function temporaryFormatGoogleSheetData(
-  sheetData: string[][],
-  spreadsheetsId: string
-) {
+// IN CASE: SHEET DATA OF USER CONTAINES LITTLE ERROR (NULL DATA, etc.)
+function formatSheetData(sheetData: any[], range: string, options: any) {
   if (sheetData.length === 0 || !sheetData[0]) {
     return;
   }
 
-  // Create columns
-  const numberOfColumns = sheetData[0].length;
-  const tempColumns: ColumnDef[] = [];
+  // columns process
+  const rangeResult = getRangeDimensions(range.split("!")[1]!);
+  const indexRow = options.headerTitle === false ? 0 : 1;
+  const indexCol = 0;
 
-  for (let i = 0; i < numberOfColumns; i++) {
-    tempColumns.push({
-      id: `col-${i}`,
-      label: `Column ${i}`,
-      type: "text",
+  if (!rangeResult) {
+    return;
+  }
+
+  const columns: ColumnDef[] = [];
+  for (let i = indexCol; i < rangeResult.columns; i++) {
+    let type;
+    let index = indexRow;
+
+    while (type === undefined) {
+      if (sheetData[i]![index] !== undefined && sheetData[i]![index] !== "") {
+        if (typeof sheetData[i]![index] === "string") {
+          type = moment(sheetData[i]![index], [
+            "MMM/DD/YYYY",
+            "MM-DD-YYYY",
+            "DD-MMM-YYYY",
+            "YYYY-MM-DD",
+            "DD-MM-YYYY",
+          ]).isValid()
+            ? "date"
+            : "text";
+        }
+
+        if (typeof sheetData[i]![index] === "number") {
+          type = "number";
+        }
+
+        if (typeof sheetData[i]![index] === "boolean") {
+          type = "boolean";
+        }
+
+        index = 0;
+        break;
+      }
+      index++;
+    }
+
+    const column: ColumnDef = {
+      id:
+        options.headerTitle === false
+          ? `col-${i}`
+          : `${sheetData[i]![0]?.toLowerCase()}`,
+      label:
+        options.headerTitle === false ? `Column ${i}` : `${sheetData[i]![0]}`,
+      type: type,
       isActive: true,
       isPrimaryKey: true,
       isForeignKey: false,
       foreignKeyId: "",
-    });
+    };
+
+    columns.push(column);
   }
 
-  // Create rows
+  // rows process
   const rows: RowDef[] = [];
-  // eslint-disable-next-line unicorn/no-for-loop
-  for (let i = 0; i < sheetData.length; i++) {
-    if (!sheetData[i]) {
-      continue;
+  for (let i = indexRow; i < rangeResult.rows; i++) {
+    const row: RowDef = {
+      id: indexRow === 0 ? i + 1 : i,
+    };
+
+    for (let j = indexCol; j < rangeResult.columns; j++) {
+      if (columns[j]?.type === "text") {
+        row[`${columns[j]?.id}`] = sheetData[j]![i].toString();
+      }
+
+      if (columns[j]?.type === "number") {
+        row[`${columns[j]?.id}`] = sheetData[j]![i];
+      }
+
+      if (columns[j]?.type === "boolean") {
+        row[`${columns[j]?.id}`] = Boolean(sheetData[j]![i]);
+      }
+
+      if (columns[j]?.type === "date") {
+        row[`${columns[j]?.id}`] = moment(sheetData[j]![i], [
+          "MMM/DD/YYYY",
+          "MM-DD-YYYY",
+          "DD-MMM-YYYY",
+          "YYYY-MM-DD",
+          "DD-MM-YYYY",
+        ]).format("YYYY-MM-DD");
+      }
     }
 
-    rows.push({
-      id: i + 1,
-      ...combineArraysToObject(tempColumns, sheetData[i]!),
-    });
+    rows.push(row);
   }
 
-  const response = {
-    columns: tempColumns,
+  return {
+    columns: columns,
     rows: rows,
   };
-
-  return response;
 }
 
-function combineArraysToObject(
-  ids: ColumnDef[],
-  values: string[]
-): { [key: string]: string } {
-  if (ids.length !== values.length) {
-    throw new Error("Arrays must have the same length");
+function getRangeDimensions(
+  range: string
+): { rows: number; columns: number } | undefined {
+  const [startCell, endCell] = range.split(":");
+
+  if (!startCell) {
+    return;
   }
 
-  return Object.fromEntries(ids.map((id, index) => [id.id, values[index]!]));
+  if (!endCell) {
+    return;
+  }
+
+  const startRow = Number.parseInt(startCell.slice(1), 10);
+  const startCol = startCell.codePointAt(0)! - 65;
+  const endRow = Number.parseInt(endCell.slice(1), 10);
+  const endCol = endCell.codePointAt(0)! - 65;
+
+  const rows = endRow - startRow + 1;
+  const columns = endCol - startCol + 1;
+
+  return { rows, columns };
 }
+
+function tempJSONWriter() {}
