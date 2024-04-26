@@ -95,22 +95,22 @@ export class ApiConfigService {
     };
   }
 
-  //  get paseto(): PASETO {
-  //    const secret = this.getString('PASETO_SECRET');
+  get paseto(): PASETO {
+    const secret = this.getString('PASETO_SECRET');
 
-  //    if (!this.is32BytesSymmetricKey(secret)) {
-  //      throw new Error(
-  //        'PASETO_SECRET environment variable must be a 32 bytes long base64 string',
-  //      );
-  //    }
+    if (!this.is32BytesSymmetricKey(secret)) {
+      throw new Error(
+        'PASETO_SECRET environment variable must be a 32 bytes long base64 string',
+      );
+    }
 
-  //    return {
-  //      secret,
-  //      expiresIn: this.getString('PASETO_EXPIRES_IN'),
-  //      accessTokenExpiresIn: this.getString('PASETO_ACCESS_TOKEN_EXPIRES_IN'),
-  //      refreshTokenExpiresIn: this.getString('PASETO_REFRESH_TOKEN_EXPIRES_IN'),
-  //    };
-  //  }
+    return {
+      secret,
+      expiresIn: this.getString('PASETO_EXPIRES_IN'),
+      accessTokenExpiresIn: this.getString('PASETO_ACCESS_TOKEN_EXPIRES_IN'),
+      refreshTokenExpiresIn: this.getString('PASETO_REFRESH_TOKEN_EXPIRES_IN'),
+    };
+  }
 
   get authConfig(): AuthConfig {
     return {
@@ -133,6 +133,6 @@ export class ApiConfigService {
   }
 
   private isByteLengthEqual(key: string, length: number): boolean {
-    return Buffer.byteLength(key, 'utf-8') === length;
+    return Buffer.byteLength(key, 'utf8') === length;
   }
 }
