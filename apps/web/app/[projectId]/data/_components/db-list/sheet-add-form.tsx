@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
   Button,
+  Checkbox,
   Form,
   FormControl,
   FormDescription,
@@ -27,6 +28,7 @@ const formSchema = z.object({
     .string()
     .regex(new RegExp(/^([\w-]+)+$/), "Must be a valid spreadsheet identifier"),
   sheetRange: z.string(),
+  headerTitle: z.boolean().default(true),
 });
 
 export const SheetAddForm = () => {
@@ -36,8 +38,7 @@ export const SheetAddForm = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      spreadsheetsId: "",
-      sheetRange: "",
+      headerTitle: true,
     },
   });
 
@@ -104,6 +105,28 @@ export const SheetAddForm = () => {
                 <FormDescription>
                   Format:<span className="text-rose-500"> SheetId!A1:B10</span>
                 </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="headerTitle"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Header Title?</FormLabel>
+                  <FormDescription>
+                    Is your first row a title row?
+                  </FormDescription>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
