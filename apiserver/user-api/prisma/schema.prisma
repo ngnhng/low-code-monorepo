@@ -44,7 +44,7 @@ model Project {
   userId Int
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@index([userId])
 }
@@ -61,7 +61,7 @@ model Workflow {
   projectId Int?
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@index([userId])
   @@index([projectId])
@@ -76,7 +76,7 @@ model View {
   projectId Int
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@index([projectId])
 }
@@ -94,10 +94,11 @@ model Table {
   projectId Int?
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   @@index([userId])
   @@index([projectId])
+  @@unique([projectId, tableName])
 }
 
 model DataIntegration {
@@ -107,5 +108,5 @@ model DataIntegration {
   datasourceMetadata Json
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 }
