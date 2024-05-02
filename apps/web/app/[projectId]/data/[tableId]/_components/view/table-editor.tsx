@@ -24,7 +24,15 @@ type CommitFunc = (
   // eslint-disable-next-line no-unused-vars
   localData: RowDef[],
   // eslint-disable-next-line no-unused-vars
+  addedRowIds: Set<number>,
+  // eslint-disable-next-line no-unused-vars
   deletedRowIds: Set<number>,
+  // eslint-disable-next-line no-unused-vars
+  updatedRowIds: Set<number>,
+  createdColumns: Set<ColumnDef>,
+  // addedRows: Set<RowDef>,
+  // deletedRows: Set<RowDef>,
+  // updatedRows: Set<RowDef>,
   // eslint-disable-next-line no-unused-vars
   newReferenceTableId: any
 ) => void;
@@ -59,6 +67,9 @@ export const TableEditor = ({
   const createdRowIds = useMemo(() => new Set<number>(), [tableId]);
   const deletedRowIds = useMemo(() => new Set<number>(), [tableId]);
   const updatedRowIds = useMemo(() => new Set<number>(), [tableId]);
+  const createdColumns = useMemo(() => new Set<ColumnDef>(), [tableId]);
+
+  // const addedRows = useMemo(() => new Set<RowDef>(), [tableId]);
 
   const createdColumn = useMemo(() => new Set<string>(), [tableId]);
   const deletedColumn = useMemo(() => new Set<string>(), [tableId]);
@@ -138,6 +149,9 @@ export const TableEditor = ({
   const discardData = () => {
     setLocalData(tableData.rows);
     setLocalColumns(tableData.columns);
+    updatedRowIds.clear();
+    createdRowIds.clear();
+    deletedRowIds.clear();
     setNewReferenceTableId([]);
   };
 
@@ -157,6 +171,9 @@ export const TableEditor = ({
         localColumns={localColumns}
         localData={localData}
         deletedRowIds={deletedRowIds}
+        updatedRowIds={updatedRowIds}
+        addedRowIds={createdRowIds}
+        createdColumns={createdColumns}
         newReferenceTableId={newReferenceTableId}
         setNewReferenceTableId={setNewReferenceTableId}
         tableId={tableId}

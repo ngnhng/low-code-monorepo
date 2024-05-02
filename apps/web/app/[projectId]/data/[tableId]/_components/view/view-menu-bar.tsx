@@ -15,6 +15,9 @@ interface ViewMenuBarProps {
   setLocalData: any;
   setNewReferenceTableId: any;
   deletedRowIds: Set<number>;
+  updatedRowIds: Set<number>;
+  addedRowIds: Set<number>;
+  createdColumns: Set<ColumnDef>;
   localColumns: ColumnDef[];
   localData: RowDef[];
   tableId: string;
@@ -28,6 +31,9 @@ export const ViewMenuBar = ({
   setLocalColumns,
   setLocalData,
   deletedRowIds,
+  updatedRowIds,
+  addedRowIds,
+  createdColumns,
   localColumns,
   localData,
   tableId,
@@ -43,7 +49,10 @@ export const ViewMenuBar = ({
             onCommit(
               localColumns,
               localData,
+              addedRowIds,
               deletedRowIds,
+              updatedRowIds,
+              createdColumns,
               newReferenceTableId
             )
           }
@@ -69,6 +78,7 @@ export const ViewMenuBar = ({
             setLocalData={setLocalData}
             tableId={tableId}
             setNewReferenceTableId={setNewReferenceTableId}
+            createdColumns={createdColumns}
           />
         </div>
       </div>

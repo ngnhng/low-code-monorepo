@@ -9,8 +9,8 @@ import { useMobxStore } from "lib/mobx/store-provider";
 import { ColumnDef, DataTable, RowDef } from "types/table-data";
 import { TableEditor } from "../_components/view/table-editor";
 
-import { toast } from "sonner";
-import axios from "axios";
+// import { toast } from "sonner";
+// import axios from "axios";
 
 export default function Page({
   params,
@@ -40,7 +40,10 @@ export default function Page({
   const handleCommit = async (
     localColumns: ColumnDef[],
     localData: RowDef[],
+    addedRowIds: Set<number>,
     deletedRowIds: Set<number>,
+    updatedRowIds: Set<number>,
+    createdColumns: Set<ColumnDef>,
     newReferenceTable
   ) => {
     const filteredData =
@@ -49,26 +52,44 @@ export default function Page({
         : localData;
 
     try {
-      await axios.put(`/api/mock/${params.projectId}/data/${params.tableId}`, {
+      // await axios.put(`/api/mock/${params.projectId}/data/${params.tableId}`, {
+      //   data: {
+      //     columns: localColumns,
+      //     rows: filteredData,
+      //   },
+      //   newReferenceTableIds: newReferenceTable,
+      // });
+
+      const changeLogs = {
+        addedRows: addedRowIds,
+        deletedRows: deletedRowIds,
+        updatedRows: updatedRowIds,
+        addedColumns: createdColumns,
+      };
+
+      const submitData = {
         data: {
           columns: localColumns,
           rows: filteredData,
         },
         newReferenceTableIds: newReferenceTable,
-      });
+        changeLogs: changeLogs,
+      };
 
-      toast.success(
-        `Table has been updated at: /api/mock/${params.projectId}/data/${params.tableId} `,
-        {
-          description: (
-            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-              <code className="text-white">
-                {JSON.stringify(newReferenceTable, undefined, 2)}
-              </code>
-            </pre>
-          ),
-        }
-      );
+      console.log("[SUBMIT_DATA]:", submitData);
+
+      // toast.success(
+      //   `Table has been updated at: /api/mock/${params.projectId}/data/${params.tableId} `,
+      //   {
+      //     description: (
+      //       <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+      //         <code className="text-white">
+      //           {JSON.stringify(newReferenceTable, undefined, 2)}
+      //         </code>
+      //       </pre>
+      //     ),
+      //   }
+      // );
       mutate();
     } catch (error) {
       console.error("Something went wrong when committing", error);
