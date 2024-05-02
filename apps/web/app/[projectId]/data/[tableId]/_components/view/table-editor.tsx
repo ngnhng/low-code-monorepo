@@ -98,7 +98,7 @@ export const TableEditor = ({
 
     const columns = localColumns.map((element) => createColumn(element));
 
-    setFields(columns);
+    setFields(columns.filter((column) => column.id !== "id"));
   }, [localColumns, tableId]);
 
   // eslint-disable-next-line unicorn/consistent-function-scoping
