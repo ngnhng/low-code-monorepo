@@ -89,7 +89,22 @@ export const conf: Config<
 
 export const initialData: Record<string, Data> = {
   "/": {
-    content: [],
+    content: [{
+      props: {
+        id: "Form-18aec31e-a9e1-426c-9197-682c003bb095",
+        inputs: [
+          {
+            label: "Label",
+            type: "string",
+            id: {
+              value: "FFE3"
+            }
+          }
+        ],
+        workflowId: ""
+      },
+      type: "Form"
+    }],
     root: { props: { title: "Test" } },
     zones: {},
   },
