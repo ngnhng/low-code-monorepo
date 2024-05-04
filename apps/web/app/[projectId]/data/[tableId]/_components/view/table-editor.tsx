@@ -198,8 +198,6 @@ export const TableEditor = ({
               ),
             };
 
-            console.log(rowReturn);
-
             return {
               ...rowReturn,
               id: genId(),

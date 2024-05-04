@@ -9,8 +9,8 @@ import { useMobxStore } from "lib/mobx/store-provider";
 import { ColumnDef, DataTable, RowDef } from "types/table-data";
 import { TableEditor } from "../_components/view/table-editor";
 
-// import { toast } from "sonner";
-// import axios from "axios";
+import { toast } from "sonner";
+import axios from "axios";
 
 export default function Page({
   params,
@@ -52,13 +52,13 @@ export default function Page({
         : localData;
 
     try {
-      // await axios.put(`/api/mock/${params.projectId}/data/${params.tableId}`, {
-      //   data: {
-      //     columns: localColumns,
-      //     rows: filteredData,
-      //   },
-      //   newReferenceTableIds: newReferenceTable,
-      // });
+      await axios.put(`/api/mock/${params.projectId}/data/${params.tableId}`, {
+        data: {
+          columns: localColumns,
+          rows: filteredData,
+        },
+        newReferenceTableIds: newReferenceTable,
+      });
 
       const changeLogs = {
         addedRows: addedRowIds,
@@ -68,24 +68,24 @@ export default function Page({
       };
 
       const submitData = {
-        ...processEditLogData(localColumns, filteredData, changeLogs),
+        ...processEditLogData(filteredData, changeLogs),
         newReferenceTable,
       };
 
       console.log("[SUBMIT_DATA]:", submitData);
 
-      // toast.success(
-      //   `Table has been updated at: /api/mock/${params.projectId}/data/${params.tableId} `,
-      //   {
-      //     description: (
-      //       <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-      //         <code className="text-white">
-      //           {JSON.stringify(newReferenceTable, undefined, 2)}
-      //         </code>
-      //       </pre>
-      //     ),
-      //   }
-      // );
+      toast.success(
+        `Table has been updated at: /api/mock/${params.projectId}/data/${params.tableId} `,
+        {
+          description: (
+            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+              <code className="text-white">
+                {JSON.stringify(newReferenceTable, undefined, 2)}
+              </code>
+            </pre>
+          ),
+        }
+      );
       mutate();
     } catch (error) {
       console.error("Something went wrong when committing", error);
@@ -122,21 +122,44 @@ type finalEditLogType = {
       [key: string]: any;
     };
   }[];
-  deletedRows: string[];
+  deletedRows: number[];
+  addedColumns: any;
 };
 
 function processEditLogData(
-  localColumns: ColumnDef[],
   localData: RowDef[],
   editLog: editLogType
 ): finalEditLogType {
-  const addedRows = localData.filter((row) => editLog.addedRows.has(row.id));
-  // const updatedRows = localData.filter((row) => editLog.updatedRows.has(row.id));
-  // const deletedRows = localData.filter((row) => editLog.deletedRows.has(row.id));
+  const addedRows = localData
+    .filter((row) => editLog.addedRows.has(row.id))
+    .map((row) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, ...rest } = row;
+      return rest;
+    });
+  const updatedRows = localData
+    .filter((row) => editLog.updatedRows.has(row.id))
+    .map((row) => {
+      const { id, ...rest } = row;
+      return {
+        id: id.toString(),
+        values: rest,
+      };
+    });
+  const deletedRows = [...editLog.deletedRows];
+  const addedColumns = [...editLog.addedColumns].map((column) => {
+    const { label, type } = column;
+
+    return {
+      name: label,
+      type: type,
+    };
+  });
 
   return {
     addedRows: addedRows,
-    updatedRows: [],
-    deletedRows: [],
+    updatedRows: updatedRows,
+    deletedRows: deletedRows,
+    addedColumns: addedColumns,
   };
 }
