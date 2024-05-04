@@ -68,12 +68,8 @@ export default function Page({
       };
 
       const submitData = {
-        data: {
-          columns: localColumns,
-          rows: filteredData,
-        },
-        newReferenceTableIds: newReferenceTable,
-        changeLogs: changeLogs,
+        ...processEditLogData(localColumns, filteredData, changeLogs),
+        newReferenceTable,
       };
 
       console.log("[SUBMIT_DATA]:", submitData);
@@ -107,4 +103,40 @@ export default function Page({
       />
     </div>
   );
+}
+
+type editLogType = {
+  addedRows: Set<number>;
+  deletedRows: Set<number>;
+  updatedRows: Set<number>;
+  addedColumns: Set<ColumnDef>;
+};
+
+type finalEditLogType = {
+  addedRows: {
+    [key: string]: any;
+  }[];
+  updatedRows: {
+    id: string;
+    values: {
+      [key: string]: any;
+    };
+  }[];
+  deletedRows: string[];
+};
+
+function processEditLogData(
+  localColumns: ColumnDef[],
+  localData: RowDef[],
+  editLog: editLogType
+): finalEditLogType {
+  const addedRows = localData.filter((row) => editLog.addedRows.has(row.id));
+  // const updatedRows = localData.filter((row) => editLog.updatedRows.has(row.id));
+  // const deletedRows = localData.filter((row) => editLog.deletedRows.has(row.id));
+
+  return {
+    addedRows: addedRows,
+    updatedRows: [],
+    deletedRows: [],
+  };
 }
