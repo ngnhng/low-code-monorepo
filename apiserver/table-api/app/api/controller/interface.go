@@ -8,10 +8,12 @@ type (
 
 	DatabaseManagerController interface {
 		CreateDatabase(...any) error
+		CreateTable(...any) error
 	}
 
 	DatabaseQuerierController interface {
 		ListTables(...any) error
+		QueryTable(...any) error
 	}
 )
 
