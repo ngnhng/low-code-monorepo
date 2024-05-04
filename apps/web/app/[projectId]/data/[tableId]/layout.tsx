@@ -15,7 +15,7 @@ export default function Layout({
   params: { tableId: string };
 }) {
   return (
-    <div className="h-full">
+    <div className="h-full flex-1">
       <Tabs defaultValue="view">
         <TabsList className="flex justify-between w-full px-4">
           <TextWithIcon icon={<Table />}>{params.tableId}</TextWithIcon>

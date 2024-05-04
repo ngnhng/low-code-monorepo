@@ -40,7 +40,10 @@ export default function Page({
   const handleCommit = async (
     localColumns: ColumnDef[],
     localData: RowDef[],
+    addedRowIds: Set<number>,
     deletedRowIds: Set<number>,
+    updatedRowIds: Set<number>,
+    createdColumns: Set<ColumnDef>,
     newReferenceTable
   ) => {
     const filteredData =
@@ -56,6 +59,20 @@ export default function Page({
         },
         newReferenceTableIds: newReferenceTable,
       });
+
+      const changeLogs = {
+        addedRows: addedRowIds,
+        deletedRows: deletedRowIds,
+        updatedRows: updatedRowIds,
+        addedColumns: createdColumns,
+      };
+
+      const submitData = {
+        ...processEditLogData(filteredData, changeLogs),
+        newReferenceTable,
+      };
+
+      console.log("[SUBMIT_DATA]:", submitData);
 
       toast.success(
         `Table has been updated at: /api/mock/${params.projectId}/data/${params.tableId} `,
@@ -86,4 +103,63 @@ export default function Page({
       />
     </div>
   );
+}
+
+type editLogType = {
+  addedRows: Set<number>;
+  deletedRows: Set<number>;
+  updatedRows: Set<number>;
+  addedColumns: Set<ColumnDef>;
+};
+
+type finalEditLogType = {
+  addedRows: {
+    [key: string]: any;
+  }[];
+  updatedRows: {
+    id: string;
+    values: {
+      [key: string]: any;
+    };
+  }[];
+  deletedRows: number[];
+  addedColumns: any;
+};
+
+function processEditLogData(
+  localData: RowDef[],
+  editLog: editLogType
+): finalEditLogType {
+  const addedRows = localData
+    .filter((row) => editLog.addedRows.has(row.id))
+    .map((row) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, ...rest } = row;
+      return rest;
+    });
+  const updatedRows = localData
+    .filter((row) => editLog.updatedRows.has(row.id))
+    .map((row) => {
+      const { id, ...rest } = row;
+      return {
+        id: id.toString(),
+        values: rest,
+      };
+    });
+  const deletedRows = [...editLog.deletedRows];
+  const addedColumns = [...editLog.addedColumns].map((column) => {
+    const { label, type } = column;
+
+    return {
+      name: label,
+      type: type,
+    };
+  });
+
+  return {
+    addedRows: addedRows,
+    updatedRows: updatedRows,
+    deletedRows: deletedRows,
+    addedColumns: addedColumns,
+  };
 }
