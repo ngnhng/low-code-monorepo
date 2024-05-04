@@ -92,7 +92,6 @@ func (c *NeonClient) GetListOfDatabases() (*http.Response, error) {
 
 func (c *NeonClient) CreateDatabase(name string) error {
 	// POST /projects/{project_id}/branches/{branch_id}/databases
-	// Body: {"database": {"name": "database_name", "owner_name": ""}}
 
 	// create the JSON body
 	// TODO: move to domain and add validation
@@ -120,4 +119,9 @@ func (c *NeonClient) CreateDatabase(name string) error {
 	}
 
 	return nil
+}
+
+func (c *NeonClient) GetDatabaseDetails(name string) (*http.Response, error) {
+	//GET projects/{project_id}/branches/{branch_id}/databases/{database_name}	// create a new request
+	return c.get(fmt.Sprintf("/projects/%s/branches/%s/databases/%s", c.projectId, c.branchId, name))
 }

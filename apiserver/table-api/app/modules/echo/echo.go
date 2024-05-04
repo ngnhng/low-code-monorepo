@@ -18,7 +18,9 @@ import (
 )
 
 type (
-	CustomValidator struct{}
+	CustomValidator struct {
+		Logger logger.Logger
+	}
 
 	Params struct {
 		fx.In
@@ -50,6 +52,7 @@ var _ shared.RequestContext = (*EchoContext)(nil)
 func (cv *CustomValidator) Validate(i any) error {
 	// check if i implements Object
 	if v, ok := i.(domain.Object); ok {
+		cv.Logger.Debug("Validating object", v)
 		return v.Validate()
 	}
 
@@ -59,7 +62,9 @@ func (cv *CustomValidator) Validate(i any) error {
 // New creates a new EchoHTTPServer
 func NewEchoServer(p Params) *EchoHTTPServer {
 	e := echo.New()
-	e.Validator = &CustomValidator{}
+	e.Validator = &CustomValidator{
+		Logger: p.Logger,
+	}
 
 	// Add custom context wrapper
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {

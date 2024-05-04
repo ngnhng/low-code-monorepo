@@ -18,7 +18,7 @@ type (
 
 type (
 	Secrets struct {
-		JwtSecret string `env:"JWT_SECRET" envDefault:"secret"`
+		JwtSecret string `env:"JWT_SECRET_AT_KEY"`
 	}
 
 	Neon struct {
@@ -40,5 +40,7 @@ type (
 		Password string `env:"PASSWORD"`
 		Host     string `env:"HOST"`
 		Port     string `env:"PORT"`
+
+		UserDatabase string `env:"USER_DB"`
 	}
 )
