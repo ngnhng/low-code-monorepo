@@ -22,10 +22,11 @@ export interface IWorkflowStore {
     modeler: any;
     activeElement: any;
 
-    currentExecutingWorkflowId: string;
+    currentWorkflowId: string;
     currentExecutingElementId: string;
     currentExecutingStatus: string;
 
+	setWorkflowId: (workflowId: string) => void;
     setCurrentWorkflow: (workflow: any) => void;
     getCurrentWorkflow: () => any;
     setModeler: (modeler: any) => void;
@@ -35,6 +36,7 @@ export interface IWorkflowStore {
 
     launchWorkflow: () => Promise<[string, boolean]>;
     fetchWorkflow: () => Promise<any>;
+	fetchWorkflowById: (workflowId: string) => Promise<any>;
     fetchWorkflowNameList: () => Promise<Set<string>>;
 
     // per user set names of the bpmn workflows
@@ -49,7 +51,7 @@ export class WorkflowStore {
     modeler: any;
     activeElement: any;
 
-    currentExecutingWorkflowId = "";
+    currentWorkflowId = "";
     currentExecutingElementId = "";
     currentExecutingStatus = "";
 
@@ -68,11 +70,12 @@ export class WorkflowStore {
             workflowName: observable,
             workflowNameList: observable,
             // js strings are immutable, so we can use observable instead of observable.ref
-            currentExecutingWorkflowId: observable,
+            currentWorkflowId: observable,
             currentExecutingElementId: observable,
             currentExecutingStatus: observable,
             //action
             //  setRenderer: action,
+			setWorkflowId: action,
             setCurrentWorkflow: action,
             setModeler: action,
             setActiveElement: action,
@@ -107,6 +110,10 @@ export class WorkflowStore {
     //  setRenderer = async (renderer: any) => {
     //    this.renderer = await this.workflowService.renderer();
     //  };
+
+	setWorkflowId = (workflowId: string) => {
+		this.currentWorkflowId = workflowId;
+	};
 
     setCurrentWorkflow = (workflow: any) => {
         this.currentWorkflow = workflow;
@@ -182,7 +189,6 @@ export class WorkflowStore {
         console.log(
             "fetchWorkflowByName",
             this.workflowName,
-            this.workflowName == "google-sheet-example"
         );
 
         switch (this.workflowName) {
@@ -214,4 +220,13 @@ export class WorkflowStore {
         });
         return response;
     };
+
+	fetchWorkflowById = async (workflowId: string): Promise<any> => {
+		console.log("fetchWorkflowById", workflowId);
+		const response = await this.workflowService.fetchWorkflowById(workflowId);
+		runInAction(() => {
+			this.currentWorkflow = response;
+		});
+		return response;
+	}
 }
