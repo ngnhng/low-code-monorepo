@@ -2,14 +2,18 @@ package shared
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
+	"time"
 
 	"yalc/dbms/domain"
 
 	"github.com/google/uuid"
 	"github.com/lithammer/shortuuid/v4"
+	"github.com/shopspring/decimal"
 
 	pgxdecimal "github.com/jackc/pgx-shopspring-decimal"
 	"github.com/jackc/pgx/v5"
@@ -100,4 +104,60 @@ func InSlice[id comparable](needle id, haystack []id) bool {
 		}
 	}
 	return false
+}
+
+func ParseValue(colType domain.ColumnType, v string) (interface{}, error) {
+
+	if v == "" {
+		return nil, fmt.Errorf("value is empty")
+	}
+
+	// if v is not empty, try to parse it
+	switch colType {
+	case domain.ColumnTypeBoolean:
+		return strconv.ParseBool(v)
+	case domain.ColumnTypeCurrency:
+		return decimal.NewFromString(v)
+	case domain.ColumnTypeDate:
+		return time.Parse("2006-01-02", v)
+	case domain.ColumnTypeInteger:
+		return strconv.ParseInt(v, 10, 64)
+	case domain.ColumnTypeString:
+		return fmt.Sprintf("'%s'", v), nil
+	case domain.ColumnTypeTime:
+		return time.Parse("15:04:05", v)
+	case domain.ColumnTypeDateTime:
+		return time.Parse("2006-01-02 15:04:05", v)
+	case domain.ColumnTypeLink:
+		val, err := json.Marshal(v)
+		if err != nil {
+			return nil, err
+		}
+		return val, nil
+	default:
+		return nil, fmt.Errorf("unknown column type: %v", colType)
+	}
+}
+
+func ParseNullOperator(colType domain.ColumnType) string {
+	switch colType {
+	case domain.ColumnTypeString:
+		return "null::text"
+	case domain.ColumnTypeInteger:
+		return "null::integer"
+	case domain.ColumnTypeDate:
+		return "null::date"
+	case domain.ColumnTypeTime:
+		return "null::time"
+	case domain.ColumnTypeDateTime:
+		return "null::timestamp"
+	case domain.ColumnTypeBoolean:
+		return "null::boolean"
+	case domain.ColumnTypeCurrency:
+		return "null::numeric"
+	case domain.ColumnTypeLink:
+		return "[]::jsonb"
+	default:
+		return "null::text"
+	}
 }
