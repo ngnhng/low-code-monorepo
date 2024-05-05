@@ -21,6 +21,7 @@ import {
 } from "@repo/ui";
 
 import useSWR from "swr";
+import { useLocalStorage } from "hooks/use-local-storage";
 
 import { Database, Download, Table, User } from "react-feather";
 import { DataTable, columns } from "./_components/table-list/table-list";
@@ -34,18 +35,22 @@ import { useMobxStore } from "../../../lib/mobx/store-provider";
 import CreateTableForm from "./_components/create-form/create-table-form";
 
 export default function Page() {
+  const [yalcToken] = useLocalStorage("yalc_at", "");
+
   const {
     projectData: { currentProjectId },
     tableData: { fetchTables },
   } = useMobxStore();
 
   const { data, isLoading } = useSWR(`TABLE_DATA-${currentProjectId}-all`, () =>
-    fetchTables()
+    fetchTables(yalcToken)
   );
 
   if (!data || isLoading) {
     return <div>Loading...</div>;
   }
+
+  console.log("TABLE_DATA:", data);
 
   return (
     <>

@@ -31,7 +31,5 @@ export async function GET(
     config
   );
 
-  return new NextResponse(JSON.stringify(response.data), {
-    status: 200,
-  });
+  return NextResponse.json(response.data, { status: 200 });
 }

@@ -58,14 +58,25 @@ export class TableDataService extends RouteHandlerAPIService {
     return result;
   }
 
-  async getTables({ projectId }): Promise<GetTablesResponse[]> {
-    const response = await this.getServerSide(
-      `/api/mock/${projectId}/data/all`
-    );
+  async getTables({ projectId, yalcToken }): Promise<GetTablesResponse[]> {
+    const response = await this.getServerSide(`/api/dbms/${projectId}/all`, {
+      headers: {
+        Authorization: `Bearer ${yalcToken}`,
+      },
+    });
 
-    const result: TableItem[] = response.data;
+    const rawTables = response.data;
+    const processedTables: TableItem[] = rawTables.map((table) => ({
+      id: table.tid,
+      name: table.name,
+      source: "Source 1",
+      created: table.createdAt ?? "2024-01-01",
+      updated: table.updatedAt ?? "2024-01-01",
+      status: "Active",
+      columns: table.columns,
+    }));
 
-    return result;
+    return processedTables;
   }
 
   async getTableRelations({ projectId, tableId }) {

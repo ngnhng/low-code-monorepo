@@ -66,7 +66,7 @@ export type TableListAttributes = {
   created: string;
   updated: string;
   status: string;
-  referenceTables: string[];
+  referenceTables?: string[];
   columns: ColumnDef[];
 };
 

@@ -17,7 +17,7 @@ export interface ITableDataStore {
   fetchTableData: (a0: GetTableDataParams) => Promise<GetTableDataResponse>;
   // eslint-disable-next-line no-unused-vars
   fetchAppliedQueries: (tableId: string) => any;
-  fetchTables: () => any;
+  fetchTables: (yalcToken: string) => any;
 }
 
 export class TableDataStore implements ITableDataStore {
@@ -114,10 +114,11 @@ export class TableDataStore implements ITableDataStore {
     }
   };
 
-  fetchTables = async () => {
+  fetchTables = async (yalcToken: string) => {
     try {
       const response = await this.tableDataService.getTables({
         projectId: this.rootStore.projectData.currentProjectId,
+        yalcToken: yalcToken,
       });
 
       if (response) {
@@ -126,7 +127,7 @@ export class TableDataStore implements ITableDataStore {
         throw new Error("Table data not found");
       }
     } catch (error) {
-      console.log(error);
+      console.log("ERROR", error);
       throw error;
     }
   };
