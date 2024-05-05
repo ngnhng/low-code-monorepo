@@ -98,7 +98,7 @@ export class WorkflowStore {
         console.log("newRenderer");
         if (!this.modeler) {
             const m = await this.workflowService.renderer(options);
-            await m.importXML(this.currentWorkflow);
+            //await m.importXML(this.currentWorkflow);
             runInAction(() => {
                 this.modeler = m;
             });
