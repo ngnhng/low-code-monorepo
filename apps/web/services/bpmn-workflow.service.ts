@@ -63,4 +63,14 @@ export class BpmnWorkflowService extends APIService {
             throw new Error("Error calling service");
         }
     }
+
+    async fetchWorkflowById(workflowId: string): Promise<any> {
+        try {
+            const response = await this.get(`/api/workflow/${workflowId}`);
+
+            return response.status === 200 ? response.data : undefined;
+        } catch {
+            throw new Error("Error calling service");
+        }
+    }
 }
