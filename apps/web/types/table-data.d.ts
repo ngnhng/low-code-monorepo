@@ -1,7 +1,7 @@
 export type GetTableDataParams = {
   tableId: string;
-  page: number;
-  limit: number;
+  offset?: number;
+  limit?: number;
   query?: any;
 };
 
@@ -31,7 +31,7 @@ export type TableItem = { id: string } & TableListAttributes;
 interface DataTable {
   columns: ColumnDef[] | [];
   rows: RowDef[] | [];
-  pagination: {
+  pagination?: {
     page: number;
     pageSize: number;
     totalPage: number;

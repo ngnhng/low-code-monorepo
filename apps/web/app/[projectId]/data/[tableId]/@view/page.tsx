@@ -2,6 +2,7 @@
 "use client";
 
 import useSWR from "swr";
+import { useLocalStorage } from "hooks/use-local-storage";
 
 import "react-datasheet-grid/dist/style.css";
 
@@ -21,16 +22,26 @@ export default function Page({
   };
 }) {
   const {
-    tableData: { fetchTableData, fetchAppliedQueries },
+    tableData: { fetchTableData },
   } = useMobxStore();
+
+  const queryObject = {
+    sql: "(1=1)",
+    params: [],
+  };
+
+  const [yalcToken] = useLocalStorage("yalc_at", "");
 
   const { data, isLoading, mutate } = useSWR<DataTable>(
     `TABLE_DATA-${params.projectId}-${params.tableId}`,
     () =>
-      fetchTableData({
-        tableId: params.tableId,
-        ...fetchAppliedQueries(params.tableId),
-      })
+      fetchTableData(
+        {
+          tableId: params.tableId,
+          query: queryObject,
+        },
+        yalcToken
+      )
   );
 
   if (!data || isLoading) {
@@ -100,6 +111,7 @@ export default function Page({
         tableId={params.tableId}
         tableData={data}
         onCommit={handleCommit}
+        yalcToken={yalcToken}
       />
     </div>
   );

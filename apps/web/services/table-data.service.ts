@@ -14,30 +14,23 @@ export class TableDataService extends RouteHandlerAPIService {
   async getTableData({
     projectId,
     tableId,
-    page,
-    limit,
     query,
+    yalcToken,
   }): Promise<GetTableDataResponse> {
-    const response = await this.getServerSide(
-      `/api/mock/${projectId}/data/${tableId}`,
+    const response = await this.postServerSide(
+      `/api/dbms/${projectId}/${tableId}`,
+      query,
       {
-        params: {
-          page,
-          limit,
-          query,
+        headers: {
+          Authorization: `Bearer ${yalcToken}`,
         },
       }
     );
 
     const result: GetTableDataResponse = {
-      columns: response.data.data.columns,
-      rows: response.data.data.rows,
-      pagination: {
-        page: response.data.meta.page,
-        pageSize: response.data.meta.pageSize,
-        totalPage: response.data.meta.totalPage,
-      },
-      maxIndex: response.data.data.maxIndex,
+      columns: response.data.columns,
+      rows: response.data.rows,
+      maxIndex: response.data.rows.length,
     };
 
     return result;

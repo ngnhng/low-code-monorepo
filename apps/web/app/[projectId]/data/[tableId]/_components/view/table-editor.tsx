@@ -6,9 +6,10 @@ import {
   textColumn,
   keyColumn,
   intColumn,
-  dateColumn,
+  // dateColumn,
   DynamicDataSheetGrid,
   AddRowsComponentProps,
+  isoDateColumn,
 } from "react-datasheet-grid";
 import "react-datasheet-grid/dist/style.css";
 import { Operation } from "react-datasheet-grid/dist/types";
@@ -41,6 +42,7 @@ type TableEditorProps = {
   tableId: string;
   tableData: DataTable;
   onCommit: CommitFunc;
+  yalcToken: string;
 };
 
 // TODO: handle types
@@ -54,6 +56,7 @@ export const TableEditor = ({
   tableId,
   tableData,
   onCommit,
+  yalcToken,
 }: TableEditorProps) => {
   const [localData, setLocalData] = useState<RowDef[]>(tableData.rows);
   const [localColumns, setLocalColumns] = useState<ColumnDef[]>(
@@ -177,6 +180,7 @@ export const TableEditor = ({
         newReferenceTableId={newReferenceTableId}
         setNewReferenceTableId={setNewReferenceTableId}
         tableId={tableId}
+        yalcToken={yalcToken}
       />
       <div className="mx-4 h-full">
         <DynamicDataSheetGrid
@@ -333,7 +337,7 @@ const colTypeMapper = (
       return LinkColumnCell(columnData, tableId);
     }
     case "date": {
-      return dateColumn;
+      return isoDateColumn;
     }
     default: {
       return textColumn;

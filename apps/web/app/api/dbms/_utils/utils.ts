@@ -13,3 +13,26 @@ export function getBearerToken(
   const parts = authorizationHeader.split(" ");
   return parts[1];
 }
+
+export function mappingTypeToUI(type: string): string {
+  switch (type) {
+    case "string": {
+      return "text";
+    }
+    case "integer": {
+      return "number";
+    }
+    case "boolean": {
+      return "boolean";
+    }
+    case "link": {
+      return "link";
+    }
+    case "date": {
+      return "date";
+    }
+    default: {
+      return "string";
+    }
+  }
+}

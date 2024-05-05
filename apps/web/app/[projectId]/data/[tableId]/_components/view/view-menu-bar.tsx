@@ -22,6 +22,7 @@ interface ViewMenuBarProps {
   localData: RowDef[];
   tableId: string;
   newReferenceTableId: string[];
+  yalcToken: string;
 }
 
 export const ViewMenuBar = ({
@@ -39,6 +40,7 @@ export const ViewMenuBar = ({
   tableId,
   setNewReferenceTableId,
   newReferenceTableId,
+  yalcToken,
 }: ViewMenuBarProps) => {
   return (
     <div className="flex items-center justify-between w-full px-4">
@@ -60,7 +62,11 @@ export const ViewMenuBar = ({
           Commit
         </Button>
         <Button onClick={discardData}>Discard</Button>
-        <QueryBuilderList columns={localColumns} tableId={tableId} />
+        <QueryBuilderList
+          columns={localColumns}
+          tableId={tableId}
+          yalcToken={yalcToken}
+        />
       </div>
 
       <div className="flex flex-end space-x-4 mb-4">

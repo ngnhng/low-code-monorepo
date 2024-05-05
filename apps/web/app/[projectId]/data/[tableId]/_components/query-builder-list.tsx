@@ -37,10 +37,15 @@ const initialQuery: RuleGroupType = { combinator: "and", rules: [] };
 interface QueryBuilderListProps {
   columns: ColumnDef[];
   tableId: string;
+  yalcToken: string;
 }
 
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
+const QueryBuilderList = ({
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  tableId,
+  columns,
+  yalcToken,
+}: QueryBuilderListProps) => {
   const [query, setQuery] = useState(initialQuery);
   const [groupby, setGroupBy] = useState<string>();
   const [sortby, setSortBy] = useState<string>();
@@ -51,7 +56,7 @@ const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
   } = useMobxStore();
 
   const { data, isLoading } = useSWR(`TABLE_DATA-${currentProjectId}-all`, () =>
-    fetchTables()
+    fetchTables(yalcToken)
   );
 
   if (!data || isLoading) {
