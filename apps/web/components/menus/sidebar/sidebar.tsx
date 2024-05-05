@@ -113,7 +113,7 @@ const Sidebar: FC<SidebarProps> = observer((props) => {
         <div className="flex flex-col gap-2.5 justify-between h-full">
             <div>
                 {navigation.items.map((item) => (
-                    <NavigationItem item={item} selectedPage={selectedPage} />
+                    <NavigationItem key={item.href} item={item} selectedPage={selectedPage} />
                 ))}
             </div>
             <UserSection currentUser={currentUser} signOut={signOut} />

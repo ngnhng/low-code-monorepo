@@ -49,11 +49,11 @@ const Modeler = observer(
     (props: React.PropsWithChildren<{ workflowId: string }>) => {
         const {
             workflow: {
+                modeler,
                 workflowName,
                 currentWorkflow,
                 fetchWorkflowById,
                 newRenderer,
-                modeler,
             },
         } = useMobxStore();
 
@@ -64,44 +64,35 @@ const Modeler = observer(
             () => fetchWorkflowById(workflowId)
         );
 
-        const containerRef = useRef<HTMLDivElement>(null);
         const panelRef = useRef<HTMLDivElement>(null);
 
+        // this useEffect is used to initialize the modeler
         useEffect(() => {
-            let isCancelled = false;
-
             const initializeModeler = async () => {
-                console.log("initializeModeler");
-                if (containerRef.current && currentWorkflow && !isCancelled) {
+                if (currentWorkflow) {
+                    console.log("[MODELER] creating new modeler");
+
+                    // create new modeler
+                    // ref will be attached to the container later
                     await newRenderer({
-                        container: containerRef.current,
+                        //container: containerRef.current,
                         keyboard: {
                             bindTo: document,
                         },
                     });
-                    //if (modeler && currentWorkflow) {
-                    //    modeler.importXML(currentWorkflow);
-                    //}
                 }
             };
 
-            const timeoutId = setTimeout(initializeModeler, 0);
+            initializeModeler();
 
             return () => {
-                isCancelled = true;
-                clearTimeout(timeoutId);
+                modeler?.destroy();
             };
-        }, [containerRef, currentWorkflow]);
+        }, [currentWorkflow]);
 
         useEffect(() => {
             mutate();
         }, [workflowName]);
-
-        useEffect(() => {
-            if (modeler && currentWorkflow) {
-                modeler.importXML(currentWorkflow);
-            }
-        }, [modeler, currentWorkflow]);
 
         if (isLoading || error || !currentWorkflow) {
             return <div>Loading Modeler...</div>;
@@ -113,13 +104,18 @@ const Modeler = observer(
                     direction="horizontal"
                     className="h-full rounded-md border"
                 >
-                    <ResizablePanel defaultSize={50}>
+                    <ResizablePanel defaultSize={60}>
                         <div className="h-full max-w-full">
-                            <div ref={containerRef} className="h-full"></div>
+                            {modeler && currentWorkflow && (
+                                <BPMNModeler
+                                    modeler={modeler}
+                                    currentWorkflow={currentWorkflow}
+                                />
+                            )}
                         </div>
                     </ResizablePanel>
                     <ResizableHandle withHandle />
-                    <ResizablePanel defaultSize={50}>
+                    <ResizablePanel defaultSize={40}>
                         <ResizablePanelGroup direction="vertical">
                             <ResizablePanel defaultSize={35}>
                                 <ScrollArea className="h-[calc(100%)]">
@@ -208,6 +204,76 @@ const Controls = observer(
                         </span>
                     </div>
                 </div>
+            </div>
+        );
+    }
+);
+
+const BPMNModeler = observer(
+    ({ modeler, currentWorkflow }: { modeler: any; currentWorkflow: any }) => {
+        const containerRef = useRef<HTMLDivElement>(null);
+
+        //useEffect(() => {
+        //    if (containerRef.current && modeler) {
+        //        console.log(
+        //            "[MODELER] attaching to container",
+        //            containerRef.current
+        //        );
+        //        modeler.attachTo(containerRef.current);
+        //    }
+
+        //    return () => {
+        //        console.log("[MODELER] detaching from container");
+        //        modeler?.detach();
+        //        modeler?.clear();
+        //    };
+        //}, [containerRef, modeler]);
+
+        //useEffect(() => {
+        //    if (modeler) {
+        //        modeler.on("import.done", () => {
+        //            console.log("[MODELER] import.done");
+        //            const canvas = modeler.get("canvas");
+        //            if (canvas) {
+        //                canvas.zoom("fit-viewport");
+        //            }
+        //        });
+        //    }
+
+        //    return () => {
+        //        modeler?.off("import.done");
+        //    };
+        //}, [modeler]);
+
+        //useEffect(() => {
+        //    if (modeler && currentWorkflow) {
+        //        modeler.importXML(currentWorkflow);
+        //    }
+        //}, [modeler, currentWorkflow]);
+
+        useEffect(() => {
+            setTimeout(() => {
+                console.log("BPMNModeler", containerRef.current);
+
+                modeler.attachTo(containerRef.current);
+
+                modeler.importXML(currentWorkflow).then(({ warnings }) => {
+                    if (warnings.length > 0) {
+                        console.log("importXML", warnings);
+                    }
+                    modeler.get("canvas").zoom("fit-viewport");
+                });
+            }, 1000);
+
+            return () => {
+                modeler?.clear();
+                modeler?.detach();
+            };
+        }, []);
+
+        return (
+            <div ref={containerRef} className="h-full">
+                {Math.random().toString(36).slice(7)}
             </div>
         );
     }
