@@ -58,6 +58,7 @@ export default function Page() {
         data={data}
         columns={columns}
         projectId={currentProjectId}
+        yalcToken={yalcToken}
       />
     </>
   );
@@ -69,7 +70,7 @@ const HorizontalList = ({ children, ...props }) => (
   </ul>
 );
 
-const DatabaseTabs = ({ data, columns, projectId }) => {
+const DatabaseTabs = ({ data, columns, projectId, yalcToken }) => {
   // const tableRef = useRef<ReactComponentElement>(null);
 
   return (
@@ -91,7 +92,7 @@ const DatabaseTabs = ({ data, columns, projectId }) => {
       <TabsContent value="tables">
         <div className="container mr-auto">
           <HorizontalList>
-            <CreateTableForm projectId={projectId} />
+            <CreateTableForm projectId={projectId} yalcToken={yalcToken} />
 
             <CardButtonWithIcon
               className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "

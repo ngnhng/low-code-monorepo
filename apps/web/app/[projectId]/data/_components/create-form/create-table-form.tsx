@@ -4,7 +4,6 @@ import { PlusSquare, XCircle } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
-// import { uuid } from 'uuidv4';
 import axios from "axios";
 
 import { Sheet, SheetContent, SheetTrigger } from "@repo/ui";
@@ -29,13 +28,11 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useMobxStore } from "lib/mobx/store-provider";
 import useSWR from "swr";
-// import { TableItem } from 'types/table-data'
 
 interface CreateTableFormProps {
   projectId: string;
+  yalcToken: string;
 }
-
-// const typeValues = ["date", "text", "number", "boolean"] as const;
 
 const requiredFieldsSchema = z.object({
   id: z.string().trim().min(2, {
@@ -63,7 +60,7 @@ const formSchema = z.object({
 
 // many references table considered
 
-const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
+const CreateTableForm = ({ projectId, yalcToken }: CreateTableFormProps) => {
   const router = useRouter();
 
   const {
@@ -73,7 +70,7 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
 
   const { data, isLoading, mutate } = useSWR(
     `TABLE_DATA-${currentProjectId}-all`,
-    () => fetchTables()
+    () => fetchTables(yalcToken)
   );
 
   const references = data?.map((data) => ({
@@ -98,15 +95,24 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
   const { isSubmitting } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const configs = {
+      headers: {
+        Authorization: `Bearer ${yalcToken}`,
+      },
+    };
+
+    const submitData = {
+      table: {
+        name: values.tablename,
+        columns: values.requiredFields.map((field) => ({
+          name: field.id,
+          type: mappingType(field.type),
+        })),
+      },
+    };
+
     try {
-      await axios.post(
-        `/api/mock/${projectId}/data/${values.tablename
-          .replaceAll(/\s/g, "")
-          .toLowerCase()}`,
-        {
-          data: values,
-        }
-      );
+      await axios.post(`/api/dbms/${projectId}`, submitData, configs);
       toast.success("Table has been created.", {
         description: (
           <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
@@ -276,5 +282,28 @@ const CreateTableForm = ({ projectId }: CreateTableFormProps) => {
     </Sheet>
   );
 };
+
+function mappingType(type: string) {
+  switch (type) {
+    case "text": {
+      return "string";
+    }
+    case "number": {
+      return "integer";
+    }
+    case "boolean": {
+      return "boolean";
+    }
+    case "date": {
+      return "date";
+    }
+    case "link": {
+      return "link";
+    }
+    default: {
+      return "string";
+    }
+  }
+}
 
 export default CreateTableForm;
