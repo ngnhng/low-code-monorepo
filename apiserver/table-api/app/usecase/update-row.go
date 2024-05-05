@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"yalc/dbms/domain"
 	"yalc/dbms/modules/config"
@@ -113,12 +112,33 @@ func (uc *UpdateRowUseCase) Execute(
 		}
 		quotedValues := make([]string, len(row.Values))
 		for j, val := range row.Values {
-			if _, err := strconv.ParseFloat(val, 64); err == nil {
-				// val is numeric, don't add quotes
-				quotedValues[j] = val
+			// check if val is numeric
+			//if _, err := strconv.ParseFloat(val, 64); err == nil {
+			//	// val is numeric, don't add quotes
+			//	quotedValues[j] = val
+			//} else {
+			//	// val is not numeric, check for type
+			//	if table.Columns[j].Type != domain.ColumnTypeString {
+			//		// use null if not string
+			//		val = "null"
+			//		// add type casting
+			//		cast := getCastOperator(table.Columns[j].Type)
+			//		//if table.Columns[j].Type == domain.ColumnTypeInteger {
+			//		//	cast = "integer"
+			//		//} else if table.Columns[j].Type == domain.ColumnTypeDate {
+			//		//	cast = "date"
+			//		//}
+
+			//		quotedValues[j] = fmt.Sprintf("%s::%s", val, cast)
+			//	} else {
+			//		quotedValues[j] = fmt.Sprintf("'%s'", val)
+			//	}
+			//}
+
+			if parsedVal, err := shared.ParseValue(table.Columns[j].Type, val); err == nil {
+				quotedValues[j] = fmt.Sprintf("%v", parsedVal)
 			} else {
-				// val is not numeric, add quotes
-				quotedValues[j] = fmt.Sprintf("'%s'", val)
+				quotedValues[j] = shared.ParseNullOperator(table.Columns[j].Type)
 			}
 		}
 		valuesStr += "(" + row.Id + ", " + strings.Join(quotedValues, ", ") + ")"
@@ -138,6 +158,7 @@ func (uc *UpdateRowUseCase) Execute(
 	connPool.ExecTx(c, func(p *pgx.Pgx) error {
 		tag, err := p.ConnPool.Exec(c, sql)
 		if err != nil {
+			uc.Logger.Errorf("error executing update query: %v", err)
 			return err
 		}
 
@@ -166,4 +187,27 @@ func addDoubleQuotes(s string) string {
 
 func parseStringToPostgresTypes(s string) string {
 	return "'" + s + "'"
+}
+
+func getCastOperator(t domain.ColumnType) string {
+	switch t {
+	case domain.ColumnTypeString:
+		return "text"
+	case domain.ColumnTypeInteger:
+		return "integer"
+	case domain.ColumnTypeDate:
+		return "date"
+	case domain.ColumnTypeTime:
+		return "time"
+	case domain.ColumnTypeDateTime:
+		return "timestamp"
+	case domain.ColumnTypeBoolean:
+		return "boolean"
+	case domain.ColumnTypeCurrency:
+		return "numeric"
+	case domain.ColumnTypeLink:
+		return "text"
+	default:
+		return "text"
+	}
 }
