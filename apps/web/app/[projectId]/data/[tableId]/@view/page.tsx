@@ -7,11 +7,13 @@ import { useLocalStorage } from "hooks/use-local-storage";
 import "react-datasheet-grid/dist/style.css";
 
 import { useMobxStore } from "lib/mobx/store-provider";
-import { ColumnDef, DataTable, RowDef } from "types/table-data";
+import { ColumnDef, ColumnType, DataTable, RowDef } from "types/table-data";
 import { TableEditor } from "../_components/view/table-editor";
 
 import { toast } from "sonner";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function Page({
   params,
@@ -31,7 +33,11 @@ export default function Page({
   };
 
   const [yalcToken] = useLocalStorage("yalc_at", "");
+  const router = useRouter();
 
+  const [isSubmiting, setIsSubmiting] = useState(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data, isLoading, mutate } = useSWR<DataTable>(
     `TABLE_DATA-${params.projectId}-${params.tableId}`,
     () =>
@@ -57,33 +63,74 @@ export default function Page({
     createdColumns: Set<ColumnDef>,
     newReferenceTable
   ) => {
+    setIsSubmiting(true);
+
     const filteredData =
       deletedRowIds.size > 0
         ? localData.filter((row) => !deletedRowIds.has(row.id))
         : localData;
 
+    const changeLogs = {
+      addedRows: addedRowIds,
+      deletedRows: deletedRowIds,
+      updatedRows: updatedRowIds,
+      addedColumns: createdColumns,
+    };
+
+    const submitData = {
+      ...processEditLogData(filteredData, changeLogs),
+      newReferenceTable,
+    };
+
+    console.log("[SUBMIT_DATA]:", submitData);
+
+    const configs = {
+      headers: {
+        Authorization: `Bearer ${yalcToken}`,
+      },
+    };
     try {
-      await axios.put(`/api/mock/${params.projectId}/data/${params.tableId}`, {
-        data: {
-          columns: localColumns,
-          rows: filteredData,
-        },
-        newReferenceTableIds: newReferenceTable,
-      });
+      if (submitData.addedRows.length > 0) {
+        await axios.post(
+          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+          {
+            rows: submitData.addedRows,
+          },
+          configs
+        );
+      }
 
-      const changeLogs = {
-        addedRows: addedRowIds,
-        deletedRows: deletedRowIds,
-        updatedRows: updatedRowIds,
-        addedColumns: createdColumns,
-      };
+      if (submitData.updatedRows.length > 0) {
+        await axios.patch(
+          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+          submitData.updatedRows,
+          configs
+        );
+      }
 
-      const submitData = {
-        ...processEditLogData(filteredData, changeLogs),
-        newReferenceTable,
-      };
+      if (submitData.deletedRows.length > 0) {
+        await axios.delete(
+          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+          {
+            headers: {
+              Authorization: `Bearer ${yalcToken}`,
+            },
+            data: {
+              ids: submitData.deletedRows,
+            },
+          }
+        );
+      }
 
-      console.log("[SUBMIT_DATA]:", submitData);
+      if (submitData.addedColumns.length > 0) {
+        await axios.post(
+          `/api/dbms/${params.projectId}/${params.tableId}/columns`,
+          {
+            columns: submitData.addedColumns,
+          },
+          configs
+        );
+      }
 
       toast.success(
         `Table has been updated at: /api/mock/${params.projectId}/data/${params.tableId} `,
@@ -97,7 +144,9 @@ export default function Page({
           ),
         }
       );
-      mutate();
+
+      setIsSubmiting(false);
+      router.refresh();
     } catch (error) {
       console.error("Something went wrong when committing", error);
     }
@@ -112,6 +161,7 @@ export default function Page({
         tableData={data}
         onCommit={handleCommit}
         yalcToken={yalcToken}
+        isSubmitting={isSubmiting}
       />
     </div>
   );
@@ -155,7 +205,7 @@ function processEditLogData(
       const { id, ...rest } = row;
       return {
         id: id.toString(),
-        values: rest,
+        values: convertedObjValues(rest),
       };
     });
   const deletedRows = [...editLog.deletedRows];
@@ -164,14 +214,60 @@ function processEditLogData(
 
     return {
       name: label,
-      type: type,
+      type: mappingType(type),
     };
   });
 
   return {
-    addedRows: addedRows,
+    addedRows: convertedActionLogsValues(addedRows),
     updatedRows: updatedRows,
     deletedRows: deletedRows,
     addedColumns: addedColumns,
   };
+}
+
+function convertedObjValues(obj) {
+  for (const key in obj) {
+    if (obj[key] === undefined || obj[key] === null) {
+      continue;
+    } else {
+      obj[key] = obj[key].toString();
+    }
+  }
+  return obj;
+}
+
+function convertedActionLogsValues(actionLogs) {
+  const convertedActionLogs = actionLogs.map((obj) => {
+    const newObj = {};
+    for (const key in obj) {
+      newObj[key] = obj[key].toString();
+    }
+    return newObj;
+  });
+
+  return convertedActionLogs;
+}
+
+function mappingType(type: ColumnType) {
+  switch (type) {
+    case "text": {
+      return "string";
+    }
+    case "number": {
+      return "integer";
+    }
+    case "boolean": {
+      return "boolean";
+    }
+    case "date": {
+      return "date";
+    }
+    case "link": {
+      return "link";
+    }
+    default: {
+      return "string";
+    }
+  }
 }

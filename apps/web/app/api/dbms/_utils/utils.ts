@@ -56,7 +56,7 @@ export function inferTypeFromService(type: string, value) {
       return Number.parseInt(value);
     }
     case "boolean": {
-      return Boolean(value);
+      return value === "true" ? true : false;
     }
     case "link": {
       return value;

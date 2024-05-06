@@ -23,6 +23,7 @@ interface ViewMenuBarProps {
   tableId: string;
   newReferenceTableId: string[];
   yalcToken: string;
+  isSubmitting: boolean;
 }
 
 export const ViewMenuBar = ({
@@ -41,12 +42,13 @@ export const ViewMenuBar = ({
   setNewReferenceTableId,
   newReferenceTableId,
   yalcToken,
+  isSubmitting,
 }: ViewMenuBarProps) => {
   return (
     <div className="flex items-center justify-between w-full px-4">
       <div className="flex flex-start space-x-4">
         <Button
-          // disabled
+          disabled={isSubmitting}
           onClick={() =>
             onCommit(
               localColumns,

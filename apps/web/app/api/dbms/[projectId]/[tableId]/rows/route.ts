@@ -26,13 +26,11 @@ export async function POST(
     },
   };
 
-  const { rows } = await request.json();
+  const insertRows = await request.json();
 
   const response = await axios.post(
     `${serviceBaseUrl}/dbms/projects/${params.projectId}/tables/${params.tableId}/rows`,
-    {
-      rows: rows,
-    },
+    insertRows,
     config
   );
 
@@ -62,8 +60,6 @@ export async function PATCH(
 
   const data = await request.json();
 
-  console.log("DATA_PATCH", data);
-
   const response = await axios.patch(
     `${serviceBaseUrl}/dbms/projects/${params.projectId}/tables/${params.tableId}/rows`,
     data,
@@ -89,6 +85,8 @@ export async function DELETE(
   );
 
   const data = await request.json();
+
+  console.log("DELETE", data);
 
   const response = await axios.delete(
     `${serviceBaseUrl}/dbms/projects/${params.projectId}/tables/${params.tableId}/rows`,

@@ -43,6 +43,7 @@ type TableEditorProps = {
   tableData: DataTable;
   onCommit: CommitFunc;
   yalcToken: string;
+  isSubmitting: boolean;
 };
 
 // TODO: handle types
@@ -57,6 +58,7 @@ export const TableEditor = ({
   tableData,
   onCommit,
   yalcToken,
+  isSubmitting,
 }: TableEditorProps) => {
   const [localData, setLocalData] = useState<RowDef[]>(tableData.rows);
   const [localColumns, setLocalColumns] = useState<ColumnDef[]>(
@@ -182,6 +184,7 @@ export const TableEditor = ({
         setNewReferenceTableId={setNewReferenceTableId}
         tableId={tableId}
         yalcToken={yalcToken}
+        isSubmitting={isSubmitting}
       />
       <div className="mx-4 h-full">
         <DynamicDataSheetGrid
