@@ -1,7 +1,11 @@
 /* eslint-disable turbo/no-undeclared-env-vars */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { getBearerToken, mappingTypeToUI } from "app/api/dbms/_utils/utils";
+import {
+  getBearerToken,
+  inferTypeFromService,
+  mappingTypeToUI,
+} from "app/api/dbms/_utils/utils";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { ColumnDef } from "types/table-data";
@@ -43,7 +47,7 @@ export async function POST(
     const rowObject = {};
     // eslint-disable-next-line unicorn/no-array-for-each
     response.data.columns.forEach((column, index) => {
-      rowObject[column.id] = row[index];
+      rowObject[column.id] = inferTypeFromService(column.type, row[index]);
     });
     return rowObject;
   });

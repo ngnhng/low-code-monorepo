@@ -6,6 +6,7 @@ import {
 } from "types/table-data";
 import { RouteHandlerAPIService } from "./route-handler.service";
 import { TableItem } from "types/table-data";
+import { mappingTypeToUI } from "app/api/dbms/_utils/utils";
 export class TableDataService extends RouteHandlerAPIService {
   constructor() {
     super();
@@ -66,7 +67,11 @@ export class TableDataService extends RouteHandlerAPIService {
       created: table.createdAt ?? "2024-01-01",
       updated: table.updatedAt ?? "2024-01-01",
       status: "Active",
-      columns: table.columns,
+      columns: table.columns.map((column) => ({
+        ...column,
+        type: mappingTypeToUI(column.type),
+        label: column.name,
+      })),
     }));
 
     return processedTables;

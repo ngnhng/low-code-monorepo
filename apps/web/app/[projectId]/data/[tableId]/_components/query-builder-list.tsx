@@ -30,7 +30,7 @@ import {
 import { toast } from "sonner";
 import { useMobxStore } from "lib/mobx/store-provider";
 import useSWR from "swr";
-import { ColumnDef } from "types/table-data";
+import { ColumnDef, ColumnType } from "types/table-data";
 
 const initialQuery: RuleGroupType = { combinator: "and", rules: [] };
 
@@ -38,13 +38,16 @@ interface QueryBuilderListProps {
   columns: ColumnDef[];
   tableId: string;
   yalcToken: string;
+  setLocalColumns: any;
+  setLocalData: any;
 }
 
 const QueryBuilderList = ({
-  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   tableId,
   columns,
   yalcToken,
+  setLocalColumns,
+  setLocalData,
 }: QueryBuilderListProps) => {
   const [query, setQuery] = useState(initialQuery);
   const [groupby, setGroupBy] = useState<string>();
@@ -52,7 +55,7 @@ const QueryBuilderList = ({
 
   const {
     projectData: { currentProjectId },
-    tableData: { fetchTables },
+    tableData: { fetchTables, fetchTableData },
   } = useMobxStore();
 
   const { data, isLoading } = useSWR(`TABLE_DATA-${currentProjectId}-all`, () =>
@@ -65,8 +68,9 @@ const QueryBuilderList = ({
 
   const transformData = data.map((table) => {
     return table.columns.map((column) => ({
-      name: `${table.id}.${column.id}`,
-      label: `${table.id} - ${column.id}`,
+      name: `"${column.id}"`,
+      label: `${table.name} - ${column.label}`,
+      inputType: formatTypeIntoInputType(column.type),
     }));
   });
 
@@ -77,8 +81,22 @@ const QueryBuilderList = ({
     event.preventDefault();
   };
 
-  const onQuery = () => {
-    const postValues = { ...query, groupby: groupby, sortby: sortby };
+  const onQuery = async () => {
+    const postValues = {
+      ...formatQuery(query, "parameterized"),
+      groupby: groupby,
+      sortby: sortby,
+    };
+    console.log("onQuery:", postValues);
+    console.log("onTEST", formatQuery(query, "sql"));
+
+    const response = await fetchTableData(
+      { tableId, query: postValues },
+      yalcToken
+    );
+
+    setLocalColumns(response.columns);
+    setLocalData(response.rows);
 
     toast.success("Column has been created.", {
       description: (
@@ -90,8 +108,6 @@ const QueryBuilderList = ({
         </pre>
       ),
     });
-
-    // router.push(``);
   };
 
   return (
@@ -170,5 +186,25 @@ const QueryBuilderList = ({
     </div>
   );
 };
+
+function formatTypeIntoInputType(type: ColumnType) {
+  switch (type) {
+    case "text": {
+      return "text";
+    }
+    case "date": {
+      return "date";
+    }
+    case "number": {
+      return "number";
+    }
+    case "boolean": {
+      return "checkbox";
+    }
+    default: {
+      return "text";
+    }
+  }
+}
 
 export default QueryBuilderList;

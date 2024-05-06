@@ -66,6 +66,8 @@ export const ViewMenuBar = ({
           columns={localColumns}
           tableId={tableId}
           yalcToken={yalcToken}
+          setLocalColumns={setLocalColumns}
+          setLocalData={setLocalData}
         />
       </div>
 

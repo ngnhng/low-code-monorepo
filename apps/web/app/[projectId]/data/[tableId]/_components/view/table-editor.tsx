@@ -155,6 +155,7 @@ export const TableEditor = ({
     updatedRowIds.clear();
     createdRowIds.clear();
     deletedRowIds.clear();
+    createdColumn.clear();
     setNewReferenceTableId([]);
   };
 

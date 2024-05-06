@@ -1,3 +1,5 @@
+import moment from "moment";
+
 export function getBearerToken(
   authorizationHeader: string
 ): string | undefined {
@@ -33,6 +35,40 @@ export function mappingTypeToUI(type: string): string {
     }
     default: {
       return "string";
+    }
+  }
+}
+
+export const supportedDateFormat = [
+  "MMM/DD/YYYY",
+  "MM-DD-YYYY",
+  "DD MMM YYYY",
+  "YYYY-MM-DD",
+  "DD-MM-YYYY",
+  "MM/DD/YYYY",
+  "MMM DD, YYYY",
+  "YYYY-MM-DD hh:mm:ss",
+];
+
+export function inferTypeFromService(type: string, value) {
+  switch (type) {
+    case "integer": {
+      return Number.parseInt(value);
+    }
+    case "boolean": {
+      return Boolean(value);
+    }
+    case "link": {
+      return value;
+    }
+    case "string": {
+      return value;
+    }
+    case "date": {
+      return moment(value, supportedDateFormat).format("YYYY-MM-DD");
+    }
+    default: {
+      return value;
     }
   }
 }
