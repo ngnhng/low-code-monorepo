@@ -85,9 +85,9 @@ const Modeler = observer(
 
             initializeModeler();
 
-            return () => {
-                modeler?.destroy();
-            };
+            // return () => {
+            //     modeler?.destroy();
+            // };
         }, [currentWorkflow]);
 
         useEffect(() => {
@@ -252,24 +252,36 @@ const BPMNModeler = observer(
         //}, [modeler, currentWorkflow]);
 
         useEffect(() => {
+            if (!containerRef.current) return;
+
+            // If you can read this, don't read further
             setTimeout(() => {
-                console.log("BPMNModeler", containerRef.current);
+                // eslint-disable-next-line unicorn/consistent-function-scoping
+                const attachModeler = async () => {
+                    console.log("BPMNModeler", containerRef.current);
+                
+                    modeler.attachTo(containerRef.current);
+    
+                    try {
+                        const { warnings } = await modeler.importXML(currentWorkflow);
+                        if (warnings.length > 0) {
+                            console.log("importXML", warnings);
+                        }
+                        modeler.get("canvas").zoom("fit-viewport");
+                    } catch (error) {
+                        console.error(error);
+                    } 
+                }
+                
+                attachModeler();
+            }, 1000)
 
-                modeler.attachTo(containerRef.current);
-
-                modeler.importXML(currentWorkflow).then(({ warnings }) => {
-                    if (warnings.length > 0) {
-                        console.log("importXML", warnings);
-                    }
-                    modeler.get("canvas").zoom("fit-viewport");
-                });
-            }, 1000);
 
             return () => {
                 modeler?.clear();
                 modeler?.detach();
             };
-        }, []);
+        }, [containerRef.current])
 
         return (
             <div ref={containerRef} className="h-full">
