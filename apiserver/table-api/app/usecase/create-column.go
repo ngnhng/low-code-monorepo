@@ -9,6 +9,8 @@ import (
 	"yalc/dbms/modules/pgx"
 	"yalc/dbms/shared"
 
+	v5 "github.com/jackc/pgx/v5"
+
 	"go.uber.org/fx"
 )
 
@@ -125,8 +127,8 @@ func (uc *CreateColumnUseCase) Execute(
 
 	result := &domain.Table{}
 
-	err = userDbPool.ExecTx(c, func(udpp *pgx.UserDbPgxPool) error {
-		table, err := udpp.GetTableInfo(c, tableId)
+	err = userDbPool.ExecuteTransaction(c, func(userTx v5.Tx) error {
+		table, err := userDbPool.GetTableInfo(c, tableId)
 		if err != nil {
 			uc.Logger.Debugf("error getting table info: %v", err)
 			return err
@@ -144,7 +146,7 @@ func (uc *CreateColumnUseCase) Execute(
 		newColumnsQuery := make([]string, len(data.Columns))
 
 		// linked columns
-		return connPool.ExecTx(c, func(p *pgx.Pgx) error {
+		return connPool.ExecuteTransaction(c, func(connTx v5.Tx) error {
 			for i, col := range data.Columns {
 				newColumns[i] = domain.Column{
 					Name: col.Name,
@@ -168,7 +170,7 @@ func (uc *CreateColumnUseCase) Execute(
 						},
 					}
 
-					linkedTable, err := udpp.GetTableInfo(c, col.Reference.TableId)
+					linkedTable, err := userDbPool.GetTableInfo(c, col.Reference.TableId)
 					if err != nil {
 						uc.Logger.Debugf("error getting linked table info: %v", err)
 						return err
@@ -189,7 +191,7 @@ func (uc *CreateColumnUseCase) Execute(
 					uc.Logger.Debugf("creating link column: %s",
 						fmt.Sprintf(sql, linkedTable.Name, newColId))
 
-					_, err = p.ConnPool.Exec(c, fmt.Sprintf(sql, linkedTable.Name, newColId))
+					_, err = connTx.Exec(c, fmt.Sprintf(sql, linkedTable.Name, newColId))
 					if err != nil {
 						uc.Logger.Debugf("error creating link column: %v", err)
 						return err
@@ -197,7 +199,7 @@ func (uc *CreateColumnUseCase) Execute(
 
 					// update table metadata
 					linkedTable.Columns = append(linkedTable.Columns, linkCol)
-					err = udpp.UpdateTableInfo(c, col.Reference.TableId, linkedTable)
+					err = userDbPool.UpdateTableInfo(c, col.Reference.TableId, linkedTable)
 					if err != nil {
 						uc.Logger.Debugf("error updating linked table info: %v", err)
 						return err
@@ -211,7 +213,7 @@ func (uc *CreateColumnUseCase) Execute(
 
 			uc.Logger.Debugf("creating column: %s", fmt.Sprintf(sql, table.Name, strings.Join(newColumnsQuery, ", ")))
 
-			_, err := p.ConnPool.Exec(c, fmt.Sprintf(sql, table.Name, strings.Join(newColumnsQuery, ", ")))
+			_, err := connTx.Exec(c, fmt.Sprintf(sql, table.Name, strings.Join(newColumnsQuery, ", ")))
 			if err != nil {
 				uc.Logger.Debugf("error executing query: %v", err)
 				return err
@@ -219,7 +221,7 @@ func (uc *CreateColumnUseCase) Execute(
 
 			// update the table metadata
 			table.Columns = append(table.Columns, newColumns...)
-			err = udpp.UpdateTableInfo(c, tableId, table)
+			err = userDbPool.UpdateTableInfo(c, tableId, table)
 			if err != nil {
 				uc.Logger.Debugf("error updating table info: %v", err)
 				return err

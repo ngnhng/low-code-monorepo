@@ -10,6 +10,8 @@ import (
 	"yalc/dbms/modules/pgx"
 	"yalc/dbms/shared"
 
+	v5 "github.com/jackc/pgx/v5"
+
 	decimal "github.com/jackc/pgx-shopspring-decimal"
 	"github.com/jackc/pgx/v5/pgtype"
 	"go.uber.org/fx"
@@ -158,8 +160,8 @@ func (uc *UpdateRowUseCase) Execute(
 		return err
 	}
 
-	return connPool.ExecTx(c, func(p *pgx.Pgx) error {
-		tag, err := p.ConnPool.Exec(c, sql)
+	return connPool.ExecuteTransaction(c, func(tx v5.Tx) error {
+		tag, err := tx.Exec(c, sql)
 		if err != nil {
 			uc.Logger.Errorf("error executing update query: %v", err)
 			return err
