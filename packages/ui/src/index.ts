@@ -23,3 +23,4 @@ export * from "./sheet";
 export * from "./checkbox";
 export * from "./badge";
 export * from "./avatar";
+export * from "./alert-dialog";
