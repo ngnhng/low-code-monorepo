@@ -156,7 +156,7 @@ func ParseNullOperator(colType domain.ColumnType) string {
 	case domain.ColumnTypeCurrency:
 		return "null::numeric"
 	case domain.ColumnTypeLink:
-		return "[]::jsonb"
+		return `null::jsonb`
 	default:
 		return "null::text"
 	}
