@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import './styles.css';
+import "./styles.css";
 
-import Title from 'components/title/title';
-import { Input, Button } from '@repo/ui';
-import { Filter, PlusCircle } from 'lucide-react';
+import Title from "components/title/title";
+import { Input } from "@repo/ui";
+import { Filter } from "lucide-react";
 
 import {
   Select,
@@ -13,7 +13,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/ui';
+} from "@repo/ui";
 
 import {
   Table,
@@ -22,38 +22,39 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@repo/ui';
-import { useRouter } from 'next/navigation';
+} from "@repo/ui";
+import { useRouter } from "next/navigation";
+import { CreateProjectForm } from "./_components/create-project-form";
 
 const pseudoProjects = [
   {
-    id: 'trollface',
-    name: 'This is a project name',
-    owner: 'Try guessing my name',
+    id: "trollface",
+    name: "This is a project name",
+    owner: "Try guessing my name",
     lastEdited: Date.now(),
   },
   {
-    id: 'trollface',
-    name: 'This is a project name',
-    owner: 'Try guessing my name',
+    id: "trollface",
+    name: "This is a project name",
+    owner: "Try guessing my name",
     lastEdited: Date.now(),
   },
   {
-    id: 'trollface',
-    name: 'This is a project name',
-    owner: 'Try guessing my name',
+    id: "trollface",
+    name: "This is a project name",
+    owner: "Try guessing my name",
     lastEdited: Date.now(),
   },
   {
-    id: 'trollface',
-    name: 'This is a project name',
-    owner: 'Try guessing my name',
+    id: "trollface",
+    name: "This is a project name",
+    owner: "Try guessing my name",
     lastEdited: Date.now(),
   },
   {
-    id: 'trollface',
-    name: 'This is a project name',
-    owner: 'Try guessing my name',
+    id: "trollface",
+    name: "This is a project name",
+    owner: "Try guessing my name",
     lastEdited: Date.now(),
   },
 ];
@@ -75,12 +76,7 @@ const TopSection = (): JSX.Element => {
           </SelectGroup>
         </SelectContent>
       </Select>
-      <Button>
-        <div className="flex gap-[10px]">
-          <PlusCircle size={20} />
-          Create new project
-        </div>
-      </Button>
+      <CreateProjectForm />
     </div>
   );
 };
