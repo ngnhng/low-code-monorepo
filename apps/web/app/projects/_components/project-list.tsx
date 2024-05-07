@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Input } from "@repo/ui";
@@ -40,58 +41,74 @@ import { CreateProjectForm } from "./create-project-form";
 const pseudoProjects = [
   {
     id: "trollface",
-    name: "This is a project name",
-    owner: "Try guessing my name",
-    lastEdited: Date.now(),
+    name: "Secret Mission",
+    owner: "Alice",
+    updatedAt: "2024-05-07",
   },
   {
     id: "trollface",
-    name: "This is a project name",
-    owner: "Try guessing my name",
-    lastEdited: Date.now(),
+    name: "Blue Sky Thinking",
+    owner: "Bob",
+    updatedAt: "2024-04-22",
   },
   {
     id: "trollface",
-    name: "This is a project name",
-    owner: "Try guessing my name",
-    lastEdited: Date.now(),
+    name: "Marketing Blitz",
+    owner: "Charlie",
+    updatedAt: "2024-03-15",
   },
   {
     id: "trollface",
-    name: "This is a project name",
-    owner: "Try guessing my name",
-    lastEdited: Date.now(),
+    name: "Innovation Engine",
+    owner: "Diana",
+    updatedAt: "2024-02-09",
   },
   {
     id: "trollface",
-    name: "This is a project name",
-    owner: "Try guessing my name",
-    lastEdited: Date.now(),
+    name: "Data Deluge",
+    owner: "Ethan",
+    updatedAt: "2024-01-25",
   },
   {
     id: "trollface",
-    name: "This is a project name",
-    owner: "Try guessing my name",
-    lastEdited: Date.now(),
+    name: "Customer Focus",
+    owner: "Fiona",
+    updatedAt: "2023-12-20",
   },
   {
     id: "trollface",
-    name: "This is a project name",
-    owner: "Try guessing my name",
-    lastEdited: Date.now(),
+    name: "Global Expansion",
+    owner: "Gabriel",
+    updatedAt: "2023-11-11",
   },
   {
     id: "trollface",
-    name: "This is a project name",
-    owner: "Try guessing my name",
-    lastEdited: Date.now(),
+    name: "Code Red",
+    owner: "Hannah",
+    updatedAt: "2023-10-07",
+  },
+  {
+    id: "trollface",
+    name: "Green Thumb",
+    owner: "Isabella",
+    updatedAt: "2023-09-04",
+  },
+  {
+    id: "trollface",
+    name: "Project Alpha",
+    owner: "Jack",
+    updatedAt: "2023-08-01",
   },
 ];
 
-export const TopSection = (): JSX.Element => {
+const TopSection = ({ setSearch }): JSX.Element => {
   return (
     <div className="w-full flex gap-2.5 items-center">
-      <Input placeholder="Search for projects" className="bg-white p-5" />
+      <Input
+        placeholder="Search for projects"
+        className="bg-white p-5"
+        onChange={(e) => setSearch(e.target.value)}
+      />
       <Filter />
       <Select>
         <SelectTrigger className="w-[180px] bg-white p-5">
@@ -110,7 +127,7 @@ export const TopSection = (): JSX.Element => {
   );
 };
 
-export const ProjectLists = (): JSX.Element => {
+const ProjectList = ({ projectList, search }): JSX.Element => {
   const router = useRouter();
 
   const handleClick = (
@@ -132,32 +149,39 @@ export const ProjectLists = (): JSX.Element => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {pseudoProjects.map((project, idx) => (
-            <TableRow
-              key={`${project.id}${idx}`}
-              className="border-0"
-              onClick={() => {
-                router.push(`/${project.id}/edit`);
-              }}
-            >
-              <TableCell className="py-5">{project.name}</TableCell>
-              <TableCell>{project.owner}</TableCell>
-              <TableCell>{project.lastEdited}</TableCell>
-              <TableCell>
-                <ConfirmModal
-                  handleClick={handleClick}
-                  projectId={project.id}
-                />
-              </TableCell>
-            </TableRow>
-          ))}
+          {projectList
+            .filter((project) => {
+              return search === ""
+                ? project
+                : project.name.toLowerCase().includes(search.toLowerCase()) ||
+                    project.owner.toLowerCase().includes(search.toLowerCase());
+            })
+            .map((project, idx) => (
+              <TableRow
+                key={`${project.id}${idx}`}
+                className="border-0"
+                onClick={() => {
+                  router.push(`/${project.id}/edit`);
+                }}
+              >
+                <TableCell className="py-5">{project.name}</TableCell>
+                <TableCell>{project.owner}</TableCell>
+                <TableCell width={200}>{project.updatedAt}</TableCell>
+                <TableCell>
+                  <ConfirmModal
+                    handleClick={handleClick}
+                    projectId={project.id}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
     </div>
   );
 };
 
-export const ConfirmModal = ({ handleClick, projectId }) => {
+const ConfirmModal = ({ handleClick, projectId }) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -186,5 +210,18 @@ export const ConfirmModal = ({ handleClick, projectId }) => {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+};
+
+export const ProjectLists = () => {
+  const [search, setSearch] = useState("");
+  const [list] = useState(pseudoProjects);
+
+  return (
+    <>
+      <TopSection setSearch={setSearch} />
+      <div className="w-full h-[1px] bg-slate-300"></div>
+      <ProjectList search={search} projectList={list} />
+    </>
   );
 };
