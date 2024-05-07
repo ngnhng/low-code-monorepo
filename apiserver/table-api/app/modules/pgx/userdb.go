@@ -231,6 +231,8 @@ func (p *UserDbPgxPool) GetTableInfo(ctx context.Context, tableId string) (*doma
 		return nil, err
 	}
 
+	table.TID = tableId
+
 	return &table, nil
 }
 

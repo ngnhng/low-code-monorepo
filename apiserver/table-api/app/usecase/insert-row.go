@@ -33,8 +33,20 @@ type (
 		Pgx *pgx.PgxManager
 	}
 
-	Row      []RowValue
-	RowValue interface{}
+	Row struct {
+		Cells []Cell
+	}
+
+	Cell struct {
+		Value any
+		Link  *LinkValue
+	}
+
+	LinkValue struct {
+		TableId  string
+		ColumnId string
+		RowIds   []int
+	}
 )
 
 func NewInsertRowUseCase(p InsertRowUseCaseParams) *InsertRowUseCase {
@@ -81,16 +93,23 @@ func (uc *InsertRowUseCase) Execute(
 		return err
 	}
 
-	var rowValues []RowValue
+	// chain multiple rows into a single slice
+	var rowValues []any
 	for _, row := range rows {
-		rowValues = append(rowValues, row...)
+		// extract values from each row
+		values := make([]any, len(row.Cells))
+		for i, cell := range row.Cells {
+			values[i] = cell.Value
+		}
+
+		rowValues = append(rowValues, values...)
 	}
 
-	// Convert []RowValue to []interface{}
-	interfaceRowValues := make([]interface{}, len(rowValues))
-	for i, v := range rowValues {
-		interfaceRowValues[i] = v
-	}
+	//// Convert []RowValue to []interface{}
+	//interfaceRowValues := make([]interface{}, len(rowValues))
+	//for i, v := range rowValues {
+	//	interfaceRowValues[i] = v
+	//}
 
 	sql, err := parameterizeInsertQuery(table, len(rows), len(columns))
 	if err != nil {
@@ -99,21 +118,62 @@ func (uc *InsertRowUseCase) Execute(
 	}
 
 	uc.Logger.Debugf("insert query: %v", sql)
-	uc.Logger.Debugf("insert values: %v", interfaceRowValues)
+	uc.Logger.Debugf("insert values: %v", rowValues)
 	uc.Logger.Debugf("inserting data: %v", data)
 	uc.Logger.Debugf("inserting into table: %v", table)
 
 	// begin insert transaction
-	connPool.ExecTx(c, func(p *pgx.Pgx) error {
-		_, err := p.ConnPool.Query(c, sql, interfaceRowValues...)
+	return connPool.ExecTx(c, func(p *pgx.Pgx) error {
+		insertedRows, err := p.ConnPool.Query(c, sql, rowValues...)
 		if err != nil {
 			return err
+		}
+
+		defer insertedRows.Close()
+
+		ids := make([]int, 0)
+		for insertedRows.Next() {
+			var id int
+			err = insertedRows.Scan(&id)
+			if err != nil {
+				return err
+			}
+			ids = append(ids, id)
+		}
+
+		// if there are no rows inserted, return an error
+		if len(ids) == 0 {
+			return fmt.Errorf("no rows inserted")
+		}
+
+		// for each row, if link is not nil, update the link value of the associated column
+		for i, row := range rows {
+			for _, cell := range row.Cells {
+				if cell.Link != nil {
+
+					tableId := cell.Link.TableId
+					columnId := cell.Link.ColumnId
+
+					// get the table definition
+					linkTable, err := userDbPool.GetTableInfo(c, tableId)
+					if err != nil {
+						return err
+					}
+
+					updateQuery := `UPDATE "%s" SET "%s" = "%s" || $1::jsonb WHERE id = $2;`
+
+					// update the link column
+					_, err = p.ConnPool.Exec(c, fmt.Sprintf(updateQuery, linkTable.Name, columnId, columnId), cell.Link.RowIds, ids[i])
+					if err != nil {
+						return err
+					}
+				}
+			}
 		}
 
 		return nil
 	})
 
-	return nil
 }
 
 // parseValues accepts a data object and returns a slice of rows, if there
@@ -121,20 +181,49 @@ func (uc *InsertRowUseCase) Execute(
 func parseValues(columns []domain.Column, data *domain.InsertRowRequest) ([]Row, error) {
 	rows := make([]Row, len(data.Rows))
 
+	// iterate over each new row to be inserted
 	for i, row := range data.Rows {
-		r := make(Row, len(columns))
 
+		// create a row object
+		r := Row{
+			Cells: make([]Cell, len(columns)),
+		}
+
+		// for each column, parse the new value
 		for j, col := range columns {
+			// if the column is present in the data, parse the value
 			if v, ok := row[col.Id]; ok {
 				parsed, err := parseValue(col.Type, v)
 				if err != nil {
 					return nil, err
 				}
 
-				r[j] = parsed
+				// if the column is a link, create a link value
+				if col.Type == domain.ColumnTypeLink {
+					link := &LinkValue{
+						TableId:  col.Reference.TableId,
+						ColumnId: col.Reference.ColumnId,
+					}
+
+					// parse row ids
+					err = json.Unmarshal([]byte(v), &link.RowIds)
+					if err != nil {
+						return nil, err
+					}
+
+					r.Cells[j] = Cell{
+						Value: nil,
+						Link:  link,
+					}
+
+				}
+
+				r.Cells[j].Value = parsed
 
 			} else {
-				r[j] = nil
+
+				// if the column is not present in the data, consider it as NULL
+				r.Cells[j].Value = nil
 			}
 		}
 
@@ -199,7 +288,7 @@ func parameterizeInsertQuery(table *domain.Table, numberOfRows, cellsPerRow int)
 	}
 
 	sql := fmt.Sprintf(
-		"INSERT INTO \"%s\" (%s) VALUES %s",
+		"INSERT INTO \"%s\" (%s) VALUES %s RETURNING id",
 		table.Name,
 		strings.Join(columnNames, ", "),
 		strings.Join(valuePlaceholders, ", "),

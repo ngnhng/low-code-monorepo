@@ -3,12 +3,15 @@ package usecase
 import (
 	"fmt"
 	"strings"
+	"time"
 	"yalc/dbms/domain"
 	"yalc/dbms/modules/config"
 	"yalc/dbms/modules/logger"
 	"yalc/dbms/modules/pgx"
 	"yalc/dbms/shared"
 
+	decimal "github.com/jackc/pgx-shopspring-decimal"
+	"github.com/jackc/pgx/v5/pgtype"
 	"go.uber.org/fx"
 )
 
@@ -136,7 +139,7 @@ func (uc *UpdateRowUseCase) Execute(
 			//}
 
 			if parsedVal, err := shared.ParseValue(table.Columns[j].Type, val); err == nil {
-				quotedValues[j] = fmt.Sprintf("%v", parsedVal)
+				quotedValues[j] = parseToPostgresValue(parsedVal)
 			} else {
 				quotedValues[j] = shared.ParseNullOperator(table.Columns[j].Type)
 			}
@@ -155,7 +158,7 @@ func (uc *UpdateRowUseCase) Execute(
 		return err
 	}
 
-	connPool.ExecTx(c, func(p *pgx.Pgx) error {
+	return connPool.ExecTx(c, func(p *pgx.Pgx) error {
 		tag, err := p.ConnPool.Exec(c, sql)
 		if err != nil {
 			uc.Logger.Errorf("error executing update query: %v", err)
@@ -170,7 +173,6 @@ func (uc *UpdateRowUseCase) Execute(
 		return nil
 	})
 
-	return nil
 }
 
 func reorderOnMap(m map[string]string, keys []string) []string {
@@ -209,5 +211,25 @@ func getCastOperator(t domain.ColumnType) string {
 		return "text"
 	default:
 		return "text"
+	}
+}
+
+func parseToPostgresValue(v any) string {
+	switch val := v.(type) {
+	case string:
+		return fmt.Sprintf("%v", val)
+	case int:
+		return fmt.Sprintf("%d", val)
+	case bool:
+		return fmt.Sprintf("%t", val)
+	case pgtype.Time:
+		ms := val.Microseconds
+		return fmt.Sprintf(`'%v'::time`, time.Unix(0, ms*1000))
+	case time.Time:
+		return fmt.Sprintf(`'%v'::date`, val.Format("2006-01-02"))
+	case decimal.Decimal:
+		return fmt.Sprintf(`'%v'::numeric`, val)
+	default:
+		return fmt.Sprintf("'%s'", val)
 	}
 }

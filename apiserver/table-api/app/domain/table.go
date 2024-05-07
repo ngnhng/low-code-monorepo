@@ -24,12 +24,18 @@ type (
 	}
 
 	Column struct {
-		Id   string     `json:"id,omitempty"`
-		Name string     `json:"name"`
-		Type ColumnType `json:"type"`
+		Id        string           `json:"id,omitempty"`
+		Name      string           `json:"name"`
+		Type      ColumnType       `json:"type"`
+		Reference *ColumnReference `json:"reference,omitempty"`
 	}
 
 	ColumnType string
+
+	ColumnReference struct {
+		TableId  string `json:"table_id,omitempty"`
+		ColumnId string `json:"column_id,omitempty"`
+	}
 )
 
 const (

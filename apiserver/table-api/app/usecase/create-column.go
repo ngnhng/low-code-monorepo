@@ -54,72 +54,183 @@ func (uc *CreateColumnUseCase) Execute(
 		return nil, err
 	}
 
-	userTx, err := userDbPool.Begin(c)
-	if err != nil {
-		uc.Logger.Debugf("error beginning transaction: %v", err)
-		return nil, err
-	}
+	//userTx, err := userDbPool.Begin(c)
+	//if err != nil {
+	//	uc.Logger.Debugf("error beginning transaction: %v", err)
+	//	return nil, err
+	//}
 
-	defer userDbPool.Rollback(userTx)
+	//defer userDbPool.Rollback(userTx)
 
-	table, err := userDbPool.GetTableInfo(userTx, tableId)
-	if err != nil {
-		uc.Logger.Debugf("error getting table info: %v", err)
-		return nil, err
-	}
+	//table, err := userDbPool.GetTableInfo(userTx, tableId)
+	//if err != nil {
+	//	uc.Logger.Debugf("error getting table info: %v", err)
+	//	return nil, err
+	//}
 
-	// create ADD COLUMN statements
-	newColumns := make([]domain.Column, len(data.Columns))
-	newColumnsQuery := make([]string, len(data.Columns))
-	for i, col := range data.Columns {
-		newColumns[i] = domain.Column{
-			Name: col.Name,
-			Type: col.Type,
-			Id:   shared.GenerateColumnId(),
+	//// create ADD COLUMN statements
+	//newColumns := make([]domain.Column, len(data.Columns))
+	//newColumnsQuery := make([]string, len(data.Columns))
+	//for i, col := range data.Columns {
+	//	newColumns[i] = domain.Column{
+	//		Name: col.Name,
+	//		Type: col.Type,
+	//		Id:   shared.GenerateColumnId(),
+	//	}
+
+	//	newColumnsQuery[i] = "ADD COLUMN \"" + newColumns[i].Id + "\" " + shared.ColumnToPostgresType(&col.Type)
+	//}
+
+	//uc.Logger.Debugf("new columns: %v", newColumns)
+
+	//sql := `ALTER TABLE "%s" %s;`
+
+	//uc.Logger.Debugf("creating column: %s", fmt.Sprintf(sql, table.Name, strings.Join(newColumnsQuery, ", ")))
+
+	//// Get a connection pool of the database
+	//connPool, err := uc.Pgx.GetOrCreatePgxPool(shared.GenerateDatabaseName(projectId, ctx.GetUserId()))
+	//if err != nil {
+	//	uc.Logger.Debugf("error getting pgx pool: %v", err)
+	//	return nil, err
+	//}
+
+	//connTx, err := connPool.Begin(c)
+	//if err != nil {
+	//	uc.Logger.Debugf("error beginning transaction: %v", err)
+	//	return nil, err
+	//}
+
+	//defer connPool.Rollback(connTx)
+
+	//// execute the query
+	//_, err = connPool.ConnPool.Query(connTx, fmt.Sprintf(sql, table.Name, strings.Join(newColumnsQuery, ", ")))
+	//if err != nil {
+	//	uc.Logger.Debugf("error executing query: %v", err)
+	//	return nil, err
+	//}
+
+	//// update the table metadata
+	//table.Columns = append(table.Columns, newColumns...)
+	//err = userDbPool.UpdateTableInfo(userTx, tableId, table)
+	//if err != nil {
+	//	uc.Logger.Debugf("error updating table info: %v", err)
+	//	return nil, err
+	//}
+
+	//// commit the transaction
+	//connPool.Commit(connTx)
+	//userDbPool.Commit(userTx)
+
+	//return table, nil
+
+	result := &domain.Table{}
+
+	err = userDbPool.ExecTx(c, func(udpp *pgx.UserDbPgxPool) error {
+		table, err := udpp.GetTableInfo(c, tableId)
+		if err != nil {
+			uc.Logger.Debugf("error getting table info: %v", err)
+			return err
 		}
 
-		newColumnsQuery[i] = "ADD COLUMN \"" + newColumns[i].Id + "\" " + shared.ColumnToPostgresType(&col.Type)
-	}
+		// Get a connection pool of the database
+		connPool, err := uc.Pgx.GetOrCreatePgxPool(shared.GenerateDatabaseName(projectId, ctx.GetUserId()))
+		if err != nil {
+			uc.Logger.Debugf("error getting pgx pool: %v", err)
+			return err
+		}
 
-	uc.Logger.Debugf("new columns: %v", newColumns)
+		// create ADD COLUMN statements
+		newColumns := make([]domain.Column, len(data.Columns))
+		newColumnsQuery := make([]string, len(data.Columns))
 
-	sql := `ALTER TABLE "%s" %s;`
+		// linked columns
+		return connPool.ExecTx(c, func(p *pgx.Pgx) error {
+			for i, col := range data.Columns {
+				newColumns[i] = domain.Column{
+					Name: col.Name,
+					Type: col.Type,
+					Id:   shared.GenerateColumnId(),
+				}
 
-	uc.Logger.Debugf("creating column: %s", fmt.Sprintf(sql, table.Name, strings.Join(newColumnsQuery, ", ")))
+				newColumnsQuery[i] = "ADD COLUMN \"" + newColumns[i].Id + "\" " + shared.ColumnToPostgresType(&col.Type)
 
-	// Get a connection pool of the database
-	connPool, err := uc.Pgx.GetOrCreatePgxPool(shared.GenerateDatabaseName(projectId, ctx.GetUserId()))
-	if err != nil {
-		uc.Logger.Debugf("error getting pgx pool: %v", err)
-		return nil, err
-	}
+				if col.Type == domain.ColumnTypeLink {
+					// create new link column on the other table
+					newColId := shared.GenerateColumnId()
 
-	connTx, err := connPool.Begin(c)
-	if err != nil {
-		uc.Logger.Debugf("error beginning transaction: %v", err)
-		return nil, err
-	}
+					linkCol := domain.Column{
+						Name: table.Name,
+						Id:   newColId,
+						Type: domain.ColumnTypeLink,
+						Reference: &domain.ColumnReference{
+							TableId:  table.TID,
+							ColumnId: newColumns[i].Id,
+						},
+					}
 
-	defer connPool.Rollback(connTx)
+					linkedTable, err := udpp.GetTableInfo(c, col.Reference.TableId)
+					if err != nil {
+						uc.Logger.Debugf("error getting linked table info: %v", err)
+						return err
+					}
 
-	// execute the query
-	_, err = connPool.ConnPool.Query(connTx, fmt.Sprintf(sql, table.Name, strings.Join(newColumnsQuery, ", ")))
-	if err != nil {
-		uc.Logger.Debugf("error executing query: %v", err)
-		return nil, err
-	}
+					// also set the col id to new table
+					//newColumns[i].Reference.ColumnId = newColId
+					newColumns[i].Reference = &domain.ColumnReference{
+						TableId:  linkedTable.TID,
+						ColumnId: newColId,
+					}
 
-	// update the table metadata
-	table.Columns = append(table.Columns, newColumns...)
-	err = userDbPool.UpdateTableInfo(userTx, tableId, table)
-	if err != nil {
-		uc.Logger.Debugf("error updating table info: %v", err)
-		return nil, err
-	}
+					//linkedColumns = append(linkedColumns, linkCol)
 
-	// commit the transaction
-	connPool.Commit(connTx)
-	userDbPool.Commit(userTx)
+					// set linked column of new table
+					sql := `ALTER TABLE "%s" ADD COLUMN "%s" JSONB;`
 
-	return table, nil
+					uc.Logger.Debugf("creating link column: %s",
+						fmt.Sprintf(sql, linkedTable.Name, newColId))
+
+					_, err = p.ConnPool.Exec(c, fmt.Sprintf(sql, linkedTable.Name, newColId))
+					if err != nil {
+						uc.Logger.Debugf("error creating link column: %v", err)
+						return err
+					}
+
+					// update table metadata
+					linkedTable.Columns = append(linkedTable.Columns, linkCol)
+					err = udpp.UpdateTableInfo(c, col.Reference.TableId, linkedTable)
+					if err != nil {
+						uc.Logger.Debugf("error updating linked table info: %v", err)
+						return err
+					}
+				}
+			}
+
+			uc.Logger.Debugf("new columns: %v", newColumns)
+
+			sql := `ALTER TABLE "%s" %s;`
+
+			uc.Logger.Debugf("creating column: %s", fmt.Sprintf(sql, table.Name, strings.Join(newColumnsQuery, ", ")))
+
+			_, err := p.ConnPool.Exec(c, fmt.Sprintf(sql, table.Name, strings.Join(newColumnsQuery, ", ")))
+			if err != nil {
+				uc.Logger.Debugf("error executing query: %v", err)
+				return err
+			}
+
+			// update the table metadata
+			table.Columns = append(table.Columns, newColumns...)
+			err = udpp.UpdateTableInfo(c, tableId, table)
+			if err != nil {
+				uc.Logger.Debugf("error updating table info: %v", err)
+				return err
+			}
+
+			result = table
+
+			return nil
+		})
+
+	})
+
+	return result, err
 }
