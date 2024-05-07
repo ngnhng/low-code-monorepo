@@ -17,7 +17,6 @@ import axios from "axios";
 
 import { getBusinessObject } from "bpmn-js/lib/util/ModelUtil";
 import { useEffect, useState } from "react";
-import { Trash } from "react-feather";
 import useSWR from "swr";
 
 export default function UserTaskProps({ element, modeler }) {

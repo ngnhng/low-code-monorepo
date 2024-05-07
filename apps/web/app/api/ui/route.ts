@@ -18,12 +18,26 @@ const mockData = {
                             id: {
                                 value: "AshallahMasshallah"
                             }
+                        },
+                        {
+                            label: "Time",
+                            type: "time",
+                            id: {
+                                value: "MohammedAfizRafiz"
+                            }
                         }
                     ],
                     workflowId: "",
                 },
                 type: "Form",
             },
+            {
+                props: {
+                    tableId: "abcd",
+                    formName: "Form Name 123"
+                },
+                type: "FormTable"
+            }
         ],
         root: { props: { title: "Test" } },
         zones: {},

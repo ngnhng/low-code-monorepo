@@ -8,18 +8,19 @@ import { Render } from "@measured/puck";
 
 import config from "../../../../[projectId]/edit/_config"
 
+const fetcher = async (key: string) => {
+    const res = await fetch(key);
+
+    if (!res.ok) {
+        return new Error("Something has gone wrong?");
+    }
+
+    return await res.json();
+};
+
 export default function Page({ params }: { params: { "project-id": string, "route-name": string[] } }) {
     const route = params["route-name"] ? params["route-name"].join("") : "";
 
-    const fetcher = async (key: string) => {
-        const res = await fetch(key);
-
-        if (!res.ok) {
-            return new Error("Something has gone wrong?");
-        }
-
-        return await res.json();
-    };
 
     const { data, isLoading, error } = useSWR("/api/ui", fetcher);
 

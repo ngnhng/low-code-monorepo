@@ -7,29 +7,16 @@ import { Render, Puck } from "@measured/puck";
 import "@measured/puck/puck.css";
 
 import { useState } from "react";
-import config, { initialData } from "./_config";
+import config from "./_config";
 import { Switch, Label, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@repo/ui";
 import axios from "axios";
 import useSWR from "swr";
-
-const isBrowser = typeof window !== "undefined";
 
 export default function Page() {
     const [route, setRoute] = useState<string>("/");
     const componentKey = Buffer.from(Object.keys(config.components).join("-")).toString("base64");
     const key = `puck-demo:${componentKey}:${route}`;
 
-    const [data, setData] = useState<Data>(() => {
-        if (isBrowser) {
-            const dataStr = localStorage.getItem(key);
-
-            if (dataStr) {
-                return JSON.parse(dataStr);
-            }
-
-            return initialData[route] ?? undefined;
-        }
-    });
 
     const { data: dataFromAPI, isLoading } = useSWR("/api/ui", async (url) => {
         const res = await axios.get(url);
@@ -92,7 +79,7 @@ export default function Page() {
                             config={config}
                             data={dataFromAPI[route]}
                             headerPath={route}
-                            onChange={setData}
+                            // onChange={setData}
                             onPublish={async (data: Data) => {
                                 localStorage.setItem(key, JSON.stringify(data));
                             }}
