@@ -8,7 +8,7 @@ import { Fragment, useState, useEffect } from "react";
 
 type FormInput = {
     label: string;
-    type: "number" | "string" | "boolean" | "date";
+    type: "number" | "string" | "boolean" | "date" | "time";
     id: {
         value: string;
     };
@@ -35,6 +35,7 @@ export const Form: ComponentConfig<FormProps> = {
                         { label: "String", value: "string" },
                         { label: "Boolean", value: "boolean" },
                         { label: "Date", value: "date" },
+                        { label: "Time", value: "time" },
                     ],
                 },
                 id: {
@@ -67,14 +68,12 @@ export const Form: ComponentConfig<FormProps> = {
     render: ({ inputs, workflowId, id: formID, formName }) => {
         const [data, setData] = useState<any>({});
         const {
-            user: {
-                currentUser
-            }
+            user: { currentUser },
         } = useMobxStore();
 
         const postData = async () => {
-            console.log(workflowId, currentUser?.email, data)
-        }
+            console.log(workflowId, currentUser?.email, data);
+        };
 
         return (
             <div className="flex flex-col gap-2.5 w-96 ml-auto mr-auto">
@@ -131,6 +130,18 @@ export const Form: ComponentConfig<FormProps> = {
                                                         });
                                                     }}
                                                 />
+                                            </>
+                                        ) : type === "time" ? (
+                                            <>
+                                                <Label>{label}</Label>
+                                                <input type="time" className="p-2.5 rounded-md" onChange={(event) => {
+                                                    const { value } = event.target;
+                                                    data[sendId] = value;
+
+                                                    setData({
+                                                        ...data
+                                                    })
+                                                }}/>
                                             </>
                                         ) : (
                                             <>
