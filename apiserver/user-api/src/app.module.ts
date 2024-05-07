@@ -22,6 +22,8 @@ import { PasetoAuthGuard } from './guards/paseto-auth.guard';
 import { LoggingInterceptor } from './shared/interceptor/logging.interceptor';
 import { SerializerInterceptor } from './shared/interceptor/serializer.interceptor';
 import { ApiConfigService } from './shared/services/api-config.service';
+import { ProjectController } from '@modules/project/controllers/project.controller';
+import { ProjectModule } from '@modules/project/project.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,10 +35,12 @@ import { ApiConfigService } from './shared/services/api-config.service';
     SharedModule,
     UserModule,
     AuthModule,
+    ProjectModule,
   ],
   controllers: [
     AppController,
     UserController,
+    ProjectController,
     //AuthenticationController,
     //OAuthController,
   ],
