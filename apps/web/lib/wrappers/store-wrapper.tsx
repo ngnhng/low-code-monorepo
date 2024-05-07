@@ -17,7 +17,7 @@ const StoreWrapper: FC<IStoreWrapper> = observer((properties) => {
 
     const {
         user: { setDefaultUser },
-        appConfig: { envConfig, fetchEnvConfig },
+        appConfig: { fetchEnvConfig },
     } = useMobxStore();
 
     const { data: env } = useSWR("ENV_CONFIG", () => fetchEnvConfig(), {
@@ -34,7 +34,7 @@ const StoreWrapper: FC<IStoreWrapper> = observer((properties) => {
         };
 
         setDevUser();
-    }, [envConfig]);
+    }, [env]);
 
     if (!env) {
         return <div>Loading...</div>;

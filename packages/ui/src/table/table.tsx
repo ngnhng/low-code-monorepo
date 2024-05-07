@@ -115,11 +115,14 @@ const TableRowButton = React.forwardRef<
 >(({ className, onClick, ...props }, ref) => (
   <tr
     ref={ref}
+	role="button"
+	tabIndex={0}
     className={cn(
       "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted cursor-pointer",
       className
     )}
     onClick={onClick}
+	onKeyDown={(e) => e.key === "Enter" && onClick()}
     {...props}
   />
 ));
