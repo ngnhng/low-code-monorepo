@@ -90,13 +90,18 @@ func (uc *GetTableDataUseCase) Execute(
 		return nil
 	})
 
-	//// parse the columns to result
-	//for _, col := range table.Columns {
-	//	result.Columns = append(result.Columns, domain.Column{
-	//		Id:   col.Id,
-	//		Name: col.Name,
-	//		Type: col.Type,
-	//	})
+	// Create a map to store column names and IDs
+	colDataMap := make(map[string]string)
+	for _, colData := range table.Columns {
+		colDataMap[colData.Id] = colData.Name
+	}
+
+	// Assign IDs to result columns
+	for _, col := range result.Columns {
+		if name, ok := colDataMap[col.Id]; ok {
+			col.Name = name
+		}
+	}
 
 	//	//if i == 0 {
 	//	//	result.Columns[i].IsPrimaryKey = true

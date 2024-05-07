@@ -244,9 +244,10 @@ func (p *Pgx) CreateTable(ctx context.Context, def *domain.Table) (*domain.Table
 
 	for i := range def.Columns {
 		table.Columns = append(table.Columns, domain.Column{
-			Id:   colIds[i],
-			Name: def.Columns[i].Name,
-			Type: def.Columns[i].Type,
+			Id:        colIds[i],
+			Name:      def.Columns[i].Name,
+			Type:      def.Columns[i].Type,
+			Reference: def.Columns[i].Reference,
 		})
 	}
 
@@ -365,8 +366,8 @@ func (p *Pgx) GetTableData(
 	cols := make([]domain.Column, len(fields))
 	for i, field := range fields {
 		cols[i] = domain.Column{
-			Id:   field.Name,
-			Name: field.Name,
+			Id: field.Name,
+			//Name: field.Name,
 			Type: domain.DataTypeMap[field.DataTypeOID],
 		}
 	}
