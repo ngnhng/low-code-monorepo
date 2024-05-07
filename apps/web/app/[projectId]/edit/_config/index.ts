@@ -1,4 +1,4 @@
-import type { Config, Data } from "@measured/puck";
+import type { Config } from "@measured/puck";
 import {
   ButtonGroup,
   ButtonGroupProps,
