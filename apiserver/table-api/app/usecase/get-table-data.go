@@ -7,6 +7,8 @@ import (
 	"yalc/dbms/modules/pgx"
 	"yalc/dbms/shared"
 
+	v5 "github.com/jackc/pgx/v5"
+
 	"go.uber.org/fx"
 )
 
@@ -79,8 +81,8 @@ func (uc *GetTableDataUseCase) Execute(
 		Rows:    make([][]string, 0),
 	}
 
-	err = connPool.ExecTx(c, func(p *pgx.Pgx) error {
-		tableData, err := p.GetTableData(c, table.Name, query, limit, offset)
+	err = connPool.ExecuteTransaction(c, func(tx v5.Tx) error {
+		tableData, err := connPool.GetTableData(c, table.Name, query, limit, offset)
 		if err != nil {
 			return err
 		}

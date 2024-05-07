@@ -9,6 +9,8 @@ import (
 	"yalc/dbms/modules/pgx"
 	"yalc/dbms/shared"
 
+	v5 "github.com/jackc/pgx/v5"
+
 	"go.uber.org/fx"
 )
 
@@ -54,7 +56,7 @@ func (uc *DeleteColumnUseCase) Execute(
 		return err
 	}
 
-	return userDbPool.ExecTx(c, func(udpp *pgx.UserDbPgxPool) error {
+	return userDbPool.ExecuteTransaction(c, func(userTx v5.Tx) error {
 
 		table, err := userDbPool.GetTableInfo(c, tableId)
 		if err != nil {
@@ -83,8 +85,8 @@ func (uc *DeleteColumnUseCase) Execute(
 			return err
 		}
 
-		return connPool.ExecTx(c, func(p *pgx.Pgx) error {
-			_, err := p.ConnPool.Exec(c, fmt.Sprintf(sql, table.Name, strings.Join(deleteColumnsQuery, ", ")))
+		return connPool.ExecuteTransaction(c, func(connTx v5.Tx) error {
+			_, err := connTx.Exec(c, fmt.Sprintf(sql, table.Name, strings.Join(deleteColumnsQuery, ", ")))
 			if err != nil {
 				uc.Logger.Debugf("error deleting column: %v", err)
 				return err

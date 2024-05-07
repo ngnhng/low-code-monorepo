@@ -8,6 +8,8 @@ import (
 	"yalc/dbms/modules/pgx"
 	"yalc/dbms/shared"
 
+	v5 "github.com/jackc/pgx/v5"
+
 	"go.uber.org/fx"
 )
 
@@ -104,13 +106,13 @@ func (uc *CreateTableUseCase) Execute(
 			}
 
 			// set linked column of new table
-			if err := connPool.ExecTx(c, func(p *pgx.Pgx) error {
+			if err := connPool.ExecuteTransaction(c, func(tx v5.Tx) error {
 				sql := `ALTER TABLE "%s" ADD COLUMN "%s" JSONB;`
 
 				uc.Logger.Debugf("creating link column: %s",
 					fmt.Sprintf(sql, linkedTable.Name, newColId))
 
-				_, err := p.ConnPool.Exec(c, fmt.Sprintf(sql, linkedTable.Name, newColId))
+				_, err := tx.Exec(c, fmt.Sprintf(sql, linkedTable.Name, newColId))
 				if err != nil {
 					uc.Logger.Debugf("error creating link column: %v", err)
 					return err

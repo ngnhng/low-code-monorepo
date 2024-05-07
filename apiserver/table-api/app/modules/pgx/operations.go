@@ -29,6 +29,8 @@ type (
 
 	// connCtx key.
 	connCtx struct{}
+
+	txFunc func(tx pgx.Tx) error
 )
 
 func (p *Pgx) Begin(ctx context.Context) (context.Context, error) {
@@ -62,22 +64,46 @@ func (p *Pgx) Rollback(ctx context.Context) error {
 	return nil
 }
 
-// ExecTx executes a Transaction with the provided function
-func (p *Pgx) ExecTx(ctx context.Context, f func(*Pgx) error) error {
-	tx, err := p.ConnPool.BeginTx(ctx, pgx.TxOptions{
-		IsoLevel: pgx.ReadCommitted, // the transaction can only see data committed before the transaction began
-	})
+//// ExecTx executes a Transaction with the provided function
+//func (p *Pgx) ExecTx(ctx context.Context, f func(*Pgx) error) error {
+//	tx, err := p.ConnPool.BeginTx(ctx, pgx.TxOptions{
+//		IsoLevel: pgx.ReadCommitted, // the transaction can only see data committed before the transaction began
+//	})
+//	if err != nil {
+//		p.Logger.Errorf("failed to begin transaction: %v", err)
+//		return err
+//	}
+//	p.Logger.Debug("transaction started")
+//	defer tx.Rollback(ctx)
+
+//	if err := f(p); err != nil {
+//		if rbErr := tx.Rollback(ctx); rbErr != nil {
+//			return fmt.Errorf("tx: %v, rb: %v", err, rbErr)
+//		}
+//		p.Logger.Debug("transaction rolled back")
+//		return err
+//	}
+//	p.Logger.Debug("transaction committed")
+//	return tx.Commit(ctx)
+//}
+
+func (p *Pgx) ExecuteTransaction(ctx context.Context, f txFunc) error {
+	ctx, err := p.Begin(ctx)
 	if err != nil {
-		p.Logger.Errorf("failed to begin transaction: %v", err)
 		return err
 	}
-	p.Logger.Debug("transaction started")
-	defer tx.Rollback(ctx)
 
-	if err := f(p); err != nil {
+	tx, ok := ctx.Value(txCtx{}).(pgx.Tx)
+	if !ok {
+		return fmt.Errorf("no transaction found in context")
+	}
+
+	err = f(tx)
+	if err != nil {
 		if rbErr := tx.Rollback(ctx); rbErr != nil {
 			return fmt.Errorf("tx: %v, rb: %v", err, rbErr)
 		}
+
 		return err
 	}
 
@@ -171,12 +197,27 @@ func (db *Pgx) Release(ctx context.Context) {
 
 // CreateTable creates a new table in the database
 func (p *Pgx) CreateTable(ctx context.Context, def *domain.Table) (*domain.Table, error) {
-	// acquire a connection from the pool
-	//conn, err := p.acquireConn(ctx)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//defer p.releaseConn(conn)
+	tx, ok := ctx.Value(txCtx{}).(pgx.Tx)
+	if !ok {
+		// acquire a connection from the pool
+		conn, err := p.acquireConn(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		defer p.releaseConn(conn)
+
+		return p.createTable(ctx, conn.Exec, def)
+	}
+
+	return p.createTableTx(ctx, tx, def)
+}
+
+func (p *Pgx) createTable(
+	ctx context.Context,
+	exec func(context.Context, string, ...interface{}) (pgconn.CommandTag, error),
+	def *domain.Table,
+) (*domain.Table, error) {
 
 	colIds := make([]string, len(def.Columns))
 
@@ -202,12 +243,7 @@ func (p *Pgx) CreateTable(ctx context.Context, def *domain.Table) (*domain.Table
 
 	p.Logger.Debugf("creating table: %s", s)
 
-	tx, ok := ctx.Value(txCtx{}).(pgx.Tx)
-	if !ok {
-		return nil, fmt.Errorf("no transaction found in context")
-	}
-
-	tag, err := tx.Exec(ctx, s)
+	tag, err := exec(ctx, s)
 
 	var pgErr *pgconn.PgError
 	if err != nil {
@@ -254,14 +290,49 @@ func (p *Pgx) CreateTable(ctx context.Context, def *domain.Table) (*domain.Table
 	return table, nil
 }
 
-func (p *Pgx) Upsert(ctx context.Context, table string, colVal map[string]any) error {
-	// acquire a connection from the pool
-	//conn, err := p.acquireConn(ctx)
-	//if err != nil {
-	//	return err
-	//}
+func (p *Pgx) createTableTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	def *domain.Table,
+) (*domain.Table, error) {
+	return p.createTable(ctx, tx.Exec, def)
+}
 
-	//defer p.releaseConn(conn)
+func (p *Pgx) Upsert(
+	ctx context.Context,
+	table string,
+	colVal map[string]any,
+) error {
+	tx, ok := ctx.Value(txCtx{}).(pgx.Tx)
+	if !ok {
+		// acquire a connection from the pool
+		conn, err := p.acquireConn(ctx)
+		if err != nil {
+			return err
+		}
+		defer p.releaseConn(conn)
+
+		return p.upsert(ctx, conn.Exec, table, colVal)
+	}
+
+	return p.upsertTx(ctx, tx, table, colVal)
+}
+
+func (p *Pgx) upsertTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	table string,
+	colVal map[string]any,
+) error {
+	return p.upsert(ctx, tx.Exec, table, colVal)
+}
+
+func (p *Pgx) upsert(
+	ctx context.Context,
+	exec func(context.Context, string, ...interface{}) (pgconn.CommandTag, error),
+	table string,
+	colVal map[string]any,
+) error {
 
 	// upsert the data to the table
 	s := `INSERT INTO "{tableName}" ({columns}) VALUES ({values}) ON CONFLICT ({conflictColumns}) DO UPDATE SET {updateColumns};`
@@ -290,12 +361,7 @@ func (p *Pgx) Upsert(ctx context.Context, table string, colVal map[string]any) e
 
 	p.Logger.Debugf("upserting data: %s", s)
 
-	tx, ok := ctx.Value(txCtx{}).(pgx.Tx)
-	if !ok {
-		return fmt.Errorf("no transaction found in context")
-	}
-
-	_, err := tx.Exec(ctx, s)
+	_, err := exec(ctx, s)
 
 	if err != nil {
 		return fmt.Errorf("failed to upsert data: %v", err)
@@ -310,13 +376,38 @@ func (p *Pgx) GetTableData(
 	query *domain.Query,
 	limit, offset int,
 ) (*domain.GetTableDataResponse, error) {
-	// acquire a connection from the pool
-	//conn, err := p.acquireConn(ctx)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//defer p.releaseConn(conn)
+	tx, ok := ctx.Value(txCtx{}).(pgx.Tx)
+	if !ok {
+		// acquire a connection from the pool
+		conn, err := p.acquireConn(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer p.releaseConn(conn)
 
+		return p.getTableData(ctx, conn.Query, tableName, query, limit, offset)
+	}
+
+	return p.getTableDataTx(ctx, tx, tableName, query, limit, offset)
+}
+
+func (p *Pgx) getTableDataTx(
+	ctx context.Context,
+	tx pgx.Tx,
+	tableName string,
+	query *domain.Query,
+	limit, offset int,
+) (*domain.GetTableDataResponse, error) {
+	return p.getTableData(ctx, tx.Query, tableName, query, limit, offset)
+}
+
+func (p *Pgx) getTableData(
+	ctx context.Context,
+	queryFn func(ctx context.Context, sql string, args ...any) (pgx.Rows, error),
+	tableName string,
+	query *domain.Query,
+	limit, offset int,
+) (*domain.GetTableDataResponse, error) {
 	// replace ? with $1, $2, $3, ... in the query
 	queryStr := shared.ReplacePlaceholders(query.Sql)
 	params := query.Params
@@ -324,7 +415,7 @@ func (p *Pgx) GetTableData(
 	p.Logger.Debugf("getting table data: %s", fmt.Sprintf(`SELECT * FROM "%s" WHERE %s LIMIT %d OFFSET %d;`, tableName, queryStr, limit, offset))
 
 	// get the table data
-	rows, err := p.ConnPool.Query(
+	rows, err := queryFn(
 		ctx,
 		fmt.Sprintf(`SELECT * FROM "%s" WHERE %s LIMIT %d OFFSET %d;`, tableName, queryStr, limit, offset),
 		params...,

@@ -9,6 +9,8 @@ import (
 	"yalc/dbms/modules/pgx"
 	"yalc/dbms/shared"
 
+	v5 "github.com/jackc/pgx/v5"
+
 	"go.uber.org/fx"
 )
 
@@ -79,8 +81,8 @@ func (uc *DeleteRowUseCase) Execute(
 		return fmt.Errorf("error getting pgx pool: %v", err)
 	}
 
-	connPool.ExecTx(c, func(p *pgx.Pgx) error {
-		_, err := p.ConnPool.Query(c, fmt.Sprintf(sql, table.Name, whereClause))
+	connPool.ExecuteTransaction(c, func(tx v5.Tx) error {
+		_, err := tx.Query(c, fmt.Sprintf(sql, table.Name, whereClause))
 		if err != nil {
 			uc.Logger.Debugf("error deleting rows: %v", err)
 			return err

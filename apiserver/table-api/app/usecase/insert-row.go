@@ -10,6 +10,9 @@ import (
 	"yalc/dbms/modules/config"
 	"yalc/dbms/modules/logger"
 	"yalc/dbms/modules/pgx"
+
+	v5 "github.com/jackc/pgx/v5"
+
 	"yalc/dbms/shared"
 
 	"github.com/shopspring/decimal"
@@ -45,7 +48,8 @@ type (
 	LinkValue struct {
 		TableId  string
 		ColumnId string
-		RowIds   []int
+		// ids of the rows of another table to be linked
+		RowIds []int
 	}
 )
 
@@ -122,19 +126,20 @@ func (uc *InsertRowUseCase) Execute(
 	uc.Logger.Debugf("inserting data: %v", data)
 	uc.Logger.Debugf("inserting into table: %v", table)
 
-	// begin insert transaction
-	return connPool.ExecTx(c, func(p *pgx.Pgx) error {
-		insertedRows, err := p.ConnPool.Query(c, sql, rowValues...)
+	return connPool.ExecuteTransaction(c, func(tx v5.Tx) error {
+		resultRows, err := tx.Query(c, sql, rowValues...)
 		if err != nil {
+			uc.Logger.Debugf("error inserting rows: %v", err)
 			return err
 		}
 
-		defer insertedRows.Close()
+		defer resultRows.Close()
 
 		ids := make([]int, 0)
-		for insertedRows.Next() {
+
+		for resultRows.Next() {
 			var id int
-			err = insertedRows.Scan(&id)
+			err = resultRows.Scan(&id)
 			if err != nil {
 				return err
 			}
@@ -153,6 +158,34 @@ func (uc *InsertRowUseCase) Execute(
 
 					tableId := cell.Link.TableId
 					columnId := cell.Link.ColumnId
+					linkedColumnIds, ok := cell.Value.([]int)
+					if !ok {
+						uc.Logger.Errorf("error converting interface{}: %v", cell.Value)
+						return fmt.Errorf("error converting interface{}: %v", cell.Value)
+					}
+
+					//// convert the interface{} to string
+					//jsonBytes, ok := cell.Value.([]byte)
+					//if !ok {
+					//	uc.Logger.Errorf("error converting interface{}: %v", cell.Value)
+					//	return fmt.Errorf("error converting interface{}: %v", cell.Value)
+					//}
+
+					//// unmarshal the JSON data into a string
+					//var jsonString string
+					//err := json.Unmarshal(jsonBytes, &jsonString)
+					//if err != nil {
+					//	uc.Logger.Errorf("error unmarshalling JSON data into string: %v", err)
+					//	return err
+					//}
+
+					//// unmarshal the JSON string into a slice of integers
+					//var linkedColumnIds []int
+					//err = json.Unmarshal([]byte(jsonString), &linkedColumnIds)
+					//if err != nil {
+					//	uc.Logger.Errorf("error unmarshalling linked column ids: %v", err)
+					//	return err
+					//}
 
 					// get the table definition
 					linkTable, err := userDbPool.GetTableInfo(c, tableId)
@@ -160,12 +193,34 @@ func (uc *InsertRowUseCase) Execute(
 						return err
 					}
 
-					updateQuery := `UPDATE "%s" SET "%s" = "%s" || $1::jsonb WHERE id = $2;`
+					updateQuery := `UPDATE "%s" SET "%s" = COALESCE("%s", '[]'::jsonb) || $1::jsonb WHERE id = $2;`
 
-					// update the link column
-					_, err = p.ConnPool.Exec(c, fmt.Sprintf(updateQuery, linkTable.Name, columnId, columnId), cell.Link.RowIds, ids[i])
-					if err != nil {
-						return err
+					jsonArr := fmt.Sprintf("[%d]", ids[i])
+
+					uc.Logger.Debugf(
+						"updating link column query: %v \n params: %v %v",
+						fmt.Sprintf(updateQuery, linkTable.Name, columnId, columnId),
+						jsonArr,
+						linkedColumnIds,
+					)
+
+					for _, linkedColumnId := range linkedColumnIds {
+						// update the linked column
+						tag, err := tx.Exec(
+							c,
+							fmt.Sprintf(
+								updateQuery,
+								linkTable.Name,
+								columnId,
+								columnId,
+							),
+							jsonArr,
+							linkedColumnId,
+						)
+						if err != nil || tag.RowsAffected() == 0 {
+							uc.Logger.Errorf("error updating linked column: %v", err)
+							return fmt.Errorf("error updating linked column: %v", err)
+						}
 					}
 				}
 			}
@@ -250,11 +305,12 @@ func parseValue(colType domain.ColumnType, v string) (interface{}, error) {
 	case domain.ColumnTypeDateTime:
 		return time.Parse("2006-01-02 15:04:05", v)
 	case domain.ColumnTypeLink:
-		val, err := json.Marshal(v)
+		var linkIds []int
+		err := json.Unmarshal([]byte(v), &linkIds)
 		if err != nil {
 			return nil, err
 		}
-		return val, nil
+		return linkIds, nil
 	default:
 		return nil, fmt.Errorf("unknown column type: %v", colType)
 	}
