@@ -42,6 +42,11 @@ export class ProjectController {
     return this.project.createProject(title, uuid, userEmail);
   }
 
+  @Get(':projectId')
+  async getProjectByPid(@Param('projectId') projectId: string) {
+    return this.project.getProjectByPid(projectId.toString());
+  }
+
   @Delete(':projectId')
   async deleteProject(@Param('projectId') projectId: string) {
     return this.project.deleteProjectById(projectId.toString());
