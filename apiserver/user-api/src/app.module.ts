@@ -24,6 +24,8 @@ import { SerializerInterceptor } from './shared/interceptor/serializer.intercept
 import { ApiConfigService } from './shared/services/api-config.service';
 import { ProjectController } from '@modules/project/controllers/project.controller';
 import { ProjectModule } from '@modules/project/project.module';
+import { WorkflowController } from '@modules/workflow/controllers/workflow.controller';
+import { WorkflowModule } from '@modules/workflow/workflow.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -36,11 +38,13 @@ import { ProjectModule } from '@modules/project/project.module';
     UserModule,
     AuthModule,
     ProjectModule,
+    WorkflowModule,
   ],
   controllers: [
     AppController,
     UserController,
     ProjectController,
+    WorkflowController,
     //AuthenticationController,
     //OAuthController,
   ],
