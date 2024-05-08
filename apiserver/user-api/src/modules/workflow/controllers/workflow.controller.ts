@@ -11,6 +11,7 @@ import {
   Post,
   Put,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { type Workflow } from '@prisma/client';
@@ -51,7 +52,15 @@ export class WorkflowController {
   }
 
   @Get(':wid')
-  async getWorkflowByWid(@Param('wid') wid: string): Promise<Workflow | null> {
+  async getWorkflowByWid(@Param('wid') wid: string, @Req() req) {
+    const email: string = req.user.email;
+
+    const isValid = await this.workflow.checkValidUser(wid, email);
+
+    if (!isValid) {
+      return new UnauthorizedException();
+    }
+
     const workflow = await this.workflow.getWorkflowByWid(wid);
 
     if (!workflow) {
@@ -65,7 +74,16 @@ export class WorkflowController {
   async updateWorkflowByWid(
     @Param('wid') wid: string,
     @Body('wfData') wfData: string,
+    @Req() req,
   ) {
+    const email: string = req.user.email;
+
+    const isValid = await this.workflow.checkValidUser(wid, email);
+
+    if (!isValid) {
+      return new UnauthorizedException();
+    }
+
     return this.workflow.updateWorkflowByWid(wid, wfData);
   }
 }

@@ -6,6 +6,23 @@ import { PrismaService } from '@shared/services/prisma.service';
 export class WorkflowService {
   constructor(private prisma: PrismaService) {} // private user: UserService,
 
+  async checkValidUser(wid: string, userEmail: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: userEmail.toString(),
+      },
+      include: {
+        workflows: true,
+      },
+    });
+
+    if (!user) {
+      return false;
+    }
+
+    return user.workflows.some((wf) => wf.wid === wid);
+  }
+
   async getWorkflowsByEmail(userEmail: string): Promise<Workflow[]> {
     return this.prisma.workflow.findMany({
       where: {

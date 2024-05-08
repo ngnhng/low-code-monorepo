@@ -8,26 +8,29 @@ import {
   Logger,
   Param,
   Post,
+  Put,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import type { Project } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ProjectService } from '../services/project.service';
+import { ViewService } from '../services/view.service';
 
 @Controller('projects')
 @UseGuards(JwtAuthGuard)
 export class ProjectController {
   logger = new Logger('ProjectController');
 
-  constructor(private project: ProjectService) {}
+  constructor(
+    private project: ProjectService,
+    private view: ViewService,
+  ) {}
 
   @Get()
-  async getProjectsByEmail(
-    @Param('userId') userId: string,
-    @Req() req,
-  ): Promise<Project[]> {
+  async getProjectsByEmail(@Req() req): Promise<Project[]> {
     const email: string = req.user.email;
 
     return this.project.getProjectByEmail(email);
@@ -43,12 +46,63 @@ export class ProjectController {
   }
 
   @Get(':projectId')
-  async getProjectByPid(@Param('projectId') projectId: string) {
+  async getProjectByPid(@Param('projectId') projectId: string, @Req() req) {
+    const email: string = req.user.email;
+
+    const isValid = await this.project.checkValidUser(projectId, email);
+
+    if (!isValid) {
+      return new UnauthorizedException();
+    }
+
     return this.project.getProjectByPid(projectId.toString());
   }
 
   @Delete(':projectId')
-  async deleteProject(@Param('projectId') projectId: string) {
+  async deleteProject(@Param('projectId') projectId: string, @Req() req) {
+    const email: string = req.user.email;
+
+    const isValid = await this.project.checkValidUser(projectId, email);
+
+    if (!isValid) {
+      return new UnauthorizedException();
+    }
+
     return this.project.deleteProjectById(projectId.toString());
+  }
+
+  @Post('/:projectId/views')
+  async createView(
+    @Param('projectId') projectId: string,
+    @Body() viewData,
+    @Req() req,
+  ) {
+    const email: string = req.user.email;
+
+    const isValid = await this.project.checkValidUser(projectId, email);
+
+    if (!isValid) {
+      return new UnauthorizedException();
+    }
+
+    return this.view.addViewByPid(projectId, viewData);
+  }
+
+  @Put('/:projectId/views/:viewId')
+  async updateViewByPid(
+    @Param('projectId') projectId: string,
+    @Param('viewId') viewId: string,
+    @Body('viewData') viewData,
+    @Req() req,
+  ) {
+    const email: string = req.user.email;
+
+    const isValid = await this.project.checkValidUser(projectId, email);
+
+    if (!isValid) {
+      return new UnauthorizedException();
+    }
+
+    return this.view.updateViewByPid(projectId, viewId, viewData);
   }
 }
