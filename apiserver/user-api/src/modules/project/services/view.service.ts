@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@shared/services/prisma.service';
 
 @Injectable()
-export class ProjectService {
+export class ViewService {
   constructor(private prisma: PrismaService) {} // private user: UserService,
 
   async addViewByPid(projectId: string, viewData) {

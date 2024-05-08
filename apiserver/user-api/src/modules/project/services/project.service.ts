@@ -7,6 +7,23 @@ import { PrismaService } from '@shared/services/prisma.service';
 export class ProjectService {
   constructor(private prisma: PrismaService) {} // private user: UserService,
 
+  async checkValidUser(projectId: string, userEmail: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: userEmail.toString(),
+      },
+      include: {
+        projects: true,
+      },
+    });
+
+    if (!user) {
+      return false;
+    }
+
+    return user.projects.some((project) => project.pid === projectId);
+  }
+
   async createProject(
     title: string,
     uuid: string,
