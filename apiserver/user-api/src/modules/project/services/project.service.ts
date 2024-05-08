@@ -33,7 +33,7 @@ export class ProjectService {
         },
       },
       include: {
-        user: true,
+        views: true,
       },
     });
   }
@@ -46,7 +46,18 @@ export class ProjectService {
         },
       },
       include: {
-        user: true,
+        views: true,
+      },
+    });
+  }
+
+  async getProjectByPid(pid: string): Promise<Project | null> {
+    return this.prisma.project.findFirst({
+      where: {
+        pid: pid.toString(),
+      },
+      include: {
+        views: true,
       },
     });
   }
