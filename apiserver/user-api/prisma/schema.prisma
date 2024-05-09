@@ -39,6 +39,7 @@ model Project {
   views     View[]
   tables    Table[]
   workflows Workflow[]
+  dataIntegration DataIntegration[]
 
   user   User @relation(fields: [userId], references: [id])
   userId Int
@@ -105,9 +106,15 @@ model Table {
 model DataIntegration {
   id Int @id @default(autoincrement())
 
+  name String
   datasourceType String
   datasourceMetadata Json
 
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId Int?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+
+  @@index([projectId])
 }
