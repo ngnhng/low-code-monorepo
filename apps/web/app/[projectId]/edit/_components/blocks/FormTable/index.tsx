@@ -9,6 +9,7 @@ import useSWR from "swr";
 export type FormTableProps = {
     tableId: string;
     formName: string;
+    workflowId: string;
 };
 
 export const FormTable: ComponentConfig<FormTableProps> = {
@@ -18,14 +19,19 @@ export const FormTable: ComponentConfig<FormTableProps> = {
         },
         formName: {
             type: "text"
+        },
+        workflowId: {
+            type: "custom",
+            render: () => { return <></> }
         }
     },
     defaultProps: {
         tableId: "",
-        formName: "Form Name"
+        formName: "Form Name",
+        workflowId: ""
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    render: ({ tableId, formName }) => {
+    render: ({ tableId, formName, workflowId }) => {
         const [sendData, setSendData] = useState<any>({});
 
         const { data, isLoading } = useSWR("/api/table", async (url) =>
@@ -46,6 +52,8 @@ export const FormTable: ComponentConfig<FormTableProps> = {
 
         const postData = () => {
             console.log(sendData);
+
+            if (workflowId === "") return;
         }
 
         return (

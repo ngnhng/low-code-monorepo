@@ -17,6 +17,15 @@ const mockData = {
                 },
                 type: "Form",
             },
+            {
+                props: {
+                    id: "Form-18aec31e-a9e1-426c-9197-682c003bb094",
+                    tableId: "abcd",
+                    formName: "Form Name 123",
+                    workflowId: "",
+                },
+                type: "FormTable",
+            },
         ],
         root: { props: { title: "Test" } },
         zones: {},
@@ -35,7 +44,7 @@ export async function GET() {
     const obj = {};
 
     for (const route of Object.keys(mockData)) {
-        const formsList = mockData[route].content.filter((element) => element.type === "Form");
+        const formsList = mockData[route].content.filter((element) => element.type === "Form" || element.type === "FormTable");
         if (formsList.length === 0) continue;
         obj[route] = formsList;
     }
@@ -51,11 +60,11 @@ export async function POST(req: Request) {
     try {
         // Do something to edit DB here
         return new Response(`Successfully set workflow ID ${workflowId} for form ID ${formId}`, {
-            status: 200
-        })
+            status: 200,
+        });
     } catch {
         return new Response(`Cannot set workflow ID ${workflowId} for form ID ${formId}`, {
-            status: 500
-        })
+            status: 500,
+        });
     }
 }
