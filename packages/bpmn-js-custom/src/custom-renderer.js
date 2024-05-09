@@ -23,6 +23,7 @@ const HIGH_PRIORITY = 1500,
     COLOR_BLACK = "#000";
 
 const googleSheetSvg = `<path fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-table-2" d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>`;
+const mailServiceSvg = `<rect width="20" height="16" x="2" y="4" rx="2" fill="none" stroke="currentColor" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" fill="none" stroke="currentColor"/>`
 
 export default class CustomRenderer extends BaseRenderer {
     constructor(eventBus, bpmnRenderer) {
@@ -40,9 +41,15 @@ export default class CustomRenderer extends BaseRenderer {
         const shape = this.bpmnRenderer.drawShape(parentNode, element);
 
         const isGoogleSheet = this.getAccessToken(element);
+        const isMailService = this.isMailService(element);
 
         if (isGoogleSheet) {
             this.drawGoogleSheet(parentNode);
+            svgRemove(shape);
+        }
+
+        if (isMailService) {
+            this.drawMailService(parentNode);
             svgRemove(shape);
         }
 
@@ -54,6 +61,20 @@ export default class CustomRenderer extends BaseRenderer {
 
         const svg = svgCreate("g");
         svgInner(svg, googleSheetSvg);
+        svgAttr(svg, {
+            transform: "translate(72, 53)",
+        });
+
+        // svgAppend(text, document.createTextNode("Google Sheet"));
+        // svgAppend(parentNode, text);
+        svgAppend(parentNode, svg);
+    }
+
+    drawMailService(parentNode) {
+        drawRect(parentNode, 100, 80, 10, COLOR_BLACK, "transparent");
+
+        const svg = svgCreate("g");
+        svgInner(svg, mailServiceSvg);
         svgAttr(svg, {
             transform: "translate(72, 53)",
         });
@@ -75,6 +96,12 @@ export default class CustomRenderer extends BaseRenderer {
         const businessObject = getBusinessObject(element);
         const { isGoogleSheet } = businessObject;
         return isGoogleSheet ?? false;
+    }
+
+    isMailService(element) {
+        const businessObject = getBusinessObject(element);
+        const { isMailService } = businessObject;
+        return isMailService ?? false;
     }
 }
 
