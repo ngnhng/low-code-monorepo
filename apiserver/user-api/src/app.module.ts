@@ -26,6 +26,8 @@ import { ProjectController } from '@modules/project/controllers/project.controll
 import { ProjectModule } from '@modules/project/project.module';
 import { WorkflowController } from '@modules/workflow/controllers/workflow.controller';
 import { WorkflowModule } from '@modules/workflow/workflow.module';
+import { DataIntegrationModule } from '@modules/data-integration/data-integration.module';
+import { DataIntegrationController } from '@modules/data-integration/controllers/data-integration.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -39,12 +41,14 @@ import { WorkflowModule } from '@modules/workflow/workflow.module';
     AuthModule,
     ProjectModule,
     WorkflowModule,
+    DataIntegrationModule,
   ],
   controllers: [
     AppController,
     UserController,
     ProjectController,
     WorkflowController,
+    DataIntegrationController,
     //AuthenticationController,
     //OAuthController,
   ],
