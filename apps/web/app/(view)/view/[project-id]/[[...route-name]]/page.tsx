@@ -8,21 +8,31 @@ import { Render } from "@measured/puck";
 
 import config from "../../../../[projectId]/edit/_config"
 
-const fetcher = async (key: string) => {
-    const res = await fetch(key);
-
-    if (!res.ok) {
-        return new Error("Something has gone wrong?");
-    }
-
-    return await res.json();
-};
-
 export default function Page({ params }: { params: { "project-id": string, "route-name": string[] } }) {
     const route = params["route-name"] ? params["route-name"].join("") : "";
 
+    const { data, isLoading, error } = useSWR("/api/ui", async (url) => {
+        const res = await fetch(url);
 
-    const { data, isLoading, error } = useSWR("/api/ui", fetcher);
+        if (!res.ok) {
+            throw new Error("Something has gone wrong?");
+        }
+        
+        const allRoutes = await res.json();
+        const routeData = allRoutes.find(({ route: routeName }) => routeName === `/${route}`);
+
+        if (!routeData) {
+            throw new Error("This page does not exist!");
+        }
+
+        const routeRes = await fetch(`/api/ui/${routeData.id}`);
+
+        if (!routeRes.ok) {
+            throw new Error("Failed to fetch route");
+        }
+
+        return await routeRes.json();
+    });
 
     return (
         <div className="flex-1 overflow-auto">
@@ -31,8 +41,8 @@ export default function Page({ params }: { params: { "project-id": string, "rout
                     "Loading..."
                 ) : error ? (
                     error.message
-                ) : data[`/${route}`] ? (
-                    <Render config={config} data={data[`/${route}`]} />
+                ) : data ? (
+                    <Render config={config} data={data} />
                 ) : (
                     "Not found"
                 )}
