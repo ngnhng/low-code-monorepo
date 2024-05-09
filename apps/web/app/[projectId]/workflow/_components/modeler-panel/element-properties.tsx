@@ -37,6 +37,7 @@ const initialState = {
     businessObject: null,
     isQA: false,
     isGS: false,
+    isMailService: false,
     isStartEvent: false,
     isSequenceFlow: false,
     isUserTask: false,
@@ -55,6 +56,7 @@ function reducer(state, action) {
                 ...state,
                 isQA: false,
                 isGS: false,
+                isMailService: false,
                 isStartEvent: false,
                 isSequenceFlow: false,
                 isUserTask: false,
@@ -71,6 +73,9 @@ function reducer(state, action) {
         }
         case "setIsUserTask": {
             return { ...state, isUserTask: action.payload };
+        }
+        case "setIsMailService": {
+            return { ...state, isMailService: action.payload };
         }
         default: {
             throw new Error(`Unsupported action type: ${action.type}`);
@@ -95,7 +100,7 @@ export function ElementProperties({ element, modeler }) {
         const bObject = getBusinessObject(element);
         dispatch({ type: "setBusinessObject", payload: bObject });
 
-        const { suitable, isGoogleSheet, $type } = bObject;
+        const { suitable, isGoogleSheet, $type, isMailService } = bObject;
         const isStartEvent = $type === "bpmn:StartEvent";
         const isGateway = $type === "bpmn:SequenceFlow";
         const isUserTask = $type === "bpmn:UserTask";
@@ -115,8 +120,15 @@ export function ElementProperties({ element, modeler }) {
             handleSequenceFlow();
         } else if (isUserTask) {
             handleUserTask(bObject);
+        } else if (isMailService) {
+            handleMailServiceTask(bObject);
         }
     }, [element]);
+
+    const handleMailServiceTask = (bObject: any) => {
+        dispatch({ type: "setIsMailService", payload: true });
+        console.log(bObject);
+    }
 
     const handleUserTask = (bObject: any) => {
         dispatch({ type: "setIsUserTask", payload: true });
