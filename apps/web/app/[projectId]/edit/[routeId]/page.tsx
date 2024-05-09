@@ -5,8 +5,9 @@ import "../style.css";
 import type { Data } from "@measured/puck";
 import { Render, Puck } from "@measured/puck";
 import "@measured/puck/puck.css";
+import { Save } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import config from "../_config";
 import { Switch, Label, Input } from "@repo/ui";
 import useSWR from "swr";
@@ -15,6 +16,8 @@ import { notFound } from "next/navigation";
 export default function Page({ params }: { params: { routeId: string } }) {
     const componentKey = Buffer.from(Object.keys(config.components).join("-")).toString("base64");
     const key = `puck-demo:${componentKey}:${params.routeId}`;
+
+    const [tempData, setTempData] = useState<any>();
 
     const { data, isLoading, error } = useSWR(`/api/ui/${params.routeId}`, async (url) => {
         const res = await fetch(url);
@@ -29,6 +32,17 @@ export default function Page({ params }: { params: { routeId: string } }) {
     if (error) {
         notFound();
     }
+
+    useEffect(() => {
+        if (!data) return;
+        setTempData(data);
+
+        console.log(data);
+    }, [isLoading, data]);
+
+    // useEffect(() => {
+    //     console.log(tempData);
+    // }, [tempData])
 
     const [isEdit, setIsEdit] = useState<boolean>(true);
 
@@ -52,9 +66,18 @@ export default function Page({ params }: { params: { routeId: string } }) {
         </>
     );
 
+    const saveButton = (
+        <button className="ml-auto" onClick={() => {
+            // Do something to save here
+        }}>
+            <Save className="text-slate-700 hover:text-slate-400"/>
+        </button>
+    );
+
     const toolbarItems = [
-        { key: "edit", icon: "/edit.png", component: editSwitch },
-        { key: "routeName", icon: "", component: pageRoute },
+        { key: "edit", component: editSwitch },
+        { key: "routeName", component: pageRoute },
+        { key: "saveButton", component: saveButton },
     ];
 
     return (
@@ -72,13 +95,17 @@ export default function Page({ params }: { params: { routeId: string } }) {
                         // https://puckeditor.com/docs/extending-puck/custom-interfaces
                         <Puck
                             config={config}
-                            data={data}
-                            headerPath={data.route}
-                            // onChange={setData}
+                            data={tempData}
+                            headerPath={tempData?.route}
+                            onChange={(data) => {
+                                if (data.content.length === 0) return;
+
+                                setTempData(data);
+                            }}
                             onPublish={async (data: Data) => {
                                 localStorage.setItem(key, JSON.stringify(data));
                             }}
-                            key={data.id}
+                            key={tempData?.id}
                         >
                             <div className="gap-2.5 flex-1 overflow-hidden flex">
                                 <div className="bg-slate-100 rounded-md border-2 border-slate-300 w-52 overflow-auto">
@@ -95,7 +122,7 @@ export default function Page({ params }: { params: { routeId: string } }) {
                     ) : (
                         <div className="flex-1 overflow-auto">
                             <div className="w-full h-full overflow-auto">
-                                <Render config={config} data={data ?? "Error"} />
+                                <Render config={config} data={tempData ?? "Error"} />
                             </div>
                         </div>
                     )}
@@ -111,7 +138,6 @@ interface ToolbarProps {
 
 interface ToolbarItemProps {
     key: string;
-    icon: any;
     component: any;
 }
 
