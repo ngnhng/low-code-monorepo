@@ -46,6 +46,7 @@ interface CreateColumnFormProps {
   setLocalData: any;
   setNewReferenceTableId: any;
   tableId: string;
+  createdColumns: Set<ColumnDef>;
 }
 
 const typeValues = ["date", "text", "number", "boolean", "link"] as const;
@@ -88,6 +89,7 @@ const CreateColumnForm = ({
   setLocalData,
   tableId,
   setNewReferenceTableId,
+  createdColumns,
 }: CreateColumnFormProps) => {
   const [open, setOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<any>();
@@ -182,6 +184,8 @@ const CreateColumnForm = ({
         flag = true;
         return [...previous];
       }
+
+      createdColumns.add(newColData);
 
       return [...previous, newColData];
     });

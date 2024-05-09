@@ -2,8 +2,9 @@ package redis
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 	"yalc/auth-service/module/config"
+	"yalc/auth-service/module/logger"
 
 	redis "github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
@@ -12,12 +13,14 @@ import (
 type (
 	RedisClient struct {
 		*redis.Client
+		Logger logger.Logger
 	}
 
 	Param struct {
 		fx.In
 
-		Conf *config.Config
+		Conf   *config.Config
+		Logger logger.Logger
 	}
 
 	Result struct {
@@ -28,20 +31,30 @@ type (
 )
 
 func NewRedisClient(p Param) Result {
+	db, err := strconv.Atoi(p.Conf.Repository.Token.Db)
+	if err != nil {
+		panic(err)
+	}
+	p.Logger.Debugf("Connecting to redis: %s", p.Conf.Repository.Token.Address)
+
 	return Result{
 		RedisClient: &RedisClient{
 			Client: redis.NewClient(&redis.Options{
-				Addr:     p.Conf.Database.Redis.Host + ":" + fmt.Sprintf("%v", p.Conf.Database.Redis.Port),
-				Password: p.Conf.Database.Redis.Password,
-				DB:       p.Conf.Database.Redis.Db,
+				Addr:     p.Conf.Repository.Token.Address,
+				Password: p.Conf.Repository.Token.Password,
+				DB:       db,
 			}),
+			Logger: p.Logger,
 		},
 	}
-
 }
 
 func (c *RedisClient) Connect(ctx context.Context) error {
 	_, err := c.Client.Ping(ctx).Result()
+	if err != nil {
+		c.Logger.Debugf("Failed to connect to redis: %s", c.Client.Options().Addr)
+		c.Logger.Error(err)
+	}
 	return err
 }
 

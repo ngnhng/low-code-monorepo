@@ -54,7 +54,7 @@ func (s *SharClient) GetClient() *client.Client {
 
 func (s *SharClient) Connect() (err error) {
 
-	err = s.client.Dial(s.connCtx, s.config.GetNatsURL())
+	err = s.client.Dial(s.connCtx, s.config.GetConfig().NatsURL)
 	if err != nil {
 		return err
 	}

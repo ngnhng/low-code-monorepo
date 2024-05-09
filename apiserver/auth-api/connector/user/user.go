@@ -48,7 +48,7 @@ type (
 
 func NewUserConnector(p Params) UserConnector {
 	return &userConnector{
-		baseUrl: p.Config.App.UserApiUrl,
+		baseUrl: p.Config.Api.UserApiUrl,
 		client:  &http.Client{},
 		Config:  p.Config,
 	}
@@ -87,8 +87,8 @@ func (c *userConnector) SaveUser(ctx context.Context, info *auth.GoogleOAuthUser
 	// Add the access token to the Authorization header
 	at, err := util.CreateAccessToken(&user.User{
 		Email: info.Email,
-	}, c.Config.Secret.JwtSecret.Access.Key,
-		time.Now().Add(c.Config.Secret.JwtSecret.Access.Expiration))
+	}, c.Config.Jwt.Access.Key,
+		time.Now().Add(c.Config.Jwt.Access.Expiration))
 	if err != nil {
 		return "", err
 	}
