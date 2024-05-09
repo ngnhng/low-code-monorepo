@@ -66,7 +66,7 @@ export default function UserTaskProps({ element, modeler }) {
         });
     };
 
-    const setForm = (value: string) => {
+    const setForm = async (value: string) => {
         if (!route) return;
 
         const modeling = modeler.get("modeling");
@@ -76,14 +76,29 @@ export default function UserTaskProps({ element, modeler }) {
 
         const moddle = modeler.get("moddle");
         const formData = formsList[route][value];
-        ioMapping.get("input").push(
-            ...formData.props.inputs.map((data) =>
-                moddle.create("yalc:Input", {
-                    source: `_testWorkflowID_${formData.props.id}_${data.id.value}`,
-                    target: "",
-                })
+
+        if (formData.type === "Form") {
+            ioMapping.get("input").push(
+                ...formData.props.inputs.map((data) =>
+                    moddle.create("yalc:Input", {
+                        source: `_testWorkflowID_${formData.props.id}_${data.id.value}`,
+                        target: "",
+                    })
+                )
+            );
+        }
+
+        if (formData.type === "FormTable") {
+            const res = await fetch("/api/table");
+            const data = await res.json();
+
+            ioMapping.get("input").push(
+                ...data.map((col: any) => moddle.create("yalc:Input", {
+                    source: `_testWorkflowID_${formData.props.id}_${col.id}`,
+                    target: ""
+                }))
             )
-        );
+        }
 
         modeling.updateProperties(element, {
             extensionElements,

@@ -33,8 +33,10 @@ const mockData = {
             },
             {
                 props: {
+                    id: "Form-18aec31e-a9e1-426c-9197-682c003bb094",
                     tableId: "abcd",
-                    formName: "Form Name 123"
+                    formName: "Form Name 123",
+                    workflowId: ""
                 },
                 type: "FormTable"
             }
