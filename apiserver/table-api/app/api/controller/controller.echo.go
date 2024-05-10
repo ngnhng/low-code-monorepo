@@ -198,7 +198,7 @@ func (ec *EchoController) ListTables(args ...interface{}) error {
 	// TODO: check project validity
 
 	// call usecase
-	tables, err := ec.ListTablesUC.Execute(cc, projectId)
+	tables, err := ec.ListTablesUC.ExecuteV2(cc, projectId)
 	if err != nil {
 		resp := domain.ErrorResponse{
 			Message: err.Error(),
