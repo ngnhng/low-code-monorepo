@@ -15,6 +15,54 @@
                     "type": "Boolean"
                 }
             ]
+        },
+        {
+            "name": "IoMapping",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "input",
+                    "isMany": true,
+                    "type": "Input"
+                },
+                {
+                    "name": "output",
+                    "isMany": true,
+                    "type": "Output"
+                }
+            ]
+        },
+        {
+            "name": "Input",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "source",
+                    "isAttr": true,
+                    "type": "String"
+                },
+                {
+                    "name": "target",
+                    "isAttr": true,
+                    "type": "String"
+                }
+            ]
+        },
+        {
+            "name": "Output",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "source",
+                    "isAttr": true,
+                    "type": "String"
+                },
+                {
+                    "name": "target",
+                    "isAttr": true,
+                    "type": "String"
+                }
+            ]
         }
     ]
 }
