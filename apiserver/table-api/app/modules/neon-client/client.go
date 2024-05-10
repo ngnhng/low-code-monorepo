@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 	"yalc/dbms/modules/config"
 	"yalc/dbms/modules/logger"
 
@@ -124,4 +125,37 @@ func (c *NeonClient) CreateDatabase(name string) error {
 func (c *NeonClient) GetDatabaseDetails(name string) (*http.Response, error) {
 	//GET projects/{project_id}/branches/{branch_id}/databases/{database_name}	// create a new request
 	return c.get(fmt.Sprintf("/projects/%s/branches/%s/databases/%s", c.projectId, c.branchId, name))
+}
+
+func (c *NeonClient) WaitForDatabase(name string) error {
+	// retry 10 times with 5 seconds interval
+	return withRetry(10, 5*time.Second, func() error {
+		resp, err := c.GetDatabaseDetails(name)
+		if err != nil {
+			c.Logger.Error("failed to check for database: ", err)
+			return err
+		}
+		if resp.StatusCode == http.StatusOK {
+			return nil
+		}
+
+		c.Logger.Error("failed to wait for database: ", resp.Status)
+		return fmt.Errorf("failed to wait for database: %s", resp.Status)
+	})
+}
+
+func withRetry(
+	times int,
+	interval time.Duration,
+	fn func() error,
+) error {
+	var err error
+	for i := 0; i < times; i++ {
+		err = fn()
+		if err == nil {
+			return nil
+		}
+		time.Sleep(interval)
+	}
+	return err
 }

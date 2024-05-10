@@ -393,7 +393,7 @@ func (udpp *UserDbPgxPool) ExecuteTransaction(ctx context.Context, f txFunc) err
 		return fmt.Errorf("no transaction found in context")
 	}
 
-	err = f(tx)
+	err = f(ctx, tx)
 	if err != nil {
 		if rbErr := tx.Rollback(ctx); rbErr != nil {
 			return fmt.Errorf("tx: %v, rb: %v", err, rbErr)

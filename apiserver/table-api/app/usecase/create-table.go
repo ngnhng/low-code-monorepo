@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"fmt"
+	"context"
 	"yalc/dbms/domain"
 	"yalc/dbms/modules/config"
 	"yalc/dbms/modules/logger"
@@ -54,117 +54,60 @@ func (uc *CreateTableUseCase) Execute(
 		return nil, err
 	}
 
-	// get user db pool
-	userDbPool, err := uc.Pgx.GetOrCreateUserPgxPool()
-	if err != nil {
-		uc.Logger.Debugf("error getting user db pool: %v", err)
-		return nil, err
-	}
+	table := &domain.Table{}
 
-	tx1, err := connPool.Begin(c)
-	if err != nil {
-		uc.Logger.Debugf("error beginning transaction: %v", err)
-		return nil, err
-	}
+	err = connPool.ExecuteTransaction(c, func(cc context.Context, tx v5.Tx) error {
 
-	table, err := connPool.CreateTable(tx1, tableDef)
-	if err != nil {
-		uc.Logger.Debugf("error creating table: %v", err)
-		connPool.Rollback(tx1)
-		return nil, err
-	}
+		//tid := shared.GenerateTableId()
 
-	table.TID = shared.GenerateUUIDv4()
+		//tableName := shared.GenerateTableName(tableDef.Label)
 
-	uc.Logger.Debugf("metadata: %v", table)
-
-	// add link column to other table
-	// iterate through columns and add link columns
-	for i, col := range table.Columns {
-		if col.Type == domain.ColumnTypeLink {
-			// create link column
-			newColId := shared.GenerateColumnId()
-
-			linkCol := &domain.Column{
-				Name: table.Name,
-				Id:   newColId,
-				Type: domain.ColumnTypeLink,
-				Reference: &domain.ColumnReference{
-					TableId:  table.TID,
-					ColumnId: col.Id,
-				},
-			}
-
-			// also set the col id to new table
-			table.Columns[i].Reference.ColumnId = newColId
-
-			linkedTable, err := userDbPool.GetTableInfo(c, col.Reference.TableId)
-			if err != nil {
-				uc.Logger.Debugf("error getting linked table info: %v", err)
-				connPool.Rollback(tx1)
-				return nil, err
-			}
-
-			// set linked column of new table
-			if err := connPool.ExecuteTransaction(c, func(tx v5.Tx) error {
-				sql := `ALTER TABLE "%s" ADD COLUMN "%s" JSONB;`
-
-				uc.Logger.Debugf("creating link column: %s",
-					fmt.Sprintf(sql, linkedTable.Name, newColId))
-
-				_, err := tx.Exec(c, fmt.Sprintf(sql, linkedTable.Name, newColId))
-				if err != nil {
-					uc.Logger.Debugf("error creating link column: %v", err)
-					return err
-				}
-
-				// update table metadata
-				linkedTable.Columns = append(linkedTable.Columns, *linkCol)
-				err = userDbPool.UpdateTableInfo(c, col.Reference.TableId, linkedTable)
-				if err != nil {
-					uc.Logger.Debugf("error updating linked table info: %v", err)
-					return err
-				}
-
-				return nil
-			}); err != nil {
-				uc.Logger.Debugf("error creating link column: %v", err)
-				connPool.Rollback(tx1)
-				return nil, err
-			}
-
+		table = &domain.Table{
+			//TID:     tid,
+			//Name:    shared.NormalizeStringForPostgres(tableDef.Label),
+			Label:   tableDef.Label,
+			Columns: tableDef.Columns,
 		}
-	}
 
-	uc.Logger.Debugf("beginning transaction for upserting table metadata")
+		// create table -- also contain id column
+		createdTable, err := connPool.CreateTableV2(cc, table)
+		if err != nil {
+			uc.Logger.Debugf("error creating table: %v", err)
+			return err
+		}
 
-	tx2, err := userDbPool.Begin(c)
-	if err != nil {
-		uc.Logger.Debugf("error beginning transaction: %v", err)
-		connPool.Rollback(tx1)
-		return nil, err
-	}
+		// we insert data to manager tables (yalc_tables, yalc_columns)
+		err = connPool.InsertToYALCTables(
+			cc,
+			createdTable.TID,
+			createdTable.Name,
+			createdTable.Label,
+			false, // not a m2m link table
+		)
+		if err != nil {
+			uc.Logger.Debugf("error inserting to yalc_tables: %v", err)
+			return err
+		}
 
-	// get project info
-	project, err := userDbPool.GetProjectInfo(tx2, projectId)
-	if err != nil {
-		uc.Logger.Debugf("error getting project %s info: %v", projectId, err)
-		connPool.Rollback(tx1)
-		userDbPool.Rollback(tx2)
-		return nil, err
-	}
+		for _, col := range createdTable.Columns {
+			err := connPool.InsertToYALCCols(
+				cc,
+				createdTable.TID,
+				col.Id,
+				col.Name,
+				col.Label,
+				col.Type,
+			)
+			if err != nil {
+				uc.Logger.Debugf("error inserting to yalc_cols: %v", err)
+				return err
+			}
+		}
 
-	// upsert table metadata to store
-	err = userDbPool.UpsertTableInfo(tx2, project, table)
-	if err != nil {
-		uc.Logger.Debugf("error upserting table info: %v", err)
-		connPool.Rollback(tx1)
-		userDbPool.Rollback(tx2)
-		return nil, err
-	}
+		table = createdTable
 
-	connPool.Commit(tx1)
-	userDbPool.Commit(tx2)
+		return nil
+	})
 
-	return table, nil
+	return table, err
 }

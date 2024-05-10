@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"yalc/dbms/domain"
@@ -56,9 +57,9 @@ func (uc *DeleteColumnUseCase) Execute(
 		return err
 	}
 
-	return userDbPool.ExecuteTransaction(c, func(userTx v5.Tx) error {
+	return userDbPool.ExecuteTransaction(c, func(cc context.Context, tx v5.Tx) error {
 
-		table, err := userDbPool.GetTableInfo(c, tableId)
+		table, err := userDbPool.GetTableInfo(cc, tableId)
 		if err != nil {
 			uc.Logger.Debugf("error getting table info: %v", err)
 			return err
@@ -85,8 +86,8 @@ func (uc *DeleteColumnUseCase) Execute(
 			return err
 		}
 
-		return connPool.ExecuteTransaction(c, func(connTx v5.Tx) error {
-			_, err := connTx.Exec(c, fmt.Sprintf(sql, table.Name, strings.Join(deleteColumnsQuery, ", ")))
+		return connPool.ExecuteTransaction(cc, func(cc context.Context, connTx v5.Tx) error {
+			_, err := connTx.Exec(cc, fmt.Sprintf(sql, table.Name, strings.Join(deleteColumnsQuery, ", ")))
 			if err != nil {
 				uc.Logger.Debugf("error deleting column: %v", err)
 				return err
@@ -107,7 +108,7 @@ func (uc *DeleteColumnUseCase) Execute(
 
 			// update table metadata
 			uc.Logger.Debugf("updated table: %v", updatedTable)
-			err = userDbPool.UpdateTableInfo(c, tableId, &updatedTable)
+			err = userDbPool.UpdateTableInfo(cc, tableId, &updatedTable)
 			if err != nil {
 				uc.Logger.Debugf("error updating table info: %v", err)
 				return err

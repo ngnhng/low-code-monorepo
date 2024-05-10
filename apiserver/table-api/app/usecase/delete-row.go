@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"yalc/dbms/domain"
@@ -81,8 +82,8 @@ func (uc *DeleteRowUseCase) Execute(
 		return fmt.Errorf("error getting pgx pool: %v", err)
 	}
 
-	connPool.ExecuteTransaction(c, func(tx v5.Tx) error {
-		_, err := tx.Query(c, fmt.Sprintf(sql, table.Name, whereClause))
+	connPool.ExecuteTransaction(c, func(cc context.Context, tx v5.Tx) error {
+		_, err := tx.Query(cc, fmt.Sprintf(sql, table.Name, whereClause))
 		if err != nil {
 			uc.Logger.Debugf("error deleting rows: %v", err)
 			return err
@@ -93,4 +94,61 @@ func (uc *DeleteRowUseCase) Execute(
 
 	return nil
 
+}
+
+func (uc *DeleteRowUseCase) ExecuteV2(
+	ctx shared.RequestContext,
+	projectId string,
+	tableId string,
+	input *domain.DeleteRowRequest,
+) error {
+	c := ctx.GetContext()
+
+	// Get a connection pool of the database
+	connPool, err := uc.Pgx.GetOrCreatePgxPool(shared.GenerateDatabaseName(projectId, ctx.GetUserId()))
+	if err != nil {
+		uc.Logger.Debugf("error getting pgx pool: %v", err)
+		return err
+	}
+
+	return connPool.ExecuteTransaction(
+		c,
+		func(cc context.Context, tx v5.Tx) error {
+
+			table, err := connPool.LookupTableInfo(cc, tableId)
+			if err != nil {
+				uc.Logger.Debugf("error looking up table info: %v", err)
+				return err
+			}
+
+			linkColumns := make([]domain.Column, 0)
+			for _, col := range table.Columns {
+				if col.Type == domain.ColumnTypeLink {
+					linkColumns = append(linkColumns, col)
+				}
+			}
+
+			for _, rowId := range input.RowIds {
+				// delete the links before delete the rows
+				for _, col := range linkColumns {
+					err = connPool.UpdateLinkColumn(cc, table.Name, col.Id, rowId, []int{})
+					if err != nil {
+						uc.Logger.Debugf("error updating link column: %v", err)
+						return err
+					}
+				}
+
+				// delete the row
+				sql := fmt.Sprintf("DELETE FROM %s WHERE id = $1", table.Name)
+
+				_, err = tx.Exec(cc, sql, rowId)
+				if err != nil {
+					uc.Logger.Debugf("error deleting row: %v", err)
+					return err
+				}
+			}
+
+			return nil
+		},
+	)
 }
