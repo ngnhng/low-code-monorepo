@@ -11,8 +11,14 @@ import {
   APP_INTERCEPTOR,
   Reflector,
 } from '@nestjs/core';
-import { SharedModule } from '@shared/shared.module';
 
+import {
+  PrometheusModule,
+  makeCounterProvider,
+  makeGaugeProvider,
+} from '@willsoto/nestjs-prometheus';
+
+import { SharedModule } from '@shared/shared.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { GlobalExceptionFilter } from './filters/all.filter';
@@ -36,6 +42,7 @@ import { DataIntegrationController } from '@modules/data-integration/controllers
         ? { envFilePath: process.env.YALC_ENV_FILE }
         : {}),
     }),
+    PrometheusModule.register(),
     SharedModule,
     UserModule,
     AuthModule,
@@ -90,6 +97,15 @@ import { DataIntegrationController } from '@modules/data-integration/controllers
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
     },
+    // makeCounterProvider({
+    //   name: 'count',
+    //   help: 'metric_help',
+    //   labelNames: ['method', 'origin'] as string[],
+    // }),
+    // makeGaugeProvider({
+    //   name: 'gauge',
+    //   help: 'metric_help',
+    // }),
   ],
 })
 export class AppModule {}
