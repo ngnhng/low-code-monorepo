@@ -19,13 +19,16 @@ type (
 type (
 	Table struct {
 		TID     string   `json:"tid,omitempty"`
-		Name    string   `json:"name"`
+		Name    string   `json:"name,omitempty"`
+		Label   string   `json:"label"`
 		Columns []Column `json:"columns"`
+		MM      bool     `json:"mm"`
 	}
 
 	Column struct {
 		Id        string           `json:"id,omitempty"`
-		Name      string           `json:"name"`
+		Name      string           `json:"name,omitempty"`
+		Label     string           `json:"label"`
 		Type      ColumnType       `json:"type"`
 		Reference *ColumnReference `json:"reference,omitempty"`
 	}
@@ -40,6 +43,7 @@ type (
 
 const (
 	ColumnTypePrimaryKey ColumnType = "primary_key"
+	ColumnTypeForeignKey ColumnType = "foreign_key"
 	ColumnTypeBoolean    ColumnType = "boolean"
 	ColumnTypeCurrency   ColumnType = "currency"
 	ColumnTypeDate       ColumnType = "date"
@@ -60,7 +64,8 @@ var (
 
 func (t *Table) Validate() error {
 	return validation.ValidateStruct(t,
-		validation.Field(&t.Name, validation.Required, validation.Length(1, 255)),
+		validation.Field(&t.Name, validation.Length(1, 255)),
+		validation.Field(&t.Label, validation.Required, validation.Length(1, 255)),
 		validation.Field(&t.Columns, validation.Required, validation.Each(validation.By(func(value interface{}) error {
 			c, ok := value.(Column)
 			if !ok {
@@ -80,7 +85,7 @@ func (t *Table) Validate() error {
 func (c *Column) Validate() error {
 	log.Println("Column.Validate")
 	return validation.ValidateStruct(c,
-		validation.Field(&c.Name, validation.Required, validation.Length(1, 255)),
+		validation.Field(&c.Name, validation.Length(1, 255)),
 		validation.Field(&c.Type, validation.Required, validation.In(
 			ColumnTypePrimaryKey, ColumnTypeBoolean, ColumnTypeCurrency, ColumnTypeDate, ColumnTypeInteger, ColumnTypeString, ColumnTypeTime, ColumnTypeDateTime, ColumnTypeLink,
 		),

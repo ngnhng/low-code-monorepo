@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
 	"yalc/dbms/modules/config"
 	"yalc/dbms/modules/logger"
@@ -65,11 +66,11 @@ func (uc *DeleteTableUseCase) Execute(
 		return err
 	}
 
-	return userDbPool.ExecuteTransaction(c, func(userTx v5.Tx) error {
+	return userDbPool.ExecuteTransaction(c, func(ucc context.Context, uTx v5.Tx) error {
 
-		return connPool.ExecuteTransaction(c, func(connTx v5.Tx) error {
+		return connPool.ExecuteTransaction(ucc, func(ccc context.Context, connTx v5.Tx) error {
 			// drop the table
-			_, err := connTx.Exec(c, fmt.Sprintf(`DROP TABLE "%s"`, table.Name))
+			_, err := connTx.Exec(ccc, fmt.Sprintf(`DROP TABLE "%s"`, table.Name))
 			if err != nil {
 				uc.Logger.Debugf("error dropping table: %v", err)
 				return err
@@ -77,7 +78,7 @@ func (uc *DeleteTableUseCase) Execute(
 
 			// delete the table
 			sql := `DELETE FROM "Table" WHERE "tid" = $1`
-			_, err = userTx.Exec(c, sql, tableId)
+			_, err = uTx.Exec(ucc, sql, tableId)
 			if err != nil {
 				uc.Logger.Debugf("error deleting table: %v", err)
 				return err

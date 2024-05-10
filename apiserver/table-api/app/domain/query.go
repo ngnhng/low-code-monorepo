@@ -40,10 +40,25 @@ type (
 		Rows    [][]string `json:"rows"`
 	}
 
+	GetTableDataResponseV2 struct {
+		Data     []map[string]any `json:"data"`
+		PageInfo PageInfo         `json:"pageInfo"`
+	}
+
+	PageInfo struct {
+		TotalCount int `json:"totalCount"`
+	}
+
+	Link map[int]string
+
 	InsertRow map[string]string
 
 	InsertRowRequest struct {
 		Rows []InsertRow `json:"rows"`
+	}
+
+	InsertRowRequestV2 struct {
+		Rows []map[string]string `json:"rows"`
 	}
 
 	UpdateRow struct {
@@ -52,6 +67,10 @@ type (
 	}
 
 	UpdateRowRequest []UpdateRow
+
+	UpdateRowRequestV2 struct {
+		Data []map[string]any `json:"data"`
+	}
 
 	DeleteRowRequest struct {
 		RowIds []int `json:"ids"`

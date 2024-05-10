@@ -1,7 +1,10 @@
 package usecase
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 	"yalc/dbms/domain"
@@ -160,8 +163,8 @@ func (uc *UpdateRowUseCase) Execute(
 		return err
 	}
 
-	return connPool.ExecuteTransaction(c, func(tx v5.Tx) error {
-		tag, err := tx.Exec(c, sql)
+	return connPool.ExecuteTransaction(c, func(cc context.Context, tx v5.Tx) error {
+		tag, err := tx.Exec(cc, sql)
 		if err != nil {
 			uc.Logger.Errorf("error executing update query: %v", err)
 			return err
@@ -234,4 +237,98 @@ func parseToPostgresValue(v any) string {
 	default:
 		return fmt.Sprintf("'%s'", val)
 	}
+}
+
+func (uc *UpdateRowUseCase) ExecuteV2(
+	ctx shared.RequestContext,
+	projectId string,
+	tableId string,
+	input *domain.UpdateRowRequestV2,
+) error {
+
+	c := ctx.GetContext()
+
+	// Get a connection pool of the database
+	connPool, err := uc.Pgx.GetOrCreatePgxPool(shared.GenerateDatabaseName(projectId, ctx.GetUserId()))
+	if err != nil {
+		uc.Logger.Debugf("error getting pgx pool: %v", err)
+		return err
+	}
+
+	// input.Data is a []map[string]any
+
+	return connPool.ExecuteTransaction(
+		c,
+		func(cc context.Context, tx v5.Tx) error {
+
+			table, err := connPool.LookupTableInfo(cc, tableId)
+			if err != nil {
+				uc.Logger.Debugf("error looking up table info: %v", err)
+				return err
+			}
+
+			updateData := input.Data
+
+			for _, row := range updateData {
+				id, ok := row["id"]
+				if !ok {
+					return fmt.Errorf("id column not found")
+				}
+
+				idStr := fmt.Sprintf("%v", id)
+
+				// cast id to int, this is the parent id we use to get the link data
+				rowId, err := strconv.Atoi(idStr)
+				if err != nil {
+					return fmt.Errorf("id is not an integer")
+				}
+
+				for _, col := range table.Columns {
+					if _, ok := row[col.Name]; !ok {
+						continue
+					}
+
+					if col.Type == domain.ColumnTypePrimaryKey {
+						continue
+					}
+
+					if col.Type == domain.ColumnTypeLink {
+						childIds, err := uc.parseLinkValue(row[col.Name].(string))
+						if err != nil {
+							uc.Logger.Debugf("error parsing link value: %v", err)
+							return err
+						}
+
+						err = connPool.UpdateLinkColumn(cc, table.Name, col.Id, rowId, childIds)
+						if err != nil {
+							uc.Logger.Debugf("error updating link column: %v", err)
+							return err
+						}
+					} else {
+						err = connPool.UpdateDataColumn(cc, table.Name, col, rowId, row[col.Name])
+						if err != nil {
+							uc.Logger.Debugf("error updating data column: %v", err)
+							return err
+						}
+					}
+				}
+			}
+
+			return nil
+		},
+	)
+
+}
+
+func (uc *UpdateRowUseCase) parseLinkValue(v string) ([]int, error) {
+	var linkIds []int
+	err := json.Unmarshal([]byte(v), &linkIds)
+	if err != nil {
+		uc.Logger.Errorf("error unmarshalling linked column ids: %v", err)
+		return nil, err
+	}
+
+	uc.Logger.Debugf("link ids: %v", linkIds)
+
+	return linkIds, nil
 }

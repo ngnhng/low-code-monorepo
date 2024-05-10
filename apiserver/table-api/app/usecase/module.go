@@ -15,5 +15,6 @@ var Module = fx.Module(
 		NewCreateColumnUseCase,
 		NewDeleteColumnUseCase,
 		NewDeleteTableUseCase,
+		NewGetTableInfoUseCase,
 	),
 )
