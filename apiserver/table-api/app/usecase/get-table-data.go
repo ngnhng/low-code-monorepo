@@ -157,7 +157,7 @@ func (uc *GetTableDataUseCase) ExecuteV2(
 
 			table, err := connPool.LookupTableInfo(cc, tableId)
 			if err != nil {
-				uc.Logger.Debugf("error looking up table info: %v", err)
+				uc.Logger.Errorf("error looking up table info: %v", err)
 				return err
 			}
 
