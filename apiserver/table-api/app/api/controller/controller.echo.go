@@ -28,6 +28,7 @@ type (
 		CreateColumnUC   *usecase.CreateColumnUseCase
 		DeleteColumnUC   *usecase.DeleteColumnUseCase
 		DeleteTableUC    *usecase.DeleteTableUseCase
+		GetTableInfoUC   *usecase.GetTableInfoUseCase
 	}
 
 	Params struct {
@@ -45,6 +46,7 @@ type (
 		CreateColumnUC   *usecase.CreateColumnUseCase
 		DeleteColumnUC   *usecase.DeleteColumnUseCase
 		DeleteTableUC    *usecase.DeleteTableUseCase
+		GetTableInfoUC   *usecase.GetTableInfoUseCase
 	}
 )
 
@@ -62,6 +64,7 @@ func NewEchoController(p Params) *EchoController {
 		CreateColumnUC:   p.CreateColumnUC,
 		DeleteColumnUC:   p.DeleteColumnUC,
 		DeleteTableUC:    p.DeleteTableUC,
+		GetTableInfoUC:   p.GetTableInfoUC,
 	}
 }
 
@@ -195,7 +198,7 @@ func (ec *EchoController) ListTables(args ...interface{}) error {
 	// TODO: check project validity
 
 	// call usecase
-	tables, err := ec.ListTablesUC.Execute(cc, projectId)
+	tables, err := ec.ListTablesUC.ExecuteV2(cc, projectId)
 	if err != nil {
 		resp := domain.ErrorResponse{
 			Message: err.Error(),
@@ -245,7 +248,7 @@ func (ec *EchoController) QueryTable(args ...interface{}) error {
 		body = &defaultQuery
 	}
 
-	result, err := ec.GetTableDataUC.Execute(
+	result, err := ec.GetTableDataUC.ExecuteV2(
 		cc,
 		projectId,
 		tableId,
@@ -280,7 +283,7 @@ func (ec *EchoController) InsertRow(args ...interface{}) error {
 	projectId := c.Param("projectId")
 	tableId := c.Param("tableId")
 
-	payload := &domain.InsertRowRequest{}
+	payload := &domain.InsertRowRequestV2{}
 	if err := cc.Bind(payload); err != nil {
 		ec.Logger.Errorf("failed to bind body: %v", err)
 		return err
@@ -294,7 +297,7 @@ func (ec *EchoController) InsertRow(args ...interface{}) error {
 	//ec.Logger.Debugf("payload: %+v", payload)
 	//ec.Logger.Debugf("projectId: %s, tableId: %s", projectId, tableId)
 
-	err := ec.InsertRowUC.Execute(
+	err := ec.InsertRowUC.ExecuteV2(
 		cc,
 		projectId,
 		tableId,
@@ -327,8 +330,8 @@ func (ec *EchoController) UpdateRow(args ...interface{}) error {
 	projectId := c.Param("projectId")
 	tableId := c.Param("tableId")
 
-	payload := domain.UpdateRowRequest{}
-	if err := cc.Bind(&payload); err != nil {
+	payload := &domain.UpdateRowRequestV2{}
+	if err := cc.Bind(payload); err != nil {
 		ec.Logger.Errorf("failed to bind body: %v", err)
 		return err
 	}
@@ -336,11 +339,11 @@ func (ec *EchoController) UpdateRow(args ...interface{}) error {
 	//ec.Logger.Debugf("payload: %+v", payload)
 	//ec.Logger.Debugf("projectId: %s, tableId: %s", projectId, tableId)
 
-	err := ec.UpdateRowUC.Execute(
+	err := ec.UpdateRowUC.ExecuteV2(
 		cc,
 		projectId,
 		tableId,
-		&payload,
+		payload,
 	)
 	if err != nil {
 		resp := domain.ErrorResponse{
@@ -383,7 +386,7 @@ func (ec *EchoController) DeleteRow(args ...interface{}) error {
 	//ec.Logger.Debugf("payload: %+v", payload)
 	//ec.Logger.Debugf("projectId: %s, tableId: %s", projectId, tableId)
 
-	err := ec.DeleteRowUC.Execute(
+	err := ec.DeleteRowUC.ExecuteV2(
 		cc,
 		projectId,
 		tableId,
@@ -430,7 +433,7 @@ func (ec *EchoController) CreateColumn(args ...interface{}) error {
 	ec.Logger.Debugf("payload: %+v", payload)
 	ec.Logger.Debugf("projectId: %s, tableId: %s", projectId, tableId)
 
-	table, err := ec.CreateColumnUC.Execute(
+	table, err := ec.CreateColumnUC.ExecuteV2(
 		cc,
 		projectId,
 		tableId,
@@ -491,4 +494,37 @@ func (ec *EchoController) DeleteColumn(args ...interface{}) error {
 	}
 
 	return c.JSON(201, "Column deleted")
+}
+
+func (ec *EchoController) GetTableInfo(args ...interface{}) error {
+	if len(args) == 0 {
+		return errors.New("no arguments provided")
+	}
+
+	c, ok := args[0].(v4.Context)
+	if !ok {
+		return errors.New("first argument is not of type echo.Context")
+	}
+
+	cc := &echo.EchoContext{
+		Context: c,
+	}
+
+	projectId := c.Param("projectId")
+	tableId := c.Param("tableId")
+
+	table, err := ec.GetTableInfoUC.Execute(
+		cc,
+		projectId,
+		tableId,
+	)
+
+	if err != nil {
+		resp := domain.ErrorResponse{
+			Message: err.Error(),
+		}
+		return c.JSON(400, resp)
+	}
+
+	return c.JSON(200, table)
 }

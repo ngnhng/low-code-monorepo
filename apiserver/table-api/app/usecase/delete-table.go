@@ -1,11 +1,14 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
 	"yalc/dbms/modules/config"
 	"yalc/dbms/modules/logger"
 	"yalc/dbms/modules/pgx"
 	"yalc/dbms/shared"
+
+	v5 "github.com/jackc/pgx/v5"
 
 	"go.uber.org/fx"
 )
@@ -57,17 +60,17 @@ func (uc *DeleteTableUseCase) Execute(
 		return err
 	}
 
-	return userDbPool.ExecTx(c, func(udpp *pgx.UserDbPgxPool) error {
+	connPool, err := uc.Pgx.GetOrCreatePgxPool(shared.GenerateDatabaseName(projectId, ctx.GetUserId()))
+	if err != nil {
+		uc.Logger.Debugf("error getting pgx pool: %v", err)
+		return err
+	}
 
-		connPool, err := uc.Pgx.GetOrCreatePgxPool(shared.GenerateDatabaseName(projectId, ctx.GetUserId()))
-		if err != nil {
-			uc.Logger.Debugf("error getting pgx pool: %v", err)
-			return err
-		}
+	return userDbPool.ExecuteTransaction(c, func(ucc context.Context, uTx v5.Tx) error {
 
-		return connPool.ExecTx(c, func(p *pgx.Pgx) error {
+		return connPool.ExecuteTransaction(ucc, func(ccc context.Context, connTx v5.Tx) error {
 			// drop the table
-			_, err := p.ConnPool.Exec(c, fmt.Sprintf(`DROP TABLE "%s"`, table.Name))
+			_, err := connTx.Exec(ccc, fmt.Sprintf(`DROP TABLE "%s"`, table.Name))
 			if err != nil {
 				uc.Logger.Debugf("error dropping table: %v", err)
 				return err
@@ -75,7 +78,7 @@ func (uc *DeleteTableUseCase) Execute(
 
 			// delete the table
 			sql := `DELETE FROM "Table" WHERE "tid" = $1`
-			_, err = userDbPool.ConnPool.Exec(c, sql, tableId)
+			_, err = uTx.Exec(ucc, sql, tableId)
 			if err != nil {
 				uc.Logger.Debugf("error deleting table: %v", err)
 				return err

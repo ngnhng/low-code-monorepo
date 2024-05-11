@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -10,6 +11,9 @@ import (
 	"yalc/dbms/modules/config"
 	"yalc/dbms/modules/logger"
 	"yalc/dbms/modules/pgx"
+
+	v5 "github.com/jackc/pgx/v5"
+
 	"yalc/dbms/shared"
 
 	"github.com/shopspring/decimal"
@@ -45,7 +49,15 @@ type (
 	LinkValue struct {
 		TableId  string
 		ColumnId string
-		RowIds   []int
+		// ids of the rows of another table to be linked
+		RowIds []int
+	}
+
+	LinkValueV2 struct {
+		CurrentColId string
+		LinkedColId  string
+
+		RowIds []int
 	}
 )
 
@@ -122,19 +134,20 @@ func (uc *InsertRowUseCase) Execute(
 	uc.Logger.Debugf("inserting data: %v", data)
 	uc.Logger.Debugf("inserting into table: %v", table)
 
-	// begin insert transaction
-	return connPool.ExecTx(c, func(p *pgx.Pgx) error {
-		insertedRows, err := p.ConnPool.Query(c, sql, rowValues...)
+	return connPool.ExecuteTransaction(c, func(cc context.Context, tx v5.Tx) error {
+		resultRows, err := tx.Query(cc, sql, rowValues...)
 		if err != nil {
+			uc.Logger.Debugf("error inserting rows: %v", err)
 			return err
 		}
 
-		defer insertedRows.Close()
+		defer resultRows.Close()
 
 		ids := make([]int, 0)
-		for insertedRows.Next() {
+
+		for resultRows.Next() {
 			var id int
-			err = insertedRows.Scan(&id)
+			err = resultRows.Scan(&id)
 			if err != nil {
 				return err
 			}
@@ -153,19 +166,69 @@ func (uc *InsertRowUseCase) Execute(
 
 					tableId := cell.Link.TableId
 					columnId := cell.Link.ColumnId
+					linkedColumnIds, ok := cell.Value.([]int)
+					if !ok {
+						uc.Logger.Errorf("error converting interface{}: %v", cell.Value)
+						return fmt.Errorf("error converting interface{}: %v", cell.Value)
+					}
+
+					//// convert the interface{} to string
+					//jsonBytes, ok := cell.Value.([]byte)
+					//if !ok {
+					//	uc.Logger.Errorf("error converting interface{}: %v", cell.Value)
+					//	return fmt.Errorf("error converting interface{}: %v", cell.Value)
+					//}
+
+					//// unmarshal the JSON data into a string
+					//var jsonString string
+					//err := json.Unmarshal(jsonBytes, &jsonString)
+					//if err != nil {
+					//	uc.Logger.Errorf("error unmarshalling JSON data into string: %v", err)
+					//	return err
+					//}
+
+					//// unmarshal the JSON string into a slice of integers
+					//var linkedColumnIds []int
+					//err = json.Unmarshal([]byte(jsonString), &linkedColumnIds)
+					//if err != nil {
+					//	uc.Logger.Errorf("error unmarshalling linked column ids: %v", err)
+					//	return err
+					//}
 
 					// get the table definition
-					linkTable, err := userDbPool.GetTableInfo(c, tableId)
+					linkTable, err := userDbPool.GetTableInfo(cc, tableId)
 					if err != nil {
 						return err
 					}
 
-					updateQuery := `UPDATE "%s" SET "%s" = "%s" || $1::jsonb WHERE id = $2;`
+					updateQuery := `UPDATE "%s" SET "%s" = COALESCE("%s", '[]'::jsonb) || $1::jsonb WHERE id = $2;`
 
-					// update the link column
-					_, err = p.ConnPool.Exec(c, fmt.Sprintf(updateQuery, linkTable.Name, columnId, columnId), cell.Link.RowIds, ids[i])
-					if err != nil {
-						return err
+					jsonArr := fmt.Sprintf("[%d]", ids[i])
+
+					uc.Logger.Debugf(
+						"updating link column query: %v \n params: %v %v",
+						fmt.Sprintf(updateQuery, linkTable.Name, columnId, columnId),
+						jsonArr,
+						linkedColumnIds,
+					)
+
+					for _, linkedColumnId := range linkedColumnIds {
+						// update the linked column
+						tag, err := tx.Exec(
+							cc,
+							fmt.Sprintf(
+								updateQuery,
+								linkTable.Name,
+								columnId,
+								columnId,
+							),
+							jsonArr,
+							linkedColumnId,
+						)
+						if err != nil || tag.RowsAffected() == 0 {
+							uc.Logger.Errorf("error updating linked column: %v", err)
+							return fmt.Errorf("error updating linked column: %v", err)
+						}
 					}
 				}
 			}
@@ -250,11 +313,12 @@ func parseValue(colType domain.ColumnType, v string) (interface{}, error) {
 	case domain.ColumnTypeDateTime:
 		return time.Parse("2006-01-02 15:04:05", v)
 	case domain.ColumnTypeLink:
-		val, err := json.Marshal(v)
+		var linkIds []int
+		err := json.Unmarshal([]byte(v), &linkIds)
 		if err != nil {
 			return nil, err
 		}
-		return val, nil
+		return linkIds, nil
 	default:
 		return nil, fmt.Errorf("unknown column type: %v", colType)
 	}
@@ -295,4 +359,245 @@ func parameterizeInsertQuery(table *domain.Table, numberOfRows, cellsPerRow int)
 	)
 
 	return sql, nil
+}
+
+func (uc *InsertRowUseCase) ExecuteV2(
+	ctx shared.RequestContext,
+	projectId string,
+	tableId string,
+	data *domain.InsertRowRequestV2,
+) error {
+
+	// limit row to 1
+	//if len(data.Rows) > 1 {
+	//	return fmt.Errorf("only one row can be inserted at a time")
+	//}
+
+	c := ctx.GetContext()
+
+	// Get a connection pool of the database
+	connPool, err := uc.Pgx.GetOrCreatePgxPool(shared.GenerateDatabaseName(projectId, ctx.GetUserId()))
+	if err != nil {
+		uc.Logger.Debugf("error getting pgx pool: %v", err)
+		return err
+	}
+
+	return connPool.ExecuteTransaction(
+		c,
+		func(cc context.Context, tx v5.Tx) error {
+			// need to know column type of each values in rows
+
+			table, err := connPool.LookupTableInfo(cc, tableId)
+			if err != nil {
+				uc.Logger.Debugf("error looking up table info: %v", err)
+				return err
+			}
+
+			// get the columns of the table
+			columns := table.Columns
+			// remove the id column
+			columns = columns[1:]
+
+			// row is a map[string]string of column id and value to insert
+			for _, row := range data.Rows {
+				//row := data.Rows[0]
+
+				// prepare the row values
+				var linkValues []LinkValueV2
+				var rowValues []any
+				for _, col := range columns {
+					if val, ok := row[col.Name]; ok {
+						// if normal type
+						if col.Type != domain.ColumnTypeLink {
+							// parse the value
+							parsedVal, err := shared.ParseValue(col.Type, val)
+							if err != nil {
+								uc.Logger.Debugf("error parsing value: %v", err)
+								return err
+							}
+
+							// append the parsed value to the row values
+							rowValues = append(rowValues, parsedVal)
+						} else {
+							// if link type
+							// parse the value
+							parsedVal, err := uc.parseLinkValue(val)
+							if err != nil {
+								uc.Logger.Debugf("error parsing value: %v", err)
+								return err
+							}
+
+							linkValues = append(linkValues, LinkValueV2{
+								CurrentColId: col.Id,
+								RowIds:       parsedVal,
+							})
+						}
+					} else {
+						// if the column is not present in the data and is not link, consider it as NULL
+						if col.Type != domain.ColumnTypeLink {
+							rowValues = append(rowValues, shared.ParseNullOperatorV2(col.Type))
+						}
+					}
+				}
+
+				// insert the row values
+				sql, err := parameterizeInsertQueryV2(table, 1, len(columns))
+
+				if err != nil {
+					uc.Logger.Debugf("error parsing insert query: %v", err)
+					return err
+				}
+
+				uc.Logger.Debugf("insert query: %v", sql)
+				uc.Logger.Debugf("insert values: %v", rowValues)
+
+				resultRows, err := tx.Query(cc, sql, rowValues...)
+
+				if err != nil {
+					uc.Logger.Debugf("error inserting rows: %v", err)
+					return err
+				}
+
+				defer resultRows.Close()
+
+				// if no link values, return
+				if len(linkValues) != 0 {
+
+					insertedRowIds := make([]int, 0)
+
+					for resultRows.Next() {
+						var id int
+						err = resultRows.Scan(&id)
+						if err != nil {
+							uc.Logger.Errorf("error scanning id: %v", err)
+							return err
+						}
+						insertedRowIds = append(insertedRowIds, id)
+					}
+
+					uc.Logger.Debugf("inserted row ids: %v", insertedRowIds)
+
+					for _, linkValue := range linkValues {
+						mmLookUp, err := tx.Query(
+							cc,
+							`SELECT mm_table_id, fk_mm_child_col_id, fk_mm_parent_col_id FROM yalc_col_relations WHERE link_col_id = $1 AND link_table_id = $2`,
+							linkValue.CurrentColId,
+							tableId,
+						)
+						if err != nil {
+							uc.Logger.Debugf("error looking up mm table: %v", err)
+							return err
+						}
+
+						var mmTableRelation struct {
+							mmTableId     string
+							fkChildColId  string
+							fkParentColId string
+						}
+
+						for mmLookUp.Next() {
+							err = mmLookUp.Scan(&mmTableRelation.mmTableId, &mmTableRelation.fkChildColId, &mmTableRelation.fkParentColId)
+							if err != nil {
+								uc.Logger.Errorf("error scanning mm table relation: %v", err)
+								return err
+							}
+						}
+						uc.Logger.Debugf("looking up mm table: %v", mmTableRelation)
+						// look up table
+						mmTable, err := connPool.LookupTableInfo(cc, mmTableRelation.mmTableId)
+						if err != nil {
+							uc.Logger.Debugf("error looking up mm table: %v", err)
+							return err
+						}
+
+						fkChildColName, err := connPool.LookUpColumnName(cc, mmTableRelation.fkChildColId)
+						if err != nil {
+							uc.Logger.Debugf("error looking up fk child column name: %v", err)
+							return err
+						}
+
+						fkParentColName, err := connPool.LookUpColumnName(cc, mmTableRelation.fkParentColId)
+						if err != nil {
+							uc.Logger.Debugf("error looking up fk parent column name: %v", err)
+							return err
+						}
+
+						// insert to mm table
+						sql := `INSERT INTO "%s" ("%s", "%s") VALUES ($1, $2)`
+						sql = fmt.Sprintf(sql, mmTable.Name, fkChildColName, fkParentColName)
+
+						for _, rowId := range linkValue.RowIds {
+							resultRows, err := tx.Query(cc, sql, rowId, insertedRowIds[0])
+							if err != nil {
+								uc.Logger.Debugf("error inserting rows: %v", err)
+								return err
+							}
+
+							resultRows.Close()
+						}
+					}
+				}
+
+				resultRows.Close()
+			}
+			return nil
+		},
+	)
+}
+
+// produces a parameterized insert query such as:
+// INSERT INTO table_name (column1, column2, column3) VALUES ($1, $2, $3)
+func parameterizeInsertQueryV2(table *domain.Table, numberOfRows, cellsPerRow int) (string, error) {
+	if numberOfRows == 0 || cellsPerRow == 0 {
+		return "", fmt.Errorf("rows or columns are empty")
+	}
+
+	columns := table.Columns
+	// skip the id column and link columns
+	columnsToBeInserted := make([]domain.Column, 0)
+	for i, col := range columns {
+		if col.Type != domain.ColumnTypePrimaryKey && col.Type != domain.ColumnTypeLink {
+			columnsToBeInserted = append(columnsToBeInserted, columns[i])
+		}
+	}
+
+	// Prepare column names
+	columnNames := make([]string, len(columnsToBeInserted))
+	for i, col := range columnsToBeInserted {
+		columnNames[i] = fmt.Sprintf("\"%s\"", col.Name)
+	}
+
+	// Prepare placeholders for values
+	valuePlaceholders := make([]string, numberOfRows)
+	for i := range valuePlaceholders {
+		placeholders := make([]string, len(columnsToBeInserted))
+		rowIdx := i * len(columnsToBeInserted)
+		for j := range columnsToBeInserted {
+			idx := rowIdx + j
+			placeholders[j] = fmt.Sprintf("$%d", idx+1)
+		}
+		valuePlaceholders[i] = fmt.Sprintf("(%s)", strings.Join(placeholders, ", "))
+	}
+
+	sql := fmt.Sprintf(
+		"INSERT INTO \"%s\" (%s) VALUES %s RETURNING id",
+		table.Name,
+		strings.Join(columnNames, ", "),
+		strings.Join(valuePlaceholders, ", "),
+	)
+
+	return sql, nil
+}
+
+func (uc *InsertRowUseCase) parseLinkValue(v string) ([]int, error) {
+	var linkIds []int
+	err := json.Unmarshal([]byte(v), &linkIds)
+	if err != nil {
+		uc.Logger.Errorf("error unmarshalling linked column ids: %v", err)
+		return nil, err
+	}
+
+	uc.Logger.Debugf("link ids: %v", linkIds)
+
+	return linkIds, nil
 }

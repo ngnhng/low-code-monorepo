@@ -41,6 +41,10 @@ func NewEchoRouter(p Params) {
 				return cc.ListTables(c)
 			})
 
+			manageSubGroup.GET("/tables/:tableId", func(c v4.Context) error {
+				return cc.GetTableInfo(c)
+			})
+
 			// create a new table for project
 			manageSubGroup.POST("/tables", func(c v4.Context) error {
 				return cc.CreateTable(c)
