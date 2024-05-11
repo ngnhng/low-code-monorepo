@@ -2,11 +2,10 @@ package shared
 
 import (
 	"context"
-	"crypto/sha1"
 	"database/sql"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"regexp"
 	"sort"
 	"strconv"
@@ -311,18 +310,19 @@ func GenerateMMTableName(table1, table2 string) string {
 	tables := []string{table1, table2}
 	sort.Strings(tables)
 
-	// Concatenate the sorted strings
-	concat := tables[0] + tables[1]
+	// Create a new random number generator
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	// Hash the concatenated string
-	hasher := sha1.New()
-	hasher.Write([]byte(concat))
-	hash := hex.EncodeToString(hasher.Sum(nil))
+	chars := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	shortRand := make([]rune, 8)
+	for i := range shortRand {
+		shortRand[i] = chars[r.Intn(len(chars))]
+	}
 
-	// Use the first 8 characters of the hash
-	shortHash := hash[:8]
+	// Convert the string to lowercase
+	lowercase := strings.ToLower(fmt.Sprintf("yalc_mm_%s", string(shortRand)))
 
-	return fmt.Sprintf("yalc_mm_%s", shortHash)
+	return lowercase
 }
 
 func GenerateTableName(label string) string {
