@@ -80,6 +80,7 @@ export async function GET(
     label: column.label,
     name: column.name,
     type: mappingTypeToUI(column.type),
+    referenceTable: column.reference?.table_id,
     isActive: true,
     isPrimaryKey: false,
     isForeignKey: false,

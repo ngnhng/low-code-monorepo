@@ -48,21 +48,32 @@ const RelationRecords = ({
   setNumberOfRecords,
   linkedRecordIds,
   rowData,
+  columnData,
 }: RelationRecordsProps) => {
   const [linkedData, setLinkedData] = useState<RelationRecordsType[]>([]);
 
   const {
     projectData: { currentProjectId },
-    tableData: { fetchTableRecords },
+    tableData: { fetchTableData },
   } = useMobxStore();
 
   const { data, isLoading } = useSWR(
-    `TABLE_DATA-${currentProjectId}-${referenceTableId}-rows`,
-    () => fetchTableRecords(referenceTableId)
+    `TABLE_DATA-${currentProjectId}-${referenceTableId}`,
+    () =>
+      fetchTableData(
+        {
+          tableId: referenceTableId,
+          query: {
+            sql: "(1=1)",
+            params: [],
+          },
+        },
+        columnData.yalcToken
+      )
   );
   useEffect(() => {
     if (data) {
-      const mappingData: RelationRecordsType[] = data.map((record) => ({
+      const mappingData: RelationRecordsType[] = data.rows.map((record) => ({
         ...record,
         linkedState: rowData.referenceRecords.includes(record.id.toString()),
       }));

@@ -11,8 +11,8 @@ import { ColumnDef, ColumnType, RowDef } from "types/table-data";
 import { TableEditor } from "../_components/view/table-editor";
 
 import { toast } from "sonner";
-// import axios from "axios";
-// import { useRouter } from "next/navigation";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatValidUiDate } from "app/api/dbms/_utils/utils";
 
@@ -30,7 +30,7 @@ export default function Page({
 
   const [yalcToken] = useLocalStorage("yalc_at", "");
   const [isSubmiting, setIsSubmiting] = useState(false);
-  // const router = useRouter();
+  const router = useRouter();
 
   const queryObject = {
     sql: "(1=1)",
@@ -122,21 +122,21 @@ export default function Page({
 
     console.log("[SUBMIT_DATA]:", submitData);
 
-    // const configs = {
-    //   headers: {
-    //     Authorization: `Bearer ${yalcToken}`,
-    //   },
-    // };
+    const configs = {
+      headers: {
+        Authorization: `Bearer ${yalcToken}`,
+      },
+    };
     try {
-      // if (submitData.addedRows.length > 0) {
-      //   await axios.post(
-      //     `/api/dbms/${params.projectId}/${params.tableId}/rows`,
-      //     {
-      //       rows: submitData.addedRows,
-      //     },
-      //     configs
-      //   );
-      // }
+      if (submitData.addedRows.length > 0) {
+        await axios.post(
+          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+          {
+            rows: submitData.addedRows,
+          },
+          configs
+        );
+      }
 
       // if (submitData.updatedRows.length > 0) {
       //   await axios.patch(
@@ -184,7 +184,9 @@ export default function Page({
       );
 
       setIsSubmiting(false);
-      // router.refresh();
+      // tableRecordsMutate();
+      // tableColumnsMutate();
+      router.refresh();
     } catch (error) {
       console.error("Something went wrong when committing", error);
     }

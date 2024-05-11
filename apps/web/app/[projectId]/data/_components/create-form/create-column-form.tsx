@@ -102,7 +102,7 @@ const CreateColumnForm = ({
 
   const { data: allTables, isLoading } = useSWR(
     `TABLE_DATA-${currentProjectId}-all`,
-    () => fetchTables()
+    () => fetchTables("")
   );
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -139,6 +139,7 @@ const CreateColumnForm = ({
     // check logic naming for foreign key id
     let newColData: ColumnDef = {
       id: values.columnname.replaceAll(/\s/g, "").toLowerCase(),
+      name: values.columnname,
       label: values.columnname,
       type: values.type,
       isActive: true,
@@ -204,8 +205,9 @@ const CreateColumnForm = ({
           const newRow = {
             ...row,
             [newColData.id]: {
-              referenceTableId: `${values.referenceTable}`,
-              referenceRecords: [],
+              count: 0,
+              children_ids: [],
+              children_table: values.referenceTable,
             },
           };
 

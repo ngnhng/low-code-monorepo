@@ -16,7 +16,7 @@ import { Operation } from "react-datasheet-grid/dist/types";
 import { ColumnType, DataTable, RowDef, ColumnDef } from "types/table-data";
 
 import { ViewMenuBar } from "./view-menu-bar";
-// import RelationRecords from "../relation-record/relation-records";
+import RelationRecords from "../relation-record/relation-records";
 import { Button } from "@repo/ui";
 
 type CommitFunc = (
@@ -84,7 +84,7 @@ export const TableEditor = ({
       const isLinkType = column.type === "link";
       const isId = column.id === "id";
       const colType = isLinkType
-        ? colTypeMapper(column.type, column, tableId)
+        ? colTypeMapper(column.type, column, tableId, yalcToken)
         : colTypeMapper(column.type);
       const disabled = isId;
 
@@ -264,27 +264,23 @@ const TitleDataSheet = ({
 const LinkCell = ({ rowData, columnData }) => {
   // * rowData: is the value of the cell
   // * columnData: is the props (attributes) of the column containing cells
-  // const [numberOfRecords, setNumberOfRecords] = useState(rowData.count);
+  const [numberOfRecords, setNumberOfRecords] = useState(rowData.count);
 
   return (
-    <div>Link Column</div>
-    // <div className="flex items-center">
-    //   <RelationRecords
-    //     referenceTableId={rowData.referenceTableId}
-    //     linkedRecordIds={rowData.referenceRecords}
-    //     setNumberOfRecords={setNumberOfRecords}
-    //     rowData={rowData}
-    //     columnData={columnData}
-    //   />
-    //   <span>
-    //     {numberOfRecords} records -{" "}
-    //     <span className="text-emerald-500">{columnData.referenceTable}</span>
-    //   </span>
-    // </div>
+    <div className="flex items-center">
+      <RelationRecords
+        referenceTableId={rowData.children_table}
+        linkedRecordIds={rowData.children_ids}
+        setNumberOfRecords={setNumberOfRecords}
+        rowData={rowData}
+        columnData={columnData}
+      />
+      <span>{numberOfRecords} records</span>
+    </div>
   );
 };
 
-const LinkColumnCell = (columnData, tableId) => {
+const LinkColumnCell = (columnData, tableId, yalcToken) => {
   columnData = { ...columnData, tableId: tableId };
 
   return {
@@ -292,14 +288,15 @@ const LinkColumnCell = (columnData, tableId) => {
     deleteValue: () => "",
     copyValue: ({ rowData }) => rowData,
     pasteValue: ({ value }) => value,
-    columnData: { ...columnData, tableId: tableId },
+    columnData: { ...columnData, tableId: tableId, yalcToken: yalcToken },
   };
 };
 
 const colTypeMapper = (
   type: ColumnType,
   columnData?: any,
-  tableId?: string
+  tableId?: string,
+  yalcToken?: string
 ) => {
   switch (type) {
     case "text": {
@@ -312,7 +309,7 @@ const colTypeMapper = (
       return checkboxColumn;
     }
     case "link": {
-      return LinkColumnCell(columnData, tableId);
+      return LinkColumnCell(columnData, tableId, yalcToken);
     }
     case "date": {
       return isoDateColumn;
@@ -360,9 +357,9 @@ function returnDefaultValue(type: ColumnType, referenceTable?: string) {
     }
     case "link": {
       return {
-        count: referenceTable,
+        count: 0,
         children_ids: [],
-        reference: referenceTable,
+        children_table: referenceTable,
       };
     }
     case "date": {
