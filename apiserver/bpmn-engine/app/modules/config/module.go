@@ -4,25 +4,32 @@ import (
 	"os"
 
 	"go.uber.org/fx"
+
+	env "github.com/caarlos0/env/v10"
+	dotenv "github.com/joho/godotenv"
 )
 
 var Module = fx.Module(
 	"config",
-	fx.Options(
-		fx.Provide(NewConfig),
+	fx.Provide(
+		fx.Annotate(
+			NewConfig,
+			fx.As(new(Config)),
+		),
 	),
 )
 
 func NewConfig() (Config, error) {
-	env := os.Getenv("ENVIRONMENT")
-	switch env {
-	case "local":
-		return NewLocalConfig()
-	case "development":
-		return NewDevConfig()
-	case "production":
-		return NewProdConfig()
-	default:
-		panic("Invalid environment: " + env)
+	dotenv.Load(os.Getenv("YALC_ENV_FILE"))
+
+	cfg := &config{
+		env: &Env{},
 	}
+	if err := env.ParseWithOptions(cfg.env, env.Options{
+		Prefix:          Prefix,
+		RequiredIfNoDef: true,
+	}); err != nil {
+		panic(err)
+	}
+	return cfg, nil
 }

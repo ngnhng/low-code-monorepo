@@ -22,9 +22,9 @@ func main() {
 	app := fx.New(
 		//core.GetModule(configs),
 		connector.Module,
+		config.Module,
 		logger.Module,
 		oauth2.GetModule(),
-		config.Module,
 		core.GetModule(),
 		// provide db as a separate module
 		redis_db.Module,

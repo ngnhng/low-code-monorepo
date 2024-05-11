@@ -1,0 +1,18 @@
+version: "3.7"
+
+networks:
+    my_network:
+        driver: bridge
+
+services:
+    multi-tenant-svc: 
+        image: ghcr.io/multi-tenant:v0.80.0
+
+        networks:
+            - my_network
+
+    per-user-postgres:
+        image: postgres:16
+
+        networks:
+            - my_network

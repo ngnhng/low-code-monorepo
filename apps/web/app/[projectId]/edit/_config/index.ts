@@ -1,4 +1,4 @@
-import type { Config, Data } from "@measured/puck";
+import type { Config } from "@measured/puck";
 import {
   ButtonGroup,
   ButtonGroupProps,
@@ -19,6 +19,8 @@ import type { TableProps } from "../_components/blocks/Table";
 import { Table } from "../_components/blocks/Table";
 import { Kanban, KanbanProps } from "../_components/blocks/Kanban";
 import { Charts, ChartsProps } from "../_components/blocks/Chart";
+import { Form, FormProps } from "../_components/blocks/Form";
+import { FormTable, FormTableProps } from "../_components/blocks/FormTable";
 
 export type { RootProps } from "./root";
 
@@ -34,6 +36,8 @@ type CProps = {
   Stats: StatsProps;
   Text: TextProps;
   VerticalSpace: VerticalSpaceProps;
+  Form: FormProps,
+  FormTable: FormTableProps
 };
 
 export type UserConfig = Config<
@@ -81,22 +85,8 @@ export const conf: Config<
     Stats,
     Text,
     VerticalSpace,
-  },
-};
-
-export const initialData: Record<string, Data> = {
-  "/": {
-    content: [],
-    root: { props: { title: "Test" } },
-    zones: {},
-  },
-  "/pricing": {
-    content: [],
-    root: { props: { title: "Pricing" } },
-  },
-  "/about": {
-    content: [],
-    root: { props: { title: "About" } },
+    Form,
+    FormTable
   },
 };
 

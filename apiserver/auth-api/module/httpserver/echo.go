@@ -110,7 +110,7 @@ func NewEchoServer(p Params) *server {
 
 	//quick and dirty setup for jwt
 	e.Use(echojwt.WithConfig(echojwt.Config{
-		SigningKey: []byte(p.Config.Secret.JwtSecret.Access.Key),
+		SigningKey: []byte(p.Config.Jwt.Access.Key),
 		ContextKey: "user",
 		Skipper: func(c echo.Context) bool {
 			return strings.Contains(c.Path(), "/api/v1/oauth/google")
@@ -145,15 +145,15 @@ func NewEchoServer(p Params) *server {
 	}))
 
 	rateLimit := 0
-	if p.Config.Env.App.Server.RateLimit.Enabled {
-		rateLimit = p.Config.Env.App.Server.RateLimit.Max
+	if p.Config.Env.App.RateLimit.Enabled {
+		rateLimit = p.Config.Env.App.RateLimit.Max
 	}
 
 	return &server{
 		echo: e,
 		ServerConfig: &serverConfig{
-			ServerAddress: p.Config.Env.App.Server.Address,
-			Port:          p.Config.Env.App.Server.Port,
+			ServerAddress: p.Config.Env.HTTPAddress,
+			Port:          p.Config.Env.HTTPPort,
 			RateLimit:     rateLimit,
 			Logger:        p.Logger,
 		},

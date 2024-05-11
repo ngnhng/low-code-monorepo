@@ -36,8 +36,8 @@ var loggerLevelMap = map[string]zapcore.Level{
 
 // NewZapLogger create new zap logger
 func NewZapLogger(cfg config.Config) ZapLogger {
-	zapLogger := &zapLogger{level: cfg.GetLogLevel(), logOptions: cfg}
-	zapLogger.initLogger(os.Getenv(cfg.GetEnv()))
+	zapLogger := &zapLogger{level: cfg.GetConfig().LogLevel, logOptions: cfg}
+	zapLogger.initLogger(os.Getenv(cfg.GetConfig().Environment))
 	return zapLogger
 }
 
@@ -58,13 +58,13 @@ func (l *zapLogger) initLogger(env string) {
 	logLevel := l.getLoggerLevel()
 
 	// create -- overwrite blank log file
-	logFile, err := os.OpenFile(l.logOptions.GetLogPath(), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		panic(err)
-	}
+	//logFile, err := os.OpenFile(l.logOptions.GetConfig().LogPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	//logWriter := zapcore.AddSync(os.Stdout)
-	logWriter := zap.CombineWriteSyncers(zapcore.AddSync(logFile), zapcore.AddSync(os.Stdout))
+	logWriter := zapcore.AddSync(os.Stdout)
+	//logWriter := zap.CombineWriteSyncers(zapcore.AddSync(logFile), zapcore.AddSync(os.Stdout))
 
 	var encoderCfg zapcore.EncoderConfig
 	var encoder zapcore.Encoder

@@ -54,7 +54,7 @@ func New(p Params) *EchoHTTPServer {
 	e := echo.New()
 	e.Validator = &CustomValidator{}
 	e.Use(echojwt.WithConfig(echojwt.Config{
-		SigningKey: []byte(p.Config.GetJwtSecret()),
+		SigningKey: []byte(p.Config.GetConfig().JwtSecret),
 		ContextKey: "user",
 	}),
 	)
@@ -83,8 +83,8 @@ func New(p Params) *EchoHTTPServer {
 	}))
 
 	return &EchoHTTPServer{
-		Address: p.Config.GetAddress(),
-		Port:    p.Config.GetPort(),
+		Address: p.Config.GetConfig().HTTPAddress,
+		Port:    p.Config.GetConfig().HTTPPort,
 		Echo:    e,
 		Builder: e.Group("/"),
 	}

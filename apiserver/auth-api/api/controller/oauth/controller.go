@@ -96,8 +96,8 @@ func (ctrl *GoogleOAuthLoginController) Callback(c echo.Context) error {
 			LastName:     userInfo.FamilyName,
 			ProfileImage: userInfo.Picture,
 		},
-		ctrl.Config.Secret.JwtSecret.Access.Key,
-		time.Now().Add(ctrl.Config.Secret.JwtSecret.Access.Expiration),
+		ctrl.Config.Jwt.Access.Key,
+		time.Now().Add(ctrl.Config.Jwt.Access.Expiration),
 	)
 	if err != nil {
 		return error_response.InternalServerError(c, "error", "failed to generate access token: "+err.Error())
@@ -124,7 +124,7 @@ func (ctrl *GoogleOAuthLoginController) ValidateToken(c echo.Context) error {
 		return error_response.BadRequestError(c, "error", err.Error())
 	}
 
-	_, err = util.ValidateToken(token, ctrl.Config.Secret.JwtSecret.Access.Key)
+	_, err = util.ValidateToken(token, ctrl.Config.Jwt.Access.Key)
 	if err != nil {
 		return error_response.UnauthorizedError(c, err.Error(), "invalid token")
 	}
