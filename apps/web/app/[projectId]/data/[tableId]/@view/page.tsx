@@ -85,7 +85,7 @@ export default function Page({
     return <div>Loading...</div>;
   }
 
-  // console.log("RAW_RECORDS", tableRecordsData.rows);
+  // console.log("RAW_RECORDS", tableRecordsData.maxIndex);
   // console.log(
   //   "MODIED_RECORDS",
   //   mappingValueDate(tableColumnsData.columns, tableRecordsData.rows)
@@ -116,11 +116,12 @@ export default function Page({
     };
 
     const submitData = {
-      ...processEditLogData(filteredData, changeLogs),
+      ...processEditLogData(filteredData, changeLogs, localColumns),
       newReferenceTable,
     };
 
     console.log("[SUBMIT_DATA]:", submitData);
+    console.log("[CURRENT_DATA]:", localData);
 
     const configs = {
       headers: {
@@ -128,6 +129,16 @@ export default function Page({
       },
     };
     try {
+      if (submitData.addedColumns.length > 0) {
+        await axios.post(
+          `/api/dbms/${params.projectId}/${params.tableId}/columns`,
+          {
+            columns: submitData.addedColumns,
+          },
+          configs
+        );
+      }
+
       if (submitData.addedRows.length > 0) {
         await axios.post(
           `/api/dbms/${params.projectId}/${params.tableId}/rows`,
@@ -138,37 +149,29 @@ export default function Page({
         );
       }
 
-      // if (submitData.updatedRows.length > 0) {
-      //   await axios.patch(
-      //     `/api/dbms/${params.projectId}/${params.tableId}/rows`,
-      //     submitData.updatedRows,
-      //     configs
-      //   );
-      // }
+      if (submitData.updatedRows.length > 0) {
+        await axios.patch(
+          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+          {
+            data: submitData.updatedRows,
+          },
+          configs
+        );
+      }
 
-      // if (submitData.deletedRows.length > 0) {
-      //   await axios.delete(
-      //     `/api/dbms/${params.projectId}/${params.tableId}/rows`,
-      //     {
-      //       headers: {
-      //         Authorization: `Bearer ${yalcToken}`,
-      //       },
-      //       data: {
-      //         ids: submitData.deletedRows,
-      //       },
-      //     }
-      //   );
-      // }
-
-      // if (submitData.addedColumns.length > 0) {
-      //   await axios.post(
-      //     `/api/dbms/${params.projectId}/${params.tableId}/columns`,
-      //     {
-      //       columns: submitData.addedColumns,
-      //     },
-      //     configs
-      //   );
-      // }
+      if (submitData.deletedRows.length > 0) {
+        await axios.delete(
+          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+          {
+            headers: {
+              Authorization: `Bearer ${yalcToken}`,
+            },
+            data: {
+              ids: submitData.deletedRows,
+            },
+          }
+        );
+      }
 
       toast.success(
         `Table has been updated at: /api/mock/${params.projectId}/data/${params.tableId} `,
@@ -228,9 +231,7 @@ type finalEditLogType = {
   }[];
   updatedRows: {
     id: string;
-    values: {
-      [key: string]: any;
-    };
+    [key: string]: any;
   }[];
   deletedRows: number[];
   addedColumns: any;
@@ -238,7 +239,8 @@ type finalEditLogType = {
 
 function processEditLogData(
   localData: RowDef[],
-  editLog: editLogType
+  editLog: editLogType,
+  localColumns
 ): finalEditLogType {
   const addedRows = localData
     .filter((row) => editLog.addedRows.has(row.id))
@@ -254,16 +256,21 @@ function processEditLogData(
       const { id, ...rest } = row;
       return {
         id: id.toString(),
-        values: convertedObjValues(rest),
+        ...convertedObjValues(rest, localColumns),
       };
     });
   const deletedRows = [...editLog.deletedRows];
   const addedColumns = [...editLog.addedColumns].map((column) => {
-    const { label, type } = column;
+    const { label, type, referenceTable } = column;
 
     return {
-      name: label,
+      label: label,
       type: mappingType(type),
+      reference: referenceTable
+        ? {
+            table_id: referenceTable,
+          }
+        : undefined,
     };
   });
 
@@ -275,10 +282,19 @@ function processEditLogData(
   };
 }
 
-function convertedObjValues(obj) {
+function convertedObjValues(obj, localColumns) {
   for (const key in obj) {
     if (obj[key] === undefined || obj[key] === null) {
       continue;
+    }
+
+    // eslint-disable-next-line unicorn/prefer-ternary
+    if (
+      localColumns.some(
+        (column) => column.name === key && column.type === "link"
+      )
+    ) {
+      obj[key] = `[${obj[key].children_ids.toString()}]`;
     } else {
       obj[key] = obj[key].toString();
     }
@@ -313,7 +329,7 @@ function mappingType(type: ColumnType) {
       return "date";
     }
     case "link": {
-      return "  ";
+      return "link";
     }
     default: {
       return "string";

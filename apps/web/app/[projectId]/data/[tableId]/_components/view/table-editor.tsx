@@ -79,6 +79,9 @@ export const TableEditor = ({
   const createdColumn = useMemo(() => new Set<string>(), [tableId]);
   const deletedColumn = useMemo(() => new Set<string>(), [tableId]);
 
+  // console.log("ROWS:", localData);
+  // console.log("COLUMNS:", localColumns);
+
   useEffect(() => {
     const createColumn = (column) => {
       const isLinkType = column.type === "link";
@@ -104,7 +107,7 @@ export const TableEditor = ({
     const columns = localColumns.map((element) => createColumn(element));
 
     // console.log("ROWS:", localData);
-    console.log("COLUMNS:", columns);
+    // console.log("COLUMNS:", columns);
 
     setFields(columns.filter((column) => column.id !== "id"));
   }, [localColumns, tableId]);
@@ -261,9 +264,17 @@ const TitleDataSheet = ({
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const LinkCell = ({ rowData, columnData }) => {
+const LinkCell = ({ rowData, columnData, setRowData }) => {
   // * rowData: is the value of the cell
   // * columnData: is the props (attributes) of the column containing cells
+  // if (!rowData) {
+  //   rowData = {
+  //     count: 0,
+  //     children_ids: [],
+  //     children_table: columnData.referenceTable,
+  //   };
+  // }
+
   const [numberOfRecords, setNumberOfRecords] = useState(rowData.count);
 
   return (
@@ -274,6 +285,7 @@ const LinkCell = ({ rowData, columnData }) => {
         setNumberOfRecords={setNumberOfRecords}
         rowData={rowData}
         columnData={columnData}
+        setRowData={setRowData}
       />
       <span>{numberOfRecords} records</span>
     </div>

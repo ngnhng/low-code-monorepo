@@ -37,6 +37,7 @@ interface RelationRecordsProps {
   setNumberOfRecords: any;
   rowData: any;
   columnData: any;
+  setRowData: any;
 }
 
 function countTrueState(objects) {
@@ -49,8 +50,10 @@ const RelationRecords = ({
   linkedRecordIds,
   rowData,
   columnData,
+  setRowData,
 }: RelationRecordsProps) => {
   const [linkedData, setLinkedData] = useState<RelationRecordsType[]>([]);
+  const [afterClicked, setAfterClicked] = useState(false);
 
   const {
     projectData: { currentProjectId },
@@ -75,15 +78,25 @@ const RelationRecords = ({
     if (data) {
       const mappingData: RelationRecordsType[] = data.rows.map((record) => ({
         ...record,
-        linkedState: rowData.referenceRecords.includes(record.id.toString()),
+        linkedState: rowData.children_ids.includes(record.id),
       }));
 
+      console.log(data.rows);
       setLinkedData(mappingData);
     }
   }, [data]);
 
   useEffect(() => {
     setNumberOfRecords(countTrueState(linkedData));
+    if (afterClicked) {
+      setAfterClicked(false);
+
+      setRowData({
+        children_ids: linkedRecordIds,
+        count: countTrueState(linkedData),
+        children_table: referenceTableId,
+      });
+    }
   }, [linkedData]);
 
   if (!data || isLoading) {
@@ -115,6 +128,8 @@ const RelationRecords = ({
     linkedRecordIds = linkedRecordIds.filter(
       (item, index) => linkedRecordIds.indexOf(item) === index
     );
+
+    setAfterClicked(true);
   };
 
   return (

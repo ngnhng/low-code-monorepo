@@ -204,14 +204,13 @@ const CreateColumnForm = ({
         const newData = previous.map((row) => {
           const newRow = {
             ...row,
-            [newColData.id]: {
+            [newColData.name]: {
               count: 0,
               children_ids: [],
               children_table: values.referenceTable,
             },
           };
 
-          console.log("New Created", newRow[values.columnname]);
           return newRow;
         });
 
@@ -250,7 +249,7 @@ const CreateColumnForm = ({
   const references = useMemo(() => {
     return allTables?.map((data) => ({
       id: data.id,
-      tablename: data.name,
+      tablename: data.label,
     }));
   }, [allTables]);
 
