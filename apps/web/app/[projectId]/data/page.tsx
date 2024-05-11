@@ -73,6 +73,11 @@ const HorizontalList = ({ children, ...props }) => (
 const DatabaseTabs = ({ data, columns, projectId, yalcToken }) => {
   // const tableRef = useRef<ReactComponentElement>(null);
 
+  const transformData = data.map((table) => ({
+    ...table,
+    name: table.label,
+  }));
+
   return (
     <Tabs defaultValue="tables" className="w-11/12 m-4">
       <TabsList className="flex justify-start space-x-28">
@@ -121,7 +126,7 @@ const DatabaseTabs = ({ data, columns, projectId, yalcToken }) => {
 
           <Separator className="my-4" />
 
-          <DataTable columns={columns} data={data} />
+          <DataTable columns={columns} data={transformData} />
         </div>
       </TabsContent>
       <TabsContent value="members">

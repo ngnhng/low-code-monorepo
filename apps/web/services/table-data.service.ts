@@ -63,6 +63,7 @@ export class TableDataService extends RouteHandlerAPIService {
     const processedTables: TableItem[] = rawTables.map((table) => ({
       id: table.tid,
       name: table.name,
+      label: table.label,
       source: "Source 1",
       created: table.createdAt ?? "2024-01-01",
       updated: table.updatedAt ?? "2024-01-01",
@@ -70,7 +71,8 @@ export class TableDataService extends RouteHandlerAPIService {
       columns: table.columns.map((column) => ({
         ...column,
         type: mappingTypeToUI(column.type),
-        label: column.name,
+        label: column.label,
+        name: column.name,
       })),
     }));
 

@@ -51,6 +51,7 @@ export type RowAttributes = {
 
 export type ColumnAttributes = {
   label: string;
+  name: string;
   type: ColumnType;
   isActive: boolean;
   isPrimaryKey: boolean;
@@ -62,6 +63,7 @@ export type ColumnAttributes = {
 
 export type TableListAttributes = {
   name: string;
+  label: string;
   source: string;
   created: string;
   updated: string;

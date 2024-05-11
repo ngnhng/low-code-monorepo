@@ -12,6 +12,11 @@ import { ColumnDef } from "types/table-data";
 
 const serviceBaseUrl = process.env.SERVICE_BASE_URL;
 
+/*
+ * [POST]: POST -> GET a table records
+ * [API]: POST /projects/:projectsId/tables/:tablesId/query
+ */
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { projectId: string; tableId: string } }
@@ -34,29 +39,63 @@ export async function POST(
     configs
   );
 
+  // const modifiedColumns: ColumnDef[] = response.data.columns.map((column) => ({
+  //   id: column.id,
+  //   label: column.name,
+  //   type: mappingTypeToUI(column.type),
+  //   isActive: true,
+  //   isPrimaryKey: false,
+  //   isForeignKey: false,
+  // }));
+
+  // const modifiedRows = response.data.data.map((row) => {
+  //   const rowObject = {};
+  //   // eslint-disable-next-line unicorn/no-array-for-each
+  //   response.data.columns.forEach((column, index) => {
+  //     rowObject[column.id] = inferTypeFromService(column.type, row[index]);
+  //   });
+  //   return rowObject;
+  // });
+
+  return NextResponse.json(response.data, { status: 200 });
+}
+
+/*
+ * [GET]: GET -> GET a table columns
+ * [API]: GET /projects/:projectId/manage/tables/:tableId
+ */
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { projectId: string; tableId: string } }
+) {
+  const bearerToken = getBearerToken(
+    request.headers.get("authorization") ?? ""
+  );
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${bearerToken}`,
+    },
+  };
+
+  const response = await axios.get(
+    `${serviceBaseUrl}/dbms/projects/${params.projectId}/manage/tables/${params.tableId}`,
+    config
+  );
+
   const modifiedColumns: ColumnDef[] = response.data.columns.map((column) => ({
     id: column.id,
-    label: column.name,
+    label: column.label,
+    name: column.name,
     type: mappingTypeToUI(column.type),
     isActive: true,
     isPrimaryKey: false,
     isForeignKey: false,
   }));
 
-  const modifiedRows = response.data.rows.map((row) => {
-    const rowObject = {};
-    // eslint-disable-next-line unicorn/no-array-for-each
-    response.data.columns.forEach((column, index) => {
-      rowObject[column.id] = inferTypeFromService(column.type, row[index]);
-    });
-    return rowObject;
-  });
-
   return NextResponse.json(
-    {
-      columns: modifiedColumns,
-      rows: modifiedRows,
-    },
+    { ...response.data, columns: modifiedColumns },
     { status: 200 }
   );
 }
