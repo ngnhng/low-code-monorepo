@@ -39,15 +39,6 @@ export async function POST(
     configs
   );
 
-  // const modifiedColumns: ColumnDef[] = response.data.columns.map((column) => ({
-  //   id: column.id,
-  //   label: column.name,
-  //   type: mappingTypeToUI(column.type),
-  //   isActive: true,
-  //   isPrimaryKey: false,
-  //   isForeignKey: false,
-  // }));
-
   // const modifiedRows = response.data.data.map((row) => {
   //   const rowObject = {};
   //   // eslint-disable-next-line unicorn/no-array-for-each

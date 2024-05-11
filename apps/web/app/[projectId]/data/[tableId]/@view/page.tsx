@@ -7,13 +7,14 @@ import { useLocalStorage } from "hooks/use-local-storage";
 import "react-datasheet-grid/dist/style.css";
 
 import { useMobxStore } from "lib/mobx/store-provider";
-import { ColumnDef, ColumnType, DataTable, RowDef } from "types/table-data";
+import { ColumnDef, ColumnType, RowDef } from "types/table-data";
 import { TableEditor } from "../_components/view/table-editor";
 
 import { toast } from "sonner";
-import axios from "axios";
-import { useRouter } from "next/navigation";
+// import axios from "axios";
+// import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { formatValidUiDate } from "app/api/dbms/_utils/utils";
 
 export default function Page({
   params,
@@ -24,35 +25,72 @@ export default function Page({
   };
 }) {
   const {
-    tableData: { fetchTableData },
+    tableData: { fetchTableData, fetchTableColumns },
   } = useMobxStore();
+
+  const [yalcToken] = useLocalStorage("yalc_at", "");
+  const [isSubmiting, setIsSubmiting] = useState(false);
+  // const router = useRouter();
 
   const queryObject = {
     sql: "(1=1)",
     params: [],
   };
 
-  const [yalcToken] = useLocalStorage("yalc_at", "");
-  const router = useRouter();
+  // const tableRecords = fetchTableData(
+  //   {
+  //     tableId: params.tableId,
+  //     query: { queryObject },
+  //   },
+  //   yalcToken
+  // );
 
-  const [isSubmiting, setIsSubmiting] = useState(false);
+  // const tableColumns = fetchTableColumn(yalcToken, params.tableId);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data, isLoading, mutate } = useSWR<DataTable>(
-    `TABLE_DATA-${params.projectId}-${params.tableId}`,
-    () =>
-      fetchTableData(
-        {
-          tableId: params.tableId,
-          query: queryObject,
-        },
-        yalcToken
-      )
+  // const [tableRecordsData, tableColumnsData] = await Promise.all([
+  //   tableRecords,
+  //   tableColumns,
+  // ]);
+
+  const {
+    data: tableRecordsData,
+    isLoading: tableRecordsLoading,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    mutate: tableRecordsMutate,
+  } = useSWR(`TABLE_DATA-${params.projectId}-${params.tableId}`, () =>
+    fetchTableData(
+      {
+        tableId: params.tableId,
+        query: queryObject,
+      },
+      yalcToken
+    )
   );
 
-  if (!data || isLoading) {
+  const {
+    data: tableColumnsData,
+    isLoading: tableColumnsLoading,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    mutate: tableColumnsMutate,
+  } = useSWR(`TABLE_COLUMMS-${params.projectId}-${params.tableId}`, () =>
+    fetchTableColumns(yalcToken, params.tableId)
+  );
+
+  if (
+    !tableColumnsData ||
+    !tableRecordsData ||
+    tableRecordsLoading ||
+    tableColumnsLoading
+  ) {
     return <div>Loading...</div>;
   }
+
+  // console.log("RAW_RECORDS", tableRecordsData.rows);
+  // console.log(
+  //   "MODIED_RECORDS",
+  //   mappingValueDate(tableColumnsData.columns, tableRecordsData.rows)
+  // );
+  // console.log("COLUMNS", tableColumnsData);
 
   const handleCommit = async (
     localColumns: ColumnDef[],
@@ -84,53 +122,53 @@ export default function Page({
 
     console.log("[SUBMIT_DATA]:", submitData);
 
-    const configs = {
-      headers: {
-        Authorization: `Bearer ${yalcToken}`,
-      },
-    };
+    // const configs = {
+    //   headers: {
+    //     Authorization: `Bearer ${yalcToken}`,
+    //   },
+    // };
     try {
-      if (submitData.addedRows.length > 0) {
-        await axios.post(
-          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
-          {
-            rows: submitData.addedRows,
-          },
-          configs
-        );
-      }
+      // if (submitData.addedRows.length > 0) {
+      //   await axios.post(
+      //     `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+      //     {
+      //       rows: submitData.addedRows,
+      //     },
+      //     configs
+      //   );
+      // }
 
-      if (submitData.updatedRows.length > 0) {
-        await axios.patch(
-          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
-          submitData.updatedRows,
-          configs
-        );
-      }
+      // if (submitData.updatedRows.length > 0) {
+      //   await axios.patch(
+      //     `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+      //     submitData.updatedRows,
+      //     configs
+      //   );
+      // }
 
-      if (submitData.deletedRows.length > 0) {
-        await axios.delete(
-          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
-          {
-            headers: {
-              Authorization: `Bearer ${yalcToken}`,
-            },
-            data: {
-              ids: submitData.deletedRows,
-            },
-          }
-        );
-      }
+      // if (submitData.deletedRows.length > 0) {
+      //   await axios.delete(
+      //     `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+      //     {
+      //       headers: {
+      //         Authorization: `Bearer ${yalcToken}`,
+      //       },
+      //       data: {
+      //         ids: submitData.deletedRows,
+      //       },
+      //     }
+      //   );
+      // }
 
-      if (submitData.addedColumns.length > 0) {
-        await axios.post(
-          `/api/dbms/${params.projectId}/${params.tableId}/columns`,
-          {
-            columns: submitData.addedColumns,
-          },
-          configs
-        );
-      }
+      // if (submitData.addedColumns.length > 0) {
+      //   await axios.post(
+      //     `/api/dbms/${params.projectId}/${params.tableId}/columns`,
+      //     {
+      //       columns: submitData.addedColumns,
+      //     },
+      //     configs
+      //   );
+      // }
 
       toast.success(
         `Table has been updated at: /api/mock/${params.projectId}/data/${params.tableId} `,
@@ -146,7 +184,7 @@ export default function Page({
       );
 
       setIsSubmiting(false);
-      router.refresh();
+      // router.refresh();
     } catch (error) {
       console.error("Something went wrong when committing", error);
     }
@@ -155,10 +193,18 @@ export default function Page({
   };
 
   return (
+    // <div>Hello Page</div>
     <div className="mx-4 h-full">
       <TableEditor
         tableId={params.tableId}
-        tableData={data}
+        tableData={{
+          rows: mappingValueDate(
+            tableColumnsData.columns,
+            tableRecordsData.rows
+          ),
+          columns: tableColumnsData.columns,
+          maxIndex: tableRecordsData.maxIndex,
+        }}
         onCommit={handleCommit}
         yalcToken={yalcToken}
         isSubmitting={isSubmiting}
@@ -195,6 +241,7 @@ function processEditLogData(
   const addedRows = localData
     .filter((row) => editLog.addedRows.has(row.id))
     .map((row) => {
+      console.log("ROW:", row);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, ...rest } = row;
       return rest;
@@ -264,10 +311,25 @@ function mappingType(type: ColumnType) {
       return "date";
     }
     case "link": {
-      return "link";
+      return "  ";
     }
     default: {
       return "string";
     }
   }
+}
+
+function mappingValueDate(columns, rows) {
+  for (const row of rows) {
+    const fields = Object.keys(row);
+    for (const field of fields) {
+      const matchingColumn = columns.find((column) => column.name === field);
+
+      if (matchingColumn && matchingColumn.type === "date") {
+        row[field] = formatValidUiDate(row[field]);
+      }
+    }
+  }
+
+  return rows;
 }

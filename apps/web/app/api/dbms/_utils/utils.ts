@@ -34,7 +34,7 @@ export function mappingTypeToUI(type: string): string {
       return "date";
     }
     default: {
-      return "string";
+      return type;
     }
   }
 }
@@ -50,12 +50,43 @@ export const supportedDateFormat = [
   "YYYY-MM-DD hh:mm:ss",
 ];
 
+export function inferValueType(type: string, value) {
+  switch (type) {
+    case "number": {
+      return Number.parseInt(value);
+    }
+    case "boolean": {
+      if (value === undefined) {
+        return value;
+      }
+
+      return value === "true" ? true : false;
+    }
+    case "link": {
+      return value;
+    }
+    case "text": {
+      return value;
+    }
+    case "date": {
+      return moment(value, supportedDateFormat).format("YYYY-MM-DD");
+    }
+    default: {
+      return value;
+    }
+  }
+}
+
 export function inferTypeFromService(type: string, value) {
   switch (type) {
     case "integer": {
       return Number.parseInt(value);
     }
     case "boolean": {
+      if (value === undefined) {
+        return value;
+      }
+
       return value === "true" ? true : false;
     }
     case "link": {
@@ -72,3 +103,7 @@ export function inferTypeFromService(type: string, value) {
     }
   }
 }
+
+export const formatValidUiDate = (value: string) => {
+  return moment(value, supportedDateFormat).format("YYYY-MM-DD");
+};

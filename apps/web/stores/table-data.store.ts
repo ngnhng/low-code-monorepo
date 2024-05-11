@@ -5,7 +5,7 @@ import { action, makeObservable, observable } from "mobx";
 import { RootStore } from "./root";
 import {
   GetTableDataParams,
-  GetTableDataResponse,
+  // GetTableDataResponse,
   TableQueries,
 } from "types/table-data";
 import { TableDataService } from "services/table-data.service";
@@ -14,10 +14,7 @@ export interface ITableDataStore {
   tableIds: string[];
   appliedQueries: TableQueries;
   // eslint-disable-next-line no-unused-vars
-  fetchTableData: (
-    a0: GetTableDataParams,
-    yalcToken
-  ) => Promise<GetTableDataResponse>;
+  fetchTableData: (a0: GetTableDataParams, yalcToken) => any;
   // eslint-disable-next-line no-unused-vars
   fetchAppliedQueries: (tableId: string) => any;
   fetchTables: (yalcToken: string) => any;
@@ -72,33 +69,23 @@ export class TableDataStore implements ITableDataStore {
     }
   };
 
-  // fetchTableData = async ({
-  //   tableId,
-  //   page,
-  //   limit,
-  //   query,
-  // }: GetTableDataParams): Promise<GetTableDataResponse> => {
-  //   try {
-  //     const response = await this.tableDataService.getTableData({
-  //       projectId: this.rootStore.projectData.currentProjectId,
-  //       tableId,
-  //       page,
-  //       limit,
-  //       query,
-  //     });
+  fetchTableColumns = async (yalcToken: string, tableId: string) => {
+    try {
+      const response = await this.tableDataService.getTableColumns({
+        projectId: this.rootStore.projectData.currentProjectId,
+        tableId,
+        yalcToken,
+      });
 
-  //     // temporary action that is immediately invoked
-  //     if (response) {
-  //       // validate
-  //       return response;
-  //     } else {
-  //       throw new Error("Table data not found");
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw error;
-  //   }
-  // };
+      if (response) {
+        return response.data;
+      } else {
+        throw new Error("Table data not found");
+      }
+    } catch (error) {
+      console.log("[FETCH_TABLE_COL_ERROR]", error);
+    }
+  };
 
   fetchAppliedQueries = (tableId: string) => {
     if (!this.appliedQueries[this.rootStore.projectData.currentProjectId]) {

@@ -1,5 +1,5 @@
 import {
-  GetTableDataResponse,
+  // GetTableDataResponse,
   DataTable,
   GetTablesResponse,
   RowDef,
@@ -12,12 +12,20 @@ export class TableDataService extends RouteHandlerAPIService {
     super();
   }
 
-  async getTableData({
-    projectId,
-    tableId,
-    query,
-    yalcToken,
-  }): Promise<GetTableDataResponse> {
+  async getTableColumns({ projectId, tableId, yalcToken }) {
+    const response = await this.getServerSide(
+      `/api/dbms/${projectId}/${tableId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${yalcToken}`,
+        },
+      }
+    );
+
+    return response;
+  }
+
+  async getTableData({ projectId, tableId, query, yalcToken }) {
     const response = await this.postServerSide(
       `/api/dbms/${projectId}/${tableId}`,
       query,
@@ -28,10 +36,9 @@ export class TableDataService extends RouteHandlerAPIService {
       }
     );
 
-    const result: GetTableDataResponse = {
-      columns: response.data.columns,
-      rows: response.data.rows,
-      maxIndex: response.data.rows.length,
+    const result = {
+      rows: response.data.data,
+      maxIndex: response.data.data.length,
     };
 
     return result;

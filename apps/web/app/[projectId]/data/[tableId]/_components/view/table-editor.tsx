@@ -16,7 +16,7 @@ import { Operation } from "react-datasheet-grid/dist/types";
 import { ColumnType, DataTable, RowDef, ColumnDef } from "types/table-data";
 
 import { ViewMenuBar } from "./view-menu-bar";
-import RelationRecords from "../relation-record/relation-records";
+// import RelationRecords from "../relation-record/relation-records";
 import { Button } from "@repo/ui";
 
 type CommitFunc = (
@@ -89,7 +89,7 @@ export const TableEditor = ({
       const disabled = isId;
 
       return {
-        ...keyColumn<RowDef>(column.id, colType),
+        ...keyColumn<RowDef>(column.name, colType),
         title: (
           <TitleDataSheet
             column={column}
@@ -102,6 +102,9 @@ export const TableEditor = ({
     };
 
     const columns = localColumns.map((element) => createColumn(element));
+
+    // console.log("ROWS:", localData);
+    console.log("COLUMNS:", columns);
 
     setFields(columns.filter((column) => column.id !== "id"));
   }, [localColumns, tableId]);
@@ -200,7 +203,7 @@ export const TableEditor = ({
             const rowReturn = {
               ...Object.fromEntries(
                 localColumns.map((col) => [
-                  col.id,
+                  col.name,
                   returnDefaultValue(col.type, col.referenceTable),
                 ])
               ),
@@ -253,60 +256,31 @@ const TitleDataSheet = ({
   return (
     <div className="flex items-center justify-between">
       <div>{column.label}</div>
-
-      {/* <DropdownMenu>
-        <DropdownMenuTrigger>
-          <FlaskConical size={24} />
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent>
-          <DropdownMenuLabel>Action Filter</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-
-          <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => handleSortClickAsc(column)}>
-              Sort A - Z
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSortClickDesc(column)}>
-              Sort Z - A
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-        </DropdownMenuContent>
-      </DropdownMenu> */}
     </div>
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const LinkCell = ({ rowData, columnData }) => {
   // * rowData: is the value of the cell
   // * columnData: is the props (attributes) of the column containing cells
-  const [numberOfRecords, setNumberOfRecords] = useState();
-
-  if (!rowData) {
-    rowData = {
-      referenceTableId: columnData.referenceTable,
-      referenceRecords: [],
-    };
-  }
-
-  // console.log(rowData);
-  // console.log(columnData);
+  // const [numberOfRecords, setNumberOfRecords] = useState(rowData.count);
 
   return (
-    <div className="flex items-center">
-      <RelationRecords
-        referenceTableId={rowData.referenceTableId}
-        linkedRecordIds={rowData.referenceRecords}
-        setNumberOfRecords={setNumberOfRecords}
-        rowData={rowData}
-        columnData={columnData}
-      />
-      <span>
-        {numberOfRecords} records -{" "}
-        <span className="text-emerald-500">{columnData.referenceTable}</span>
-      </span>
-    </div>
+    <div>Link Column</div>
+    // <div className="flex items-center">
+    //   <RelationRecords
+    //     referenceTableId={rowData.referenceTableId}
+    //     linkedRecordIds={rowData.referenceRecords}
+    //     setNumberOfRecords={setNumberOfRecords}
+    //     rowData={rowData}
+    //     columnData={columnData}
+    //   />
+    //   <span>
+    //     {numberOfRecords} records -{" "}
+    //     <span className="text-emerald-500">{columnData.referenceTable}</span>
+    //   </span>
+    // </div>
   );
 };
 
@@ -386,8 +360,9 @@ function returnDefaultValue(type: ColumnType, referenceTable?: string) {
     }
     case "link": {
       return {
-        referenceTableId: referenceTable,
-        referenceRecords: [],
+        count: referenceTable,
+        children_ids: [],
+        reference: referenceTable,
       };
     }
     case "date": {
