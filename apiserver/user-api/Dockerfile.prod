@@ -1,4 +1,4 @@
-FROM node:18-alpine AS builder
+FROM node:20 AS builder
 
 WORKDIR /app
 
@@ -9,12 +9,17 @@ RUN yarn install --frozen-lockfile
 
 COPY . .
 
-FROM node:18-alpine AS production
+FROM node:20-slim AS production
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-COPY package.json yarn.lock ./
+COPY package.json ./
+
 COPY ./start-prod.sh ./start-prod.sh
 
 RUN yarn add @nestjs/cli -g

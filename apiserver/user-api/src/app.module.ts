@@ -1,8 +1,14 @@
 import { AuthModule } from '@modules/auth/auth.module';
 import { AuthenticationController } from '@modules/auth/controllers/authentication.controller';
 import { OAuthController } from '@modules/auth/controllers/oauth.controller';
+import { DataIntegrationController } from '@modules/data-integration/controllers/data-integration.controller';
+import { DataIntegrationModule } from '@modules/data-integration/data-integration.module';
+import { ProjectController } from '@modules/project/controllers/project.controller';
+import { ProjectModule } from '@modules/project/project.module';
 import { UserController } from '@modules/user/controllers/user.controller';
 import { UserModule } from '@modules/user/user.module';
+import { WorkflowController } from '@modules/workflow/controllers/workflow.controller';
+import { WorkflowModule } from '@modules/workflow/workflow.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import {
@@ -11,29 +17,18 @@ import {
   APP_INTERCEPTOR,
   Reflector,
 } from '@nestjs/core';
-
-import {
-  PrometheusModule,
-  makeCounterProvider,
-  makeGaugeProvider,
-} from '@willsoto/nestjs-prometheus';
-
 import { SharedModule } from '@shared/shared.module';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { GlobalExceptionFilter } from './filters/all.filter';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { PasetoAuthGuard } from './guards/paseto-auth.guard';
+import { MetricsModule } from './modules/metrics/metrics.module';
 import { LoggingInterceptor } from './shared/interceptor/logging.interceptor';
 import { SerializerInterceptor } from './shared/interceptor/serializer.interceptor';
 import { ApiConfigService } from './shared/services/api-config.service';
-import { ProjectController } from '@modules/project/controllers/project.controller';
-import { ProjectModule } from '@modules/project/project.module';
-import { WorkflowController } from '@modules/workflow/controllers/workflow.controller';
-import { WorkflowModule } from '@modules/workflow/workflow.module';
-import { DataIntegrationModule } from '@modules/data-integration/data-integration.module';
-import { DataIntegrationController } from '@modules/data-integration/controllers/data-integration.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -42,13 +37,16 @@ import { DataIntegrationController } from '@modules/data-integration/controllers
         ? { envFilePath: process.env.YALC_ENV_FILE }
         : {}),
     }),
-    PrometheusModule.register(),
+    //PrometheusModule.register({
+    //  path: '/metrics',
+    //}),
     SharedModule,
     UserModule,
     AuthModule,
     ProjectModule,
     WorkflowModule,
     DataIntegrationModule,
+    MetricsModule,
   ],
   controllers: [
     AppController,
@@ -58,6 +56,8 @@ import { DataIntegrationController } from '@modules/data-integration/controllers
     DataIntegrationController,
     //AuthenticationController,
     //OAuthController,
+    AuthenticationController,
+    OAuthController,
   ],
   providers: [
     AppService,
@@ -97,15 +97,6 @@ import { DataIntegrationController } from '@modules/data-integration/controllers
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
     },
-    // makeCounterProvider({
-    //   name: 'count',
-    //   help: 'metric_help',
-    //   labelNames: ['method', 'origin'] as string[],
-    // }),
-    // makeGaugeProvider({
-    //   name: 'gauge',
-    //   help: 'metric_help',
-    // }),
   ],
 })
 export class AppModule {}

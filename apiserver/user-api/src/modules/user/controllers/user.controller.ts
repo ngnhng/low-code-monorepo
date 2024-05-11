@@ -6,7 +6,6 @@ import {
   Logger,
   Param,
   Post,
-  Request,
   UseGuards,
 } from '@nestjs/common';
 import type { User } from '@prisma/client';
