@@ -1240,8 +1240,9 @@ func (p *Pgx) addColumnRelation(
 
 // / For each link column, we return the id array of the linked table
 type LinkColumnData struct {
-	Count       int   `json:"count"`
-	ChildrenIds []int `json:"children_ids"`
+	Count           int    `json:"count"`
+	ChildrenTableId string `json:"children_table"`
+	ChildrenIds     []int  `json:"children_ids"`
 }
 
 func (p *Pgx) GetLinkColumnData(
@@ -1338,22 +1339,6 @@ func (p *Pgx) getLinkColumnData(
 	defer rows.Close()
 
 	data := make([]int, 0)
-	//for rows.Next() {
-	//	var id int
-	//	var linkedId string
-	//	if err := rows.Scan(&id, &linkedId); err != nil {
-	//		return nil, err
-	//	}
-	//	// append the linked id to the data if more than one child	id
-	//	if _, ok := data[id]; !ok {
-	//		data[id] = []int{}
-	//	}
-	//	linkedIdInt, err := strconv.Atoi(linkedId)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	data[id] = append(data[id], linkedIdInt)
-	//}
 
 	for rows.Next() {
 		var linkedId int
@@ -1364,9 +1349,34 @@ func (p *Pgx) getLinkColumnData(
 		data = append(data, linkedId)
 	}
 
+	rows.Close()
+
+	// get child table id
+	childLookup, err := query(
+		c,
+		`SELECT link_table_id FROM yalc_col_relations WHERE fk_mm_child_col_id = $1 AND fk_mm_parent_col_id = $2`,
+		fkMMParentColId,
+		fkMMChildColId,
+	)
+	if err != nil {
+		p.Logger.Errorf("failed to get child table id: %v", err)
+		return nil, err
+	}
+
+	defer childLookup.Close()
+
+	var linkedChildTableId string
+	for childLookup.Next() {
+		if err := childLookup.Scan(&linkedChildTableId); err != nil {
+			p.Logger.Errorf("failed to scan child table id: %v", err)
+			return nil, err
+		}
+	}
+
 	return &LinkColumnData{
-		Count:       len(data),
-		ChildrenIds: data,
+		Count:           len(data),
+		ChildrenTableId: linkedChildTableId,
+		ChildrenIds:     data,
 	}, nil
 }
 
@@ -1601,6 +1611,8 @@ func (p *Pgx) lookUpColumnName(
 		return "", err
 	}
 
+	defer rows.Close()
+
 	var colName string
 	for rows.Next() {
 		if err := rows.Scan(&colName); err != nil {
@@ -1734,6 +1746,8 @@ func (p *Pgx) getPKColumn(
 	if err != nil {
 		return nil, err
 	}
+
+	defer rows.Close()
 
 	result := &domain.Column{}
 
