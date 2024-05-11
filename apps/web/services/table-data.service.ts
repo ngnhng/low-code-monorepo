@@ -38,7 +38,13 @@ export class TableDataService extends RouteHandlerAPIService {
 
     const result = {
       rows: response.data.data,
-      maxIndex: response.data.data.length,
+      maxIndex:
+        response.data.data.length === 0
+          ? 0
+          : // eslint-disable-next-line unicorn/no-array-reduce
+            response.data.data.reduce((prev, curr) =>
+              prev ? (prev.id > curr.id ? prev : curr) : curr
+            ).id,
     };
 
     return result;
