@@ -930,6 +930,16 @@ func (p *Pgx) lookupTableInfo(
 			col.Label = ""
 		}
 
+		// if col is link type, get the reference table
+		if col.Type == domain.ColumnTypeLink {
+			// get the reference table id
+			ref, err := p.GetColumnReference(ctx, col.Id)
+			if err != nil {
+				return nil, err
+			}
+			col.Reference = ref
+		}
+
 		table.Columns = append(table.Columns, *col)
 	}
 
@@ -1758,4 +1768,84 @@ func (p *Pgx) getPKColumn(
 	}
 
 	return result, nil
+}
+
+func (p *Pgx) GetColumnReference(
+	c context.Context,
+	columnId string,
+) (*domain.ColumnReference, error) {
+	tx, ok := c.Value(TxCtx{}).(pgx.Tx)
+	if !ok {
+		// acquire a connection from the pool
+		conn, err := p.acquireConn(c)
+		if err != nil {
+			return nil, err
+		}
+		defer p.releaseConn(conn)
+
+		return p.getColumnReference(c, conn.Query, columnId)
+	}
+
+	return p.getColumnReferenceTx(c, tx, columnId)
+}
+
+func (p *Pgx) getColumnReferenceTx(
+	c context.Context,
+	tx pgx.Tx,
+	columnId string,
+) (*domain.ColumnReference, error) {
+	return p.getColumnReference(c, tx.Query, columnId)
+}
+
+func (p *Pgx) getColumnReference(
+	c context.Context,
+	query func(context.Context, string, ...interface{}) (pgx.Rows, error),
+	columnId string,
+) (*domain.ColumnReference, error) {
+	rows, err := query(
+		c,
+		`SELECT fk_child_col_id, fk_parent_col_id FROM "yalc_col_relations" WHERE "link_col_id" = $1;`,
+		columnId,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var fkChildColId, fkParentColId string
+
+	for rows.Next() {
+		if err := rows.Scan(&fkChildColId, &fkParentColId); err != nil {
+			return nil, err
+		}
+	}
+
+	rows.Close()
+
+	linked, err := query(
+		c,
+		`SELECT link_table_id FROM "yalc_col_relations" WHERE "fk_child_col_id" = $1 AND "fk_parent_col_id" = $2;`,
+		fkParentColId,
+		fkChildColId,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer linked.Close()
+
+	var linkedTableId string
+
+	for linked.Next() {
+		if err := linked.Scan(&linkedTableId); err != nil {
+			return nil, err
+		}
+	}
+
+	return &domain.ColumnReference{
+		TableId: linkedTableId,
+	}, nil
+
 }
