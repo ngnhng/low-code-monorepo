@@ -872,6 +872,75 @@ func (p *Pgx) lookupTableInfo(
 	queryFn func(ctx context.Context, sql string, args ...any) (pgx.Rows, error),
 	tableId string,
 ) (*domain.Table, error) {
+
+	// get the table and columns data
+	rows, err := queryFn(
+		ctx,
+		`SELECT 
+            t."table_id",
+            t."table_name",
+            t."table_title",
+            c."col_id",
+            c."col_name",
+            c."col_title",
+            c."type"
+        FROM "yalc_tables" t
+        LEFT JOIN "yalc_cols" c ON t."table_id" = c."table_id"
+        WHERE t."table_id" = $1;`,
+		tableId,
+	)
+	if err != nil {
+		p.Logger.Errorf("failed to get table and columns data: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	table := &domain.Table{
+		Columns: []domain.Column{},
+	}
+
+	for rows.Next() {
+		var col domain.Column
+		var colLabelNull pgtype.Text
+
+		if err := rows.Scan(&table.TID, &table.Name, &table.Label, &col.Id, &col.Name, &colLabelNull, &col.Type); err != nil {
+			p.Logger.Errorf("failed to scan table and columns data: %v", err)
+			return nil, err
+		}
+
+		if colLabelNull.Valid {
+			col.Label = colLabelNull.String
+		} else {
+			col.Label = ""
+		}
+
+		table.Columns = append(table.Columns, col)
+	}
+
+	rows.Close()
+
+	for _, col := range table.Columns {
+		if col.Type == domain.ColumnTypeLink {
+			// get the reference table id
+			ref, err := p.GetColumnReference(ctx, col.Id)
+			if err != nil {
+				p.Logger.Errorf("failed to get column reference: %v", err)
+				return nil, err
+			}
+			col.Reference = ref
+		}
+	}
+
+	p.Logger.Debug("table data: %v", table)
+
+	return table, nil
+}
+
+func (p *Pgx) getTableById(
+	ctx context.Context,
+	queryFn func(ctx context.Context, sql string, args ...any) (pgx.Rows, error),
+	tableId string,
+) (*domain.Table, error) {
 	// get the table data
 	rows, err := queryFn(
 		ctx,
@@ -886,6 +955,7 @@ func (p *Pgx) lookupTableInfo(
 		p.Logger.Errorf("failed to get table data: %v", err)
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	table := &domain.Table{
@@ -898,8 +968,18 @@ func (p *Pgx) lookupTableInfo(
 		}
 	}
 
+	p.Logger.Debug("table data: %v", table)
+
+	return table, nil
+}
+
+func (p *Pgx) getColumnsData(
+	ctx context.Context,
+	queryFn func(ctx context.Context, sql string, args ...any) (pgx.Rows, error),
+	tableId string,
+) ([]domain.Column, error) {
 	// get the columns data
-	rows, err = queryFn(
+	colrows, err := queryFn(
 		ctx,
 		`SELECT 
 			"col_id",
@@ -913,13 +993,21 @@ func (p *Pgx) lookupTableInfo(
 		p.Logger.Errorf("failed to get table data: %v", err)
 		return nil, err
 	}
-	defer rows.Close()
 
-	for rows.Next() {
-		col := &domain.Column{}
+	defer colrows.Close()
+
+	cols := []domain.Column{}
+
+	for colrows.Next() {
+		var col domain.Column
 		var colLabelNull pgtype.Text
 
-		if err := rows.Scan(&col.Id, &col.Name, &colLabelNull, &col.Type); err != nil {
+		if err := colrows.Scan(
+			&col.Id,
+			&col.Name,
+			&colLabelNull,
+			&col.Type,
+		); err != nil {
 			p.Logger.Errorf("failed to scan column data: %v", err)
 			return nil, err
 		}
@@ -939,32 +1027,10 @@ func (p *Pgx) lookupTableInfo(
 			}
 			col.Reference = ref
 		}
-
-		table.Columns = append(table.Columns, *col)
+		cols = append(cols, col)
 	}
 
-	return table, nil
-
-	//		SELECT
-	//	   t."table_id",
-	//	   t."table_name",
-	//	   t."table_title",
-	//	   c."col_id",
-	//	   c."col_name",
-	//	   c."col_title",
-	//	   c."col_type"
-	//
-	// FROM
-	//
-	//	"yalc_tables" t
-	//
-	// LEFT JOIN
-	//
-	//	"yalc_cols" c ON t."table_id" = c."table_id"
-	//
-	// WHERE
-	//
-	//	t."table_id" = $1;
+	return cols, nil
 }
 
 // Add New Column To Table
