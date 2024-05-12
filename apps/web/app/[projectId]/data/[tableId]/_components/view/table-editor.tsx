@@ -268,16 +268,6 @@ const TitleDataSheet = ({
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const LinkCell = ({ rowData, columnData, setRowData }) => {
-  // * rowData: is the value of the cell
-  // * columnData: is the props (attributes) of the column containing cells
-  // if (!rowData) {
-  //   rowData = {
-  //     count: 0,
-  //     children_ids: [],
-  //     children_table: columnData.referenceTable,
-  //   };
-  // }
-
   const [numberOfRecords, setNumberOfRecords] = useState(rowData.count);
 
   return (

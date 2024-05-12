@@ -39,6 +39,8 @@ export async function POST(
     configs
   );
 
+  console.log("RESPONSE:", response.data);
+
   // const modifiedRows = response.data.data.map((row) => {
   //   const rowObject = {};
   //   // eslint-disable-next-line unicorn/no-array-for-each

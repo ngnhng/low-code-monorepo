@@ -142,7 +142,7 @@ const CreateColumnForm = ({
       label: values.columnname,
       type: mappingType(values.type),
       reference: {
-        tableId: values.referenceTable,
+        table_id: values.referenceTable,
       },
     };
 

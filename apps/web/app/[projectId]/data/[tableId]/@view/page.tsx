@@ -106,58 +106,82 @@ export default function Page({
       },
     };
 
+    const promises: any = [];
+
+    // console.log(`URL:`, `/api/dbms/${params.projectId}/${params.tableId}/rows`);
+
     try {
       if (submitData.addedRows.length > 0) {
-        await axios.post(
-          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
-          {
-            rows: submitData.addedRows,
-          },
-          configs
+        promises.push(
+          axios.post(
+            `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+            { rows: submitData.addedRows },
+            configs
+          )
         );
       }
 
+      // Update row operation
       if (submitData.updatedRows.length > 0) {
-        await axios.patch(
-          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
-          {
-            data: submitData.updatedRows,
-          },
-          configs
+        promises.push(
+          axios.patch(
+            `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+            { data: submitData.updatedRows },
+            configs
+          )
         );
       }
 
+      // Delete row operation
       if (submitData.deletedRows.length > 0) {
-        await axios.delete(
-          `/api/dbms/${params.projectId}/${params.tableId}/rows`,
-          {
-            headers: {
-              Authorization: `Bearer ${yalcToken}`,
-            },
-            data: {
-              ids: submitData.deletedRows,
-            },
-          }
+        promises.push(
+          await axios.delete(
+            `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+            {
+              headers: {
+                Authorization: `Bearer ${yalcToken}`,
+              },
+              data: {
+                ids: submitData.deletedRows,
+              },
+            }
+          )
         );
+      }
+
+      if (promises.length > 0) {
+        await Promise.all(promises).then(() => {
+          tableRecordsMutate();
+          tableColumnsMutate();
+        });
       }
 
       toast.success(`Success Updated`);
 
       setIsSubmiting(false);
-      tableRecordsMutate();
-      tableColumnsMutate();
       // router.refresh();
     } catch (error) {
       console.error("Something went wrong when committing", error);
     }
-
-    console.log("handleCommit");
   };
 
   const onSuccessCreateColumn = () => {
-    tableRecordsMutate();
-    tableColumnsMutate();
+    tableRecordsMutate(() =>
+      fetchTableData(
+        {
+          tableId: params.tableId,
+          query: queryObject,
+        },
+        yalcToken
+      )
+    );
+    tableColumnsMutate(() => fetchTableColumns(yalcToken, params.tableId));
   };
+
+  console.log(
+    "AFTER_MAPPING:",
+    mappingValueDate(tableColumnsData.columns, tableRecordsData.rows)
+  );
 
   return (
     // <div>Hello Page</div>
@@ -208,11 +232,12 @@ function processEditLogData(
   const addedRows = localData
     .filter((row) => editLog.addedRows.has(row.id))
     .map((row) => {
-      console.log("ROW:", row);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, ...rest } = row;
+      const { id, ...rest } = convertedObjValues(row, localColumns);
+
       return rest;
     });
+
   const updatedRows = localData
     .filter((row) => editLog.updatedRows.has(row.id))
     .map((row) => {
@@ -238,7 +263,7 @@ function processEditLogData(
   });
 
   return {
-    addedRows: convertedActionLogsValues(addedRows),
+    addedRows: addedRows,
     updatedRows: updatedRows,
     deletedRows: deletedRows,
     addedColumns: addedColumns,
@@ -265,14 +290,14 @@ function convertedObjValues(obj, localColumns) {
   return obj;
 }
 
-function convertedActionLogsValues(actionLogs) {
-  const convertedActionLogs = actionLogs.map((obj) => {
-    const newObj = {};
-    for (const key in obj) {
-      newObj[key] = obj[key].toString();
-    }
-    return newObj;
-  });
+// function convertedActionLogsValues(actionLogs) {
+//   const convertedActionLogs = actionLogs.map((obj) => {
+//     const newObj = {};
+//     for (const key in obj) {
+//       newObj[key] = obj[key].toString();
+//     }
+//     return newObj;
+//   });
 
-  return convertedActionLogs;
-}
+//   return convertedActionLogs;
+// }
