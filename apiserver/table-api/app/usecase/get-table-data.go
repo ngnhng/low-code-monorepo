@@ -257,6 +257,8 @@ func (uc *GetTableDataUseCase) ExecuteV2(
 
 			result.Data = resultRows
 
+			rows.Close()
+
 			// Get the total count
 			sql = `SELECT COUNT(*) FROM "%s" WHERE %s`
 			sqlTotalQuery := fmt.Sprintf(sql, table.Name, sqlQuery)
