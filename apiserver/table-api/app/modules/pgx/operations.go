@@ -873,6 +873,41 @@ func (p *Pgx) lookupTableInfo(
 	tableId string,
 ) (*domain.Table, error) {
 
+	table, err := p.getColumnsByTableId(ctx, queryFn, tableId)
+	if err != nil {
+		p.Logger.Errorf("failed to get table data: %v", err)
+		return nil, err
+	}
+
+	for i := range table.Columns {
+		col := &table.Columns[i]
+		p.Logger.Debugf("table columns: %v", col)
+
+		if col.Type == domain.ColumnTypeLink {
+			// get the reference table id
+			p.Logger.Debugf("getting column reference: %s", col.Id)
+			ref, err := p.GetColumnReference(ctx, col.Id)
+			if err != nil {
+				p.Logger.Errorf("failed to get column reference: %v", err)
+				return nil, err
+			}
+
+			col.Reference = ref
+			p.Logger.Debugf("column reference: %v %v", col, ref)
+		}
+	}
+
+	p.Logger.Debugf("table data: %v", table)
+	p.Logger.Debugf("table columns: %v", table.Columns)
+
+	return table, nil
+}
+
+func (p *Pgx) getColumnsByTableId(
+	ctx context.Context,
+	queryFn func(ctx context.Context, sql string, args ...any) (pgx.Rows, error),
+	tableId string,
+) (*domain.Table, error) {
 	// get the table and columns data
 	rows, err := queryFn(
 		ctx,
@@ -916,59 +951,6 @@ func (p *Pgx) lookupTableInfo(
 
 		table.Columns = append(table.Columns, col)
 	}
-
-	rows.Close()
-
-	for _, col := range table.Columns {
-		if col.Type == domain.ColumnTypeLink {
-			// get the reference table id
-			ref, err := p.GetColumnReference(ctx, col.Id)
-			if err != nil {
-				p.Logger.Errorf("failed to get column reference: %v", err)
-				return nil, err
-			}
-			col.Reference = ref
-		}
-	}
-
-	p.Logger.Debug("table data: %v", table)
-
-	return table, nil
-}
-
-func (p *Pgx) getTableById(
-	ctx context.Context,
-	queryFn func(ctx context.Context, sql string, args ...any) (pgx.Rows, error),
-	tableId string,
-) (*domain.Table, error) {
-	// get the table data
-	rows, err := queryFn(
-		ctx,
-		`SELECT 
-			"table_id",
-			"table_name",
-			"table_title"
-		FROM "yalc_tables" WHERE "table_id" = $1;`,
-		tableId,
-	)
-	if err != nil {
-		p.Logger.Errorf("failed to get table data: %v", err)
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	table := &domain.Table{
-		Columns: []domain.Column{},
-	}
-	for rows.Next() {
-		if err := rows.Scan(&table.TID, &table.Name, &table.Label); err != nil {
-			p.Logger.Errorf("failed to scan table data: %v", err)
-			return nil, err
-		}
-	}
-
-	p.Logger.Debug("table data: %v", table)
 
 	return table, nil
 }
@@ -1870,7 +1852,10 @@ func (p *Pgx) getColumnReference(
 ) (*domain.ColumnReference, error) {
 	rows, err := query(
 		c,
-		`SELECT fk_child_col_id, fk_parent_col_id FROM "yalc_col_relations" WHERE "link_col_id" = $1;`,
+		`SELECT r2.link_table_id 
+        FROM "yalc_col_relations" r1
+        INNER JOIN "yalc_col_relations" r2 ON r1.fk_child_col_id = r2.fk_parent_col_id AND r1.fk_parent_col_id = r2.fk_child_col_id
+        WHERE r1."link_col_id" = $1;`,
 		columnId,
 	)
 
@@ -1879,39 +1864,17 @@ func (p *Pgx) getColumnReference(
 	}
 	defer rows.Close()
 
-	var fkChildColId, fkParentColId string
-
-	for rows.Next() {
-		if err := rows.Scan(&fkChildColId, &fkParentColId); err != nil {
-			return nil, err
-		}
-	}
-
-	rows.Close()
-
-	linked, err := query(
-		c,
-		`SELECT link_table_id FROM "yalc_col_relations" WHERE "fk_child_col_id" = $1 AND "fk_parent_col_id" = $2;`,
-		fkParentColId,
-		fkChildColId,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer linked.Close()
-
 	var linkedTableId string
 
-	for linked.Next() {
-		if err := linked.Scan(&linkedTableId); err != nil {
+	for rows.Next() {
+		if err := rows.Scan(&linkedTableId); err != nil {
 			return nil, err
 		}
 	}
+
+	p.Logger.Debugf("linkedTableId: %s", linkedTableId)
 
 	return &domain.ColumnReference{
 		TableId: linkedTableId,
 	}, nil
-
 }
