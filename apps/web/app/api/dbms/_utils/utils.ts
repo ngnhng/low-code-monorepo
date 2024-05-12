@@ -1,4 +1,5 @@
 import moment from "moment";
+import { ColumnType } from "types/table-data";
 
 export function getBearerToken(
   authorizationHeader: string
@@ -107,3 +108,41 @@ export function inferTypeFromService(type: string, value) {
 export const formatValidUiDate = (value: string) => {
   return moment(value, supportedDateFormat).format("YYYY-MM-DD");
 };
+
+export function mappingType(type: ColumnType) {
+  switch (type) {
+    case "text": {
+      return "string";
+    }
+    case "number": {
+      return "integer";
+    }
+    case "boolean": {
+      return "boolean";
+    }
+    case "date": {
+      return "date";
+    }
+    case "link": {
+      return "link";
+    }
+    default: {
+      return "string";
+    }
+  }
+}
+
+export function mappingValueDate(columns, rows) {
+  for (const row of rows) {
+    const fields = Object.keys(row);
+    for (const field of fields) {
+      const matchingColumn = columns.find((column) => column.name === field);
+
+      if (matchingColumn && matchingColumn.type === "date") {
+        row[field] = formatValidUiDate(row[field]);
+      }
+    }
+  }
+
+  return rows;
+}

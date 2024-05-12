@@ -38,8 +38,11 @@ import {
   SelectValue,
 } from "@repo/ui";
 import { ColumnDef } from "types/table-data";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import cn from "../../../../../lib";
+import { useLocalStorage } from "hooks/use-local-storage";
+import axios from "axios";
+import { mappingType } from "app/api/dbms/_utils/utils";
 
 interface CreateColumnFormProps {
   setLocalColumns: any;
@@ -47,6 +50,7 @@ interface CreateColumnFormProps {
   setNewReferenceTableId: any;
   tableId: string;
   createdColumns: Set<ColumnDef>;
+  onSuccessCreateColumn: any;
 }
 
 const typeValues = ["date", "text", "number", "boolean", "link"] as const;
@@ -85,15 +89,17 @@ const formSchema = z
   );
 
 const CreateColumnForm = ({
-  setLocalColumns,
-  setLocalData,
+  // setLocalColumns,
+  // setLocalData,
   tableId,
-  setNewReferenceTableId,
-  createdColumns,
+  // setNewReferenceTableId,
+  // createdColumns,
+  onSuccessCreateColumn,
 }: CreateColumnFormProps) => {
   const [open, setOpen] = useState(false);
   const [selectedTable, setSelectedTable] = useState<any>();
   const [, setColumnOfTable] = useState<any[]>();
+  const [yalcToken] = useLocalStorage("yalc_at", "");
 
   const {
     tableData: { fetchTables },
@@ -102,7 +108,7 @@ const CreateColumnForm = ({
 
   const { data: allTables, isLoading } = useSWR(
     `TABLE_DATA-${currentProjectId}-all`,
-    () => fetchTables("")
+    () => fetchTables(yalcToken)
   );
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -131,112 +137,123 @@ const CreateColumnForm = ({
   }, [selectedTable]);
 
   // callback when validation succeed
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // reset condition for logic disabled reference table
-    //setType('');
-
-    // transform data from form schema
-    // check logic naming for foreign key id
-    let newColData: ColumnDef = {
-      id: values.columnname.replaceAll(/\s/g, "").toLowerCase(),
-      name: values.columnname,
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const payload = {
       label: values.columnname,
-      type: values.type,
-      isActive: true,
-      isPrimaryKey: false,
-      isForeignKey: values.referenceTable ? true : false,
-      foreignKeyId: values.referenceTable
-        ? `${tableId}-${values.referenceTable}`
-        : "",
+      type: mappingType(values.type),
+      reference: {
+        tableId: values.referenceTable,
+      },
     };
 
-    console.log("Creating Column:", newColData);
-
-    if (values.referenceTable) {
-      newColData = {
-        ...newColData,
-        referenceTable: values.referenceTable,
-      };
-    }
-
-    // Check if existing column with same function and add column to localCol
-    let flag = false;
-
-    setLocalColumns((previous) => {
-      const existingColumns = previous.find((col) => {
-        if (col.id.toLowerCase() === newColData.id.toLowerCase()) {
-          return col;
-        }
-
-        if (
-          col.referenceTable &&
-          col.referenceTable?.toLowerCase() ===
-            newColData.referenceTable?.toLowerCase()
-        ) {
-          return col;
-        }
-
-        return;
-      });
-
-      console.log("Existing:", existingColumns);
-
-      if (existingColumns) {
-        flag = true;
-        return [...previous];
-      }
-
-      createdColumns.add(newColData);
-
-      return [...previous, newColData];
-    });
-
-    if (flag) {
-      form.reset();
-      setOpen(false);
-      toast.error("Column existing");
-      return;
-    }
-
-    // set default value for type link and newReferencetableid
-    if (values.type === "link") {
-      setLocalData((previous) => {
-        const newData = previous.map((row) => {
-          const newRow = {
-            ...row,
-            [newColData.name]: {
-              count: 0,
-              children_ids: [],
-              children_table: values.referenceTable,
+    try {
+      await axios
+        .post(
+          `/api/dbms/${currentProjectId}/${tableId}/columns`,
+          {
+            columns: [payload],
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${yalcToken}`,
             },
-          };
-
-          return newRow;
-        });
-
-        return newData;
-      });
+          }
+        )
+        .then(() => onSuccessCreateColumn());
+    } catch (error) {
+      console.log("Error:", error);
     }
 
-    if (values.referenceTable) {
-      setNewReferenceTableId((previous) => [
-        ...previous,
-        values.referenceTable,
-      ]);
-    }
+    // let newColData: ColumnDef = {
+    //   id: values.columnname.replaceAll(/\s/g, "").toLowerCase(),
+    //   name: values.columnname,
+    //   label: values.columnname,
+    //   type: values.type,
+    //   isActive: true,
+    //   isPrimaryKey: false,
+    //   isForeignKey: values.referenceTable ? true : false,
+    //   foreignKeyId: values.referenceTable
+    //     ? `${tableId}-${values.referenceTable}`
+    //     : "",
+    // };
 
+    // if (values.referenceTable) {
+    //   newColData = {
+    //     ...newColData,
+    //     referenceTable: values.referenceTable,
+    //   };
+    // }
+
+    // // Check if existing column with same function and add column to localCol
+    // let flag = false;
+
+    // setLocalColumns((previous) => {
+    //   const existingColumns = previous.find((col) => {
+    //     if (col.id.toLowerCase() === newColData.id.toLowerCase()) {
+    //       return col;
+    //     }
+
+    //     if (
+    //       col.referenceTable &&
+    //       col.referenceTable?.toLowerCase() ===
+    //         newColData.referenceTable?.toLowerCase()
+    //     ) {
+    //       return col;
+    //     }
+
+    //     return;
+    //   });
+
+    //   console.log("Existing:", existingColumns);
+
+    //   if (existingColumns) {
+    //     flag = true;
+    //     return [...previous];
+    //   }
+
+    //   createdColumns.add(newColData);
+
+    //   return [...previous, newColData];
+    // });
+
+    // if (flag) {
+    //   form.reset();
+    //   setOpen(false);
+    //   toast.error("Column existing");
+    //   return;
+    // }
+
+    // // set default value for type link and newReferencetableid
+    // if (values.type === "link") {
+    //   setLocalData((previous) => {
+    //     const newData = previous.map((row) => {
+    //       const newRow = {
+    //         ...row,
+    //         [newColData.name]: {
+    //           count: 0,
+    //           children_ids: [],
+    //           children_table: values.referenceTable,
+    //         },
+    //       };
+
+    //       return newRow;
+    //     });
+
+    //     return newData;
+    //   });
+    // }
+
+    // if (values.referenceTable) {
+    //   setNewReferenceTableId((previous) => [
+    //     ...previous,
+    //     values.referenceTable,
+    //   ]);
+    // }
+
+    // form.reset();
+    // setOpen(false);
     form.reset();
     setOpen(false);
-
-    // toast.success('Column has been created.', {
-    //   description: (
-    //     <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-    //       <code className="text-white">
-    //         {JSON.stringify(data, undefined, 2)}
-    //       </code>
-    //     </pre>
-    //   ),
-    // });
   };
 
   // callback when validation failed

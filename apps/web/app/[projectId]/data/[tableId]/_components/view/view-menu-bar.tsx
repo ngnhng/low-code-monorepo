@@ -24,6 +24,7 @@ interface ViewMenuBarProps {
   newReferenceTableId: string[];
   yalcToken: string;
   isSubmitting: boolean;
+  onSuccessCreateColumn: any;
 }
 
 export const ViewMenuBar = ({
@@ -43,6 +44,7 @@ export const ViewMenuBar = ({
   newReferenceTableId,
   yalcToken,
   isSubmitting,
+  onSuccessCreateColumn,
 }: ViewMenuBarProps) => {
   return (
     <div className="flex items-center justify-between w-full px-4">
@@ -70,6 +72,7 @@ export const ViewMenuBar = ({
           yalcToken={yalcToken}
           setLocalColumns={setLocalColumns}
           setLocalData={setLocalData}
+          localColumns={localColumns}
         />
       </div>
 
@@ -89,6 +92,7 @@ export const ViewMenuBar = ({
             tableId={tableId}
             setNewReferenceTableId={setNewReferenceTableId}
             createdColumns={createdColumns}
+            onSuccessCreateColumn={onSuccessCreateColumn}
           />
         </div>
       </div>

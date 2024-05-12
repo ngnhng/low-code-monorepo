@@ -7,14 +7,18 @@ import { useLocalStorage } from "hooks/use-local-storage";
 import "react-datasheet-grid/dist/style.css";
 
 import { useMobxStore } from "lib/mobx/store-provider";
-import { ColumnDef, ColumnType, RowDef } from "types/table-data";
+import { ColumnDef, RowDef } from "types/table-data";
 import { TableEditor } from "../_components/view/table-editor";
 
 import { toast } from "sonner";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { formatValidUiDate } from "app/api/dbms/_utils/utils";
+import {
+  // formatValidUiDate,
+  mappingType,
+  mappingValueDate,
+} from "app/api/dbms/_utils/utils";
 
 export default function Page({
   params,
@@ -30,27 +34,12 @@ export default function Page({
 
   const [yalcToken] = useLocalStorage("yalc_at", "");
   const [isSubmiting, setIsSubmiting] = useState(false);
-  const router = useRouter();
+  // const router = useRouter();
 
   const queryObject = {
     sql: "(1=1)",
     params: [],
   };
-
-  // const tableRecords = fetchTableData(
-  //   {
-  //     tableId: params.tableId,
-  //     query: { queryObject },
-  //   },
-  //   yalcToken
-  // );
-
-  // const tableColumns = fetchTableColumn(yalcToken, params.tableId);
-
-  // const [tableRecordsData, tableColumnsData] = await Promise.all([
-  //   tableRecords,
-  //   tableColumns,
-  // ]);
 
   const {
     data: tableRecordsData,
@@ -85,21 +74,13 @@ export default function Page({
     return <div>Loading...</div>;
   }
 
-  // console.log("RAW_RECORDS", tableRecordsData.maxIndex);
-  // console.log(
-  //   "MODIED_RECORDS",
-  //   mappingValueDate(tableColumnsData.columns, tableRecordsData.rows)
-  // );
-  // console.log("COLUMNS", tableColumnsData);
-
   const handleCommit = async (
     localColumns: ColumnDef[],
     localData: RowDef[],
     addedRowIds: Set<number>,
     deletedRowIds: Set<number>,
     updatedRowIds: Set<number>,
-    createdColumns: Set<ColumnDef>,
-    newReferenceTable
+    createdColumns: Set<ColumnDef>
   ) => {
     setIsSubmiting(true);
 
@@ -117,28 +98,15 @@ export default function Page({
 
     const submitData = {
       ...processEditLogData(filteredData, changeLogs, localColumns),
-      newReferenceTable,
     };
-
-    console.log("[SUBMIT_DATA]:", submitData);
-    console.log("[CURRENT_DATA]:", localData);
 
     const configs = {
       headers: {
         Authorization: `Bearer ${yalcToken}`,
       },
     };
-    try {
-      if (submitData.addedColumns.length > 0) {
-        await axios.post(
-          `/api/dbms/${params.projectId}/${params.tableId}/columns`,
-          {
-            columns: submitData.addedColumns,
-          },
-          configs
-        );
-      }
 
+    try {
       if (submitData.addedRows.length > 0) {
         await axios.post(
           `/api/dbms/${params.projectId}/${params.tableId}/rows`,
@@ -173,28 +141,22 @@ export default function Page({
         );
       }
 
-      toast.success(
-        `Table has been updated at: /api/mock/${params.projectId}/data/${params.tableId} `,
-        {
-          description: (
-            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-              <code className="text-white">
-                {JSON.stringify(newReferenceTable, undefined, 2)}
-              </code>
-            </pre>
-          ),
-        }
-      );
+      toast.success(`Success Updated`);
 
       setIsSubmiting(false);
-      // tableRecordsMutate();
-      // tableColumnsMutate();
-      router.refresh();
+      tableRecordsMutate();
+      tableColumnsMutate();
+      // router.refresh();
     } catch (error) {
       console.error("Something went wrong when committing", error);
     }
 
     console.log("handleCommit");
+  };
+
+  const onSuccessCreateColumn = () => {
+    tableRecordsMutate();
+    tableColumnsMutate();
   };
 
   return (
@@ -213,6 +175,7 @@ export default function Page({
         onCommit={handleCommit}
         yalcToken={yalcToken}
         isSubmitting={isSubmiting}
+        onSuccessCreateColumn={onSuccessCreateColumn}
       />
     </div>
   );
@@ -312,42 +275,4 @@ function convertedActionLogsValues(actionLogs) {
   });
 
   return convertedActionLogs;
-}
-
-function mappingType(type: ColumnType) {
-  switch (type) {
-    case "text": {
-      return "string";
-    }
-    case "number": {
-      return "integer";
-    }
-    case "boolean": {
-      return "boolean";
-    }
-    case "date": {
-      return "date";
-    }
-    case "link": {
-      return "link";
-    }
-    default: {
-      return "string";
-    }
-  }
-}
-
-function mappingValueDate(columns, rows) {
-  for (const row of rows) {
-    const fields = Object.keys(row);
-    for (const field of fields) {
-      const matchingColumn = columns.find((column) => column.name === field);
-
-      if (matchingColumn && matchingColumn.type === "date") {
-        row[field] = formatValidUiDate(row[field]);
-      }
-    }
-  }
-
-  return rows;
 }
