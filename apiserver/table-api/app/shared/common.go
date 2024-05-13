@@ -150,9 +150,9 @@ func InSlice[id comparable](needle id, haystack []id) bool {
 
 func ParseValue(colType domain.ColumnType, v string) (interface{}, error) {
 
-	if v == "" {
-		return nil, fmt.Errorf("value is empty")
-	}
+	// if v == "" {
+	// 	return nil, fmt.Errorf("value is empty")
+	// }
 
 	// if v is not empty, try to parse it
 	switch colType {

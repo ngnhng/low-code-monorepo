@@ -2,15 +2,23 @@
 "use client";
 
 import useSWR from "swr";
+import { useLocalStorage } from "hooks/use-local-storage";
 
 import "react-datasheet-grid/dist/style.css";
 
 import { useMobxStore } from "lib/mobx/store-provider";
-import { ColumnDef, DataTable, RowDef } from "types/table-data";
+import { ColumnDef, RowDef } from "types/table-data";
 import { TableEditor } from "../_components/view/table-editor";
 
 import { toast } from "sonner";
 import axios from "axios";
+// import { useRouter } from "next/navigation";
+import { useState } from "react";
+import {
+  // formatValidUiDate,
+  mappingType,
+  mappingValueDate,
+} from "app/api/dbms/_utils/utils";
 
 export default function Page({
   params,
@@ -21,19 +29,48 @@ export default function Page({
   };
 }) {
   const {
-    tableData: { fetchTableData, fetchAppliedQueries },
+    tableData: { fetchTableData, fetchTableColumns },
   } = useMobxStore();
 
-  const { data, isLoading, mutate } = useSWR<DataTable>(
-    `TABLE_DATA-${params.projectId}-${params.tableId}`,
-    () =>
-      fetchTableData({
+  const [yalcToken] = useLocalStorage("yalc_at", "");
+  const [isSubmiting, setIsSubmiting] = useState(false);
+  // const router = useRouter();
+
+  const queryObject = {
+    sql: "(1=1)",
+    params: [],
+  };
+
+  const {
+    data: tableRecordsData,
+    isLoading: tableRecordsLoading,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    mutate: tableRecordsMutate,
+  } = useSWR(`TABLE_DATA-${params.projectId}-${params.tableId}`, () =>
+    fetchTableData(
+      {
         tableId: params.tableId,
-        ...fetchAppliedQueries(params.tableId),
-      })
+        query: queryObject,
+      },
+      yalcToken
+    )
   );
 
-  if (!data || isLoading) {
+  const {
+    data: tableColumnsData,
+    isLoading: tableColumnsLoading,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    mutate: tableColumnsMutate,
+  } = useSWR(`TABLE_COLUMMS-${params.projectId}-${params.tableId}`, () =>
+    fetchTableColumns(yalcToken, params.tableId)
+  );
+
+  if (
+    !tableColumnsData ||
+    !tableRecordsData ||
+    tableRecordsLoading ||
+    tableColumnsLoading
+  ) {
     return <div>Loading...</div>;
   }
 
@@ -43,63 +80,126 @@ export default function Page({
     addedRowIds: Set<number>,
     deletedRowIds: Set<number>,
     updatedRowIds: Set<number>,
-    createdColumns: Set<ColumnDef>,
-    newReferenceTable
+    createdColumns: Set<ColumnDef>
   ) => {
+    setIsSubmiting(true);
+
     const filteredData =
       deletedRowIds.size > 0
         ? localData.filter((row) => !deletedRowIds.has(row.id))
         : localData;
 
+    const changeLogs = {
+      addedRows: addedRowIds,
+      deletedRows: deletedRowIds,
+      updatedRows: updatedRowIds,
+      addedColumns: createdColumns,
+    };
+
+    const submitData = {
+      ...processEditLogData(filteredData, changeLogs, localColumns),
+    };
+
+    const configs = {
+      headers: {
+        Authorization: `Bearer ${yalcToken}`,
+      },
+    };
+
+    const promises: any = [];
+
+    // console.log(`URL:`, `/api/dbms/${params.projectId}/${params.tableId}/rows`);
+
     try {
-      await axios.put(`/api/mock/${params.projectId}/data/${params.tableId}`, {
-        data: {
-          columns: localColumns,
-          rows: filteredData,
-        },
-        newReferenceTableIds: newReferenceTable,
-      });
+      if (submitData.addedRows.length > 0) {
+        promises.push(
+          axios.post(
+            `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+            { rows: submitData.addedRows },
+            configs
+          )
+        );
+      }
 
-      const changeLogs = {
-        addedRows: addedRowIds,
-        deletedRows: deletedRowIds,
-        updatedRows: updatedRowIds,
-        addedColumns: createdColumns,
-      };
+      // Update row operation
+      if (submitData.updatedRows.length > 0) {
+        promises.push(
+          axios.patch(
+            `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+            { data: submitData.updatedRows },
+            configs
+          )
+        );
+      }
 
-      const submitData = {
-        ...processEditLogData(filteredData, changeLogs),
-        newReferenceTable,
-      };
+      // Delete row operation
+      if (submitData.deletedRows.length > 0) {
+        promises.push(
+          await axios.delete(
+            `/api/dbms/${params.projectId}/${params.tableId}/rows`,
+            {
+              headers: {
+                Authorization: `Bearer ${yalcToken}`,
+              },
+              data: {
+                ids: submitData.deletedRows,
+              },
+            }
+          )
+        );
+      }
 
-      console.log("[SUBMIT_DATA]:", submitData);
+      if (promises.length > 0) {
+        await Promise.all(promises).then(() => {
+          tableRecordsMutate();
+          tableColumnsMutate();
+        });
+      }
 
-      toast.success(
-        `Table has been updated at: /api/mock/${params.projectId}/data/${params.tableId} `,
-        {
-          description: (
-            <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-              <code className="text-white">
-                {JSON.stringify(newReferenceTable, undefined, 2)}
-              </code>
-            </pre>
-          ),
-        }
-      );
-      mutate();
+      toast.success(`Success Updated`);
+
+      setIsSubmiting(false);
+      // router.refresh();
     } catch (error) {
       console.error("Something went wrong when committing", error);
     }
-
-    console.log("handleCommit");
   };
 
+  const onSuccessCreateColumn = () => {
+    tableRecordsMutate(() =>
+      fetchTableData(
+        {
+          tableId: params.tableId,
+          query: queryObject,
+        },
+        yalcToken
+      )
+    );
+    tableColumnsMutate(() => fetchTableColumns(yalcToken, params.tableId));
+  };
+
+  console.log(
+    "AFTER_MAPPING:",
+    mappingValueDate(tableColumnsData.columns, tableRecordsData.rows)
+  );
+
   return (
+    // <div>Hello Page</div>
     <div className="mx-4 h-full">
       <TableEditor
         tableId={params.tableId}
-        tableData={data}
+        tableData={{
+          rows: mappingValueDate(
+            tableColumnsData.columns,
+            tableRecordsData.rows
+          ),
+          columns: tableColumnsData.columns,
+          maxIndex: tableRecordsData.maxIndex,
+        }}
         onCommit={handleCommit}
+        yalcToken={yalcToken}
+        isSubmitting={isSubmiting}
+        onSuccessCreateColumn={onSuccessCreateColumn}
       />
     </div>
   );
@@ -118,9 +218,7 @@ type finalEditLogType = {
   }[];
   updatedRows: {
     id: string;
-    values: {
-      [key: string]: any;
-    };
+    [key: string]: any;
   }[];
   deletedRows: number[];
   addedColumns: any;
@@ -128,31 +226,39 @@ type finalEditLogType = {
 
 function processEditLogData(
   localData: RowDef[],
-  editLog: editLogType
+  editLog: editLogType,
+  localColumns
 ): finalEditLogType {
   const addedRows = localData
     .filter((row) => editLog.addedRows.has(row.id))
     .map((row) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, ...rest } = row;
+      const { id, ...rest } = convertedObjValues(row, localColumns);
+
       return rest;
     });
+
   const updatedRows = localData
     .filter((row) => editLog.updatedRows.has(row.id))
     .map((row) => {
       const { id, ...rest } = row;
       return {
         id: id.toString(),
-        values: rest,
+        ...convertedObjValues(rest, localColumns),
       };
     });
   const deletedRows = [...editLog.deletedRows];
   const addedColumns = [...editLog.addedColumns].map((column) => {
-    const { label, type } = column;
+    const { label, type, referenceTable } = column;
 
     return {
-      name: label,
-      type: type,
+      label: label,
+      type: mappingType(type),
+      reference: referenceTable
+        ? {
+            table_id: referenceTable,
+          }
+        : undefined,
     };
   });
 
@@ -163,3 +269,35 @@ function processEditLogData(
     addedColumns: addedColumns,
   };
 }
+
+function convertedObjValues(obj, localColumns) {
+  for (const key in obj) {
+    if (obj[key] === undefined || obj[key] === null) {
+      continue;
+    }
+
+    // eslint-disable-next-line unicorn/prefer-ternary
+    if (
+      localColumns.some(
+        (column) => column.name === key && column.type === "link"
+      )
+    ) {
+      obj[key] = `[${obj[key].children_ids.toString()}]`;
+    } else {
+      obj[key] = obj[key].toString();
+    }
+  }
+  return obj;
+}
+
+// function convertedActionLogsValues(actionLogs) {
+//   const convertedActionLogs = actionLogs.map((obj) => {
+//     const newObj = {};
+//     for (const key in obj) {
+//       newObj[key] = obj[key].toString();
+//     }
+//     return newObj;
+//   });
+
+//   return convertedActionLogs;
+// }

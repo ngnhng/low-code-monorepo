@@ -29,40 +29,45 @@ import {
 } from "@repo/ui";
 import { toast } from "sonner";
 import { useMobxStore } from "lib/mobx/store-provider";
-import useSWR from "swr";
-import { ColumnDef } from "types/table-data";
+// import useSWR from "swr";
+import { ColumnDef, ColumnType } from "types/table-data";
+import { mappingValueDate } from "app/api/dbms/_utils/utils";
 
 const initialQuery: RuleGroupType = { combinator: "and", rules: [] };
 
 interface QueryBuilderListProps {
   columns: ColumnDef[];
   tableId: string;
+  yalcToken: string;
+  setLocalColumns: any;
+  setLocalData: any;
+  localColumns: ColumnDef[];
 }
 
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
+const QueryBuilderList = ({
+  tableId,
+  columns,
+  yalcToken,
+  // setLocalColumns,
+  setLocalData,
+  localColumns,
+}: QueryBuilderListProps) => {
   const [query, setQuery] = useState(initialQuery);
   const [groupby, setGroupBy] = useState<string>();
   const [sortby, setSortBy] = useState<string>();
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const {
-    projectData: { currentProjectId },
-    tableData: { fetchTables },
+    // projectData: {  },
+    tableData: { fetchTableData },
   } = useMobxStore();
 
-  const { data, isLoading } = useSWR(`TABLE_DATA-${currentProjectId}-all`, () =>
-    fetchTables()
-  );
-
-  if (!data || isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  const transformData = data.map((table) => {
-    return table.columns.map((column) => ({
-      name: `${table.id}.${column.id}`,
-      label: `${table.id} - ${column.id}`,
-    }));
+  const transformData = localColumns.map((column) => {
+    return {
+      name: `${column.name}`,
+      label: `${column.label}`,
+      inputType: formatTypeIntoInputType(column.type),
+    };
   });
 
   const queryFields: Field[] = transformData.flat();
@@ -72,28 +77,30 @@ const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
     event.preventDefault();
   };
 
-  const onQuery = () => {
-    const postValues = { ...query, groupby: groupby, sortby: sortby };
+  const onQuery = async () => {
+    const postValues = {
+      ...formatQuery(query, "parameterized"),
+      groupby: groupby,
+      sortby: sortby,
+    };
 
-    toast.success("Column has been created.", {
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">
-            {JSON.stringify(postValues, undefined, 2)}
-          </code>
-          {/* <p className="font-bold text-white">Group by: {groupby}</p> */}
-        </pre>
-      ),
-    });
-
-    // router.push(``);
+    await fetchTableData({ tableId, query: postValues }, yalcToken).then(
+      (response) => {
+        console.log("QUERY:", response.rows);
+        setIsOpen(false);
+        setLocalData(mappingValueDate(localColumns, response.rows));
+        toast.success("Query Success");
+      }
+    );
   };
 
   return (
     <div>
-      <DropdownMenu>
+      <DropdownMenu open={isOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant={"primary"}>Query Builder</Button>
+          <Button variant={"primary"} onClick={() => setIsOpen(true)}>
+            Query Builder
+          </Button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent className="min-w-[750px] max-w-full">
@@ -157,7 +164,7 @@ const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
             </DropdownMenuItem>
           </DropdownMenuGroup>
 
-          <Button className="my-4" variant={"secondary"} onClick={onQuery}>
+          <Button className="my-4" variant={"primary"} onClick={onQuery}>
             Query
           </Button>
         </DropdownMenuContent>
@@ -165,5 +172,25 @@ const QueryBuilderList = ({ tableId, columns }: QueryBuilderListProps) => {
     </div>
   );
 };
+
+function formatTypeIntoInputType(type: ColumnType) {
+  switch (type) {
+    case "text": {
+      return "text";
+    }
+    case "date": {
+      return "date";
+    }
+    case "number": {
+      return "number";
+    }
+    case "boolean": {
+      return "checkbox";
+    }
+    default: {
+      return "text";
+    }
+  }
+}
 
 export default QueryBuilderList;

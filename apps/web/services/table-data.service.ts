@@ -1,91 +1,108 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-    GetTableDataResponse,
-    DataTable,
-    GetTablesResponse,
-    RowDef,
+  ColumnDef,
+  // GetTableDataResponse,
+  DataTable,
+  GetTablesResponse,
+  RowDef,
 } from "types/table-data";
 import { RouteHandlerAPIService } from "./route-handler.service";
 import { TableItem } from "types/table-data";
-
+import { mappingTypeToUI } from "app/api/dbms/_utils/utils";
+import { CLIENT_BASE_URL } from "helpers/common.helper";
 export class TableDataService extends RouteHandlerAPIService {
-    constructor() {
-        super();
-    }
+  constructor() {
+    super(CLIENT_BASE_URL);
+  }
 
-    async getTableData({
-        projectId,
-        tableId,
-        page,
-        limit,
-        query,
-    }): Promise<GetTableDataResponse> {
-        const response = await this.getServerSide(
-            `/api/mock/${projectId}/data/${tableId}`,
-            {
-                params: {
-                    page,
-                    limit,
-                    query,
-                },
-            }
-        );
+  async getTableColumns({ projectId, tableId, yalcToken }) {
+    const configs = {
+      headers: {
+        Authorization: `Bearer ${yalcToken}`,
+      },
+    };
 
-        const result: GetTableDataResponse = {
-            columns: response.data.data.columns,
-            rows: response.data.data.rows,
-            pagination: {
-                page: response.data.meta.page,
-                pageSize: response.data.meta.pageSize,
-                totalPage: response.data.meta.totalPage,
-            },
-            maxIndex: response.data.data.maxIndex,
-        };
+    const response = await this.getServerSide(
+      `/api/dbms/${projectId}/${tableId}`,
+      configs
+    );
 
-        return result;
-    }
+    const modifiedColumns: ColumnDef[] = response.data.columns.map(
+      (column) => ({
+        id: column.id,
+        label: column.label,
+        name: column.name,
+        type: mappingTypeToUI(column.type),
+        referenceTable: column.reference?.table_id,
+        isActive: true,
+        isPrimaryKey: false,
+        isForeignKey: false,
+      })
+    );
 
-    async postTableData(): Promise<DataTable> {
-        const result = {
-            columns: [],
-            rows: [],
-            pagination: {
-                page: 0,
-                pageSize: 0,
-                totalPage: 0,
-            },
-            maxIndex: 0,
-        };
+    return {
+      ...response.data,
+      columns: modifiedColumns,
+    };
+  }
 
-        return result;
-    }
+  async getTableData({ projectId, tableId, query, yalcToken }) {
+    const configs = {
+      headers: {
+        Authorization: `Bearer ${yalcToken}`,
+      },
+    };
 
-    async getTables({ projectId }): Promise<GetTablesResponse[]> {
-        const response = await this.getServerSide(
-            `/api/mock/${projectId}/data/all`
-        );
+    const response = await this.postServerSide(
+      `/api/dbms/${projectId}/${tableId}`,
+      query,
+      configs
+    );
 
-        const result: TableItem[] = response.data;
+    const result = {
+      rows: response.data.data,
+      maxIndex:
+        response.data.data.length === 0
+          ? 0
+          : // eslint-disable-next-line unicorn/no-array-reduce
+            response.data.data.reduce((prev, curr) =>
+              prev ? (prev.id > curr.id ? prev : curr) : curr
+            ).id,
+    };
 
-        return result;
-    }
+    return result;
+  }
 
-    async getTableRelations({ projectId, tableId }) {
-        const response = await this.getServerSide(
-            `/api/mock/${projectId}/data/${tableId}/relations`
-        );
+  async getTables({ projectId, yalcToken }): Promise<GetTablesResponse[]> {
+    const response = await this.get(`/api/dbms/${projectId}/all`);
 
-        const result: TableItem[] = response.data;
+    const rawTables = response.data;
+    const processedTables: TableItem[] = rawTables.map((table) => ({
+      id: table.tid,
+      name: table.name,
+      label: table.label,
+      source: "Source 1",
+      created: table.createdAt ?? "2024-01-01",
+      updated: table.updatedAt ?? "2024-01-01",
+      status: "Active",
+      columns: table.columns.map((column) => ({
+        ...column,
+        type: mappingTypeToUI(column.type),
+        label: column.label,
+        name: column.name,
+      })),
+    }));
 
-        return result;
-    }
+    return processedTables;
+  }
 
-    async getTableRecords(projectId: string, tableId: string) {
-        const response = await this.getServerSide(
-            `/api/mock/${projectId}/data/${tableId}/rows`
-        );
+  async getTableRelations({ projectId, tableId }) {
+    const response = await this.getServerSide(
+      `/api/mock/${projectId}/data/${tableId}/relations`
+    );
 
-        const result: RowDef[] = response.data;
+    const result: TableItem[] = response.data;
 
-        return result;
-    }
+    return result;
+  }
 }
