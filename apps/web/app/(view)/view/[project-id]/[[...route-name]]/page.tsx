@@ -24,7 +24,7 @@ export default function Page({ params }: { params: { "project-id": string, "rout
         if (!routeData) {
             throw new Error("This page does not exist!");
         }
-
+        console.log("yello")
         const routeRes = await fetch(`/api/ui/${routeData.id}`);
 
         if (!routeRes.ok) {

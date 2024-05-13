@@ -13,7 +13,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import type { Project } from '@prisma/client';
+import type { Prisma, Project } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ProjectService } from '../services/project.service';
@@ -85,24 +85,27 @@ export class ProjectController {
       return new UnauthorizedException();
     }
 
-    return this.view.addViewByPid(projectId, viewData);
+    return this.view.addViewByPid(projectId, viewData as Prisma.JsonObject);
   }
 
   @Put('/:projectId/views/:viewId')
   async updateViewByPid(
     @Param('projectId') projectId: string,
     @Param('viewId') viewId: string,
-    @Body('viewData') viewData,
-    @Req() req,
+    @Body() viewData,
   ) {
-    const email: string = req.user.email;
+    //const email: string = req.user.email;
 
-    const isValid = await this.project.checkValidUser(projectId, email);
+    //const isValid = await this.project.checkValidUser(projectId, email);
 
-    if (!isValid) {
-      return new UnauthorizedException();
-    }
+    //if (!isValid) {
+    //  return new UnauthorizedException();
+    //}
 
-    return this.view.updateViewByPid(projectId, viewId, viewData);
+    return this.view.updateViewByPid(
+      projectId,
+      viewId,
+      viewData as Prisma.JsonObject,
+    );
   }
 }

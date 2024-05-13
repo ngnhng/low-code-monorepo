@@ -73,7 +73,7 @@ export class WorkflowController {
   @Put(':wid')
   async updateWorkflowByWid(
     @Param('wid') wid: string,
-    @Body('wfData') wfData: string,
+    @Body() wfData: string,
     @Req() req,
   ) {
     const email: string = req.user.email;

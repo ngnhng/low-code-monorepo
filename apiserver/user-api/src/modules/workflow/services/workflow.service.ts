@@ -75,7 +75,7 @@ export class WorkflowService {
         wid: wid.toString(),
       },
       data: {
-        wfData: wfData.toString(),
+        wfData,
       },
     });
   }

@@ -12,52 +12,69 @@ import config from "../_config";
 import { Switch, Label, Input } from "@repo/ui";
 import useSWR from "swr";
 import { notFound } from "next/navigation";
+import { useMobxStore } from "../../../../lib/mobx/store-provider";
+import {
+    getLocalStorage,
+    setLocalStorage,
+} from "../../../../lib/local-storage";
+import { toast } from "sonner";
 
 export default function Page({ params }: { params: { routeId: string } }) {
-    const componentKey = Buffer.from(Object.keys(config.components).join("-")).toString("base64");
-    const key = `puck-demo:${componentKey}:${params.routeId}`;
-
     const [tempData, setTempData] = useState<any>();
+    const [isEdit, setIsEdit] = useState<boolean>(true);
 
-    const { data, isLoading, error } = useSWR(`/api/ui/${params.routeId}`, async (url) => {
-        const res = await fetch(url);
+    const {
+        projectData: { currentProjectId: projectId, saveView, getProjectById },
+    } = useMobxStore();
 
-        if (res.status === 404) {
-            throw new Error("Page not found");
-        }
+    const key = `puck.${projectId}.${params.routeId}`;
 
-        return await res.json();
+    const {
+        data: project,
+        isLoading,
+        error,
+        mutate,
+    } = useSWR<any>(["view", projectId], () => getProjectById(projectId), {
+        revalidateOnFocus: false,
+        revalidateIfStale: false,
     });
+
+    useEffect(() => {
+        if (isLoading || !project) return;
+        const data = project.views.find(
+            (view) => view.uiData.route === `/${params.routeId}`
+        );
+        if (!data) return;
+        console.log("Temp data", data);
+        setTempData(data);
+    }, [isLoading, project, params.routeId]);
 
     if (error) {
         notFound();
     }
 
-    useEffect(() => {
-        if (!data) return;
-        setTempData(data);
-
-        console.log(data);
-    }, [isLoading, data]);
-
-    // useEffect(() => {
-    //     console.log(tempData);
-    // }, [tempData])
-
-    const [isEdit, setIsEdit] = useState<boolean>(true);
+    if (isLoading || !project) {
+        return <div>Loading...</div>;
+    }
 
     const handleToggle = () => {
         setIsEdit(!isEdit);
     };
 
-    const editSwitch = <SwitchGroup handleToggle={handleToggle} isOn={isEdit} disabled={isLoading} />;
+    const editSwitch = (
+        <SwitchGroup
+            handleToggle={handleToggle}
+            isOn={isEdit}
+            disabled={isLoading}
+        />
+    );
 
     const pageRoute = (
         <>
             <Label className="w-auto">Route</Label>
             <Input
                 placeholder="Empty route is treated as '/'"
-                defaultValue={data?.route.slice(1) ?? ""}
+                defaultValue={tempData?.uiData?.route}
                 onBlur={(event) => {
                     // Do Something
                     console.log(event.target?.value);
@@ -67,10 +84,32 @@ export default function Page({ params }: { params: { routeId: string } }) {
     );
 
     const saveButton = (
-        <button className="ml-auto" onClick={() => {
-            // Do something to save here
-        }}>
-            <Save className="text-slate-700 hover:text-slate-400"/>
+        <button
+            className="ml-auto"
+            onClick={async () => {
+                const payload =
+                    JSON.parse(getLocalStorage(key) ?? "") || undefined;
+                if (!payload) {
+                    toast.error("No data to save");
+                    return;
+                }
+                const modifiedData = {
+                    route: tempData?.uiData?.route,
+                    id: tempData?.uiData?.id,
+                    ...payload,
+                };
+
+                await saveView(modifiedData, tempData.projectId, tempData.id)
+                    .then(() => {
+                        toast.success("Saved Successfully");
+                        mutate();
+                    })
+                    .catch(() => {
+                        toast.error("Failed to save");
+                    });
+            }}
+        >
+            <Save className="text-slate-700 hover:text-slate-400" />
         </button>
     );
 
@@ -92,39 +131,14 @@ export default function Page({ params }: { params: { routeId: string } }) {
                     }`}
                 >
                     {isEdit ? (
-                        // https://puckeditor.com/docs/extending-puck/custom-interfaces
-                        <Puck
+                        <PuckEditor
                             config={config}
-                            data={tempData}
-                            headerPath={tempData?.route}
-                            onChange={(data) => {
-                                if (data.content.length === 0) return;
-
-                                setTempData(data);
-                            }}
-                            onPublish={async (data: Data) => {
-                                localStorage.setItem(key, JSON.stringify(data));
-                            }}
-                            key={tempData?.id}
-                        >
-                            <div className="gap-2.5 flex-1 overflow-hidden flex">
-                                <div className="bg-slate-100 rounded-md border-2 border-slate-300 w-52 overflow-auto">
-                                    <Puck.Fields />
-                                </div>
-                                <div className="h-full flex-1 border-2 border-slate-300 rounded-md p-2.5 overflow-auto">
-                                    <Puck.Preview />
-                                </div>
-                                <div className="bg-slate-100 p-2.5 rounded-md border-2 border-slate-300 w-52 overflow-auto">
-                                    <Puck.Components />
-                                </div>
-                            </div>
-                        </Puck>
+                            data={tempData?.uiData}
+                            headerPath={params.routeId}
+                            lcKey={key}
+                        />
                     ) : (
-                        <div className="flex-1 overflow-auto">
-                            <div className="w-full h-full overflow-auto">
-                                <Render config={config} data={tempData ?? "Error"} />
-                            </div>
-                        </div>
+                        <RenderPreview config={config} tempData={tempData} />
                     )}
                 </div>
             )}
@@ -153,11 +167,70 @@ function Toolbar({ items }: ToolbarProps) {
     );
 }
 
-function SwitchGroup({ isOn, handleToggle, disabled }: { isOn: boolean; handleToggle: any; disabled?: boolean }) {
+function SwitchGroup({
+    isOn,
+    handleToggle,
+    disabled,
+}: {
+    isOn: boolean;
+    handleToggle: any;
+    disabled?: boolean;
+}) {
     return (
         <>
             <Label htmlFor="toggle-preview">Preview</Label>
-            <Switch id="toggle-preview" checked={!isOn} onCheckedChange={() => handleToggle()} disabled={disabled} />
+            <Switch
+                id="toggle-preview"
+                checked={!isOn}
+                onCheckedChange={() => handleToggle()}
+                disabled={disabled}
+            />
         </>
+    );
+}
+
+function PuckEditor({ config, data, lcKey, headerPath }) {
+    if (!data) {
+        return <div>Loading...</div>;
+    }
+
+    return (
+        <Puck
+            config={config}
+            data={data}
+            headerPath={headerPath}
+            onChange={(data) => {
+                if (data.content.length === 0) return;
+                console.log("On Change Data", data);
+                //setTempData(data);
+                setLocalStorage(lcKey, data);
+            }}
+            onPublish={async (data: Data) => {
+                console.log("On Publish Data", data);
+                localStorage.setItem(lcKey, JSON.stringify(data));
+            }}
+        >
+            <div className="gap-2.5 flex-1 overflow-hidden flex">
+                <div className="bg-slate-100 rounded-md border-2 border-slate-300 w-52 overflow-auto">
+                    <Puck.Fields />
+                </div>
+                <div className="h-full flex-1 border-2 border-slate-300 rounded-md p-2.5 overflow-auto">
+                    <Puck.Preview />
+                </div>
+                <div className="bg-slate-100 p-2.5 rounded-md border-2 border-slate-300 w-52 overflow-auto">
+                    <Puck.Components />
+                </div>
+            </div>
+        </Puck>
+    );
+}
+
+function RenderPreview({ config, tempData }) {
+    return (
+        <div className="flex-1 overflow-auto">
+            <div className="w-full h-full overflow-auto">
+                <Render config={config} data={tempData?.uiData ?? "Error"} />
+            </div>
+        </div>
     );
 }
