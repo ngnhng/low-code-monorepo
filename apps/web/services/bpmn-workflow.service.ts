@@ -53,24 +53,71 @@ export class BpmnWorkflowService extends APIService {
         }
     }
 
-    async fetchWorkflowNameList(): Promise<Set<string>> {
+    async fetchWorkflowNameList(projectId: string): Promise<
+        Set<{
+            title: string;
+            wid: string;
+            data: string;
+            created: string;
+        }>
+    > {
         try {
-            const response = await this.get(`/api/workflow`);
+            const response = await this.get(
+                `/api/projects/${projectId}/workflows`
+            );
+            console.log("Response", response);
             return response.status === 200
-                ? new Set(response.data.ids)
+                ? new Set(
+                      response.data.data.map((wf: any) => ({
+                          title: wf.title,
+                          wid: wf.wid,
+                          data: wf.wfData,
+                          created: new Intl.DateTimeFormat("en-US", {
+                              year: "numeric",
+                              month: "2-digit",
+                              day: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              second: "2-digit",
+                          }).format(new Date(wf.createdAt)),
+                      }))
+                  )
                 : new Set();
-        } catch {
-            throw new Error("Error calling service");
+        } catch (error) {
+            throw new Error(`Error calling service ${error}`);
         }
     }
 
-    async fetchWorkflowById(workflowId: string): Promise<any> {
+    async fetchWorkflowById(pid: string, workflowId: string): Promise<any> {
         try {
-            const response = await this.get(`/api/workflow/${workflowId}`);
+            const response = await this.get(
+                `/api/projects/${pid}/workflows/${workflowId}`
+            );
 
             return response.status === 200 ? response.data : undefined;
         } catch {
             throw new Error("Error calling service");
         }
+    }
+
+    async saveWorkflow(pid, title: string, data: any): Promise<any> {
+        const response = await this.post(
+            `/api/projects/${pid}/workflows?title=${title}`,
+            data?.xml
+        );
+
+        return response.status === 200 ? response.data : undefined;
+    }
+
+    async updateWorkflow(pid, workflowId: string, data: any): Promise<any> {
+        if (!data || !data?.xml) {
+            throw new Error("Data is required");
+        }
+        const response = await this.put(
+            `/api/projects/${pid}/workflows/${workflowId}`,
+            data?.xml
+        );
+
+        return response.status === 200 ? response.data : undefined;
     }
 }

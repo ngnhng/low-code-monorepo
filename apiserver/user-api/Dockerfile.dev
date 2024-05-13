@@ -10,11 +10,6 @@ RUN yarn add @nestjs/cli -g
 
 COPY . .
 
-
-RUN yarn run prisma generate
-
-#RUN chmod +x ./start-dev.sh
-#ENTRYPOINT [ "./start-dev.sh" ]
 RUN yarn run prisma generate
 
 CMD [ "yarn", "run", "start:dev" ]

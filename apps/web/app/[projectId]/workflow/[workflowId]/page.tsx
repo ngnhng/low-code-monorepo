@@ -19,6 +19,7 @@ import {
 import { PlayIcon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
 import useSWR from "swr";
+import { Save } from "lucide-react";
 
 export default function Page({
     params,
@@ -61,7 +62,11 @@ const Modeler = observer(
 
         const { isLoading, error, mutate } = useSWR(
             ["workflow", workflowId],
-            () => fetchWorkflowById(workflowId)
+            () => fetchWorkflowById(workflowId),
+            {
+                revalidateIfStale: false,
+                revalidateOnFocus: false,
+            }
         );
 
         const panelRef = useRef<HTMLDivElement>(null);
@@ -175,7 +180,7 @@ const DebugXML = observer(() => {
 const Controls = observer(
     (props: React.PropsWithChildren<{ workflowId: string }>) => {
         const {
-            workflow: { launchWorkflow },
+            workflow: { launchWorkflow, updateWorkflow },
         } = useMobxStore();
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -188,11 +193,35 @@ const Controls = observer(
                 : toast.error("Failed to launch workflow: " + result);
         };
 
+        const handleUpdateWorkflow = async () => {
+            await updateWorkflow(workflowId)
+                .then(() => {
+                    toast.success("Workflow updated successfully");
+                })
+                .catch(() => {
+                    toast.error("Failed to update workflow");
+                });
+        };
+
         return (
             <div className="w-full border-2 border-slate-300 rounded-md flex gap-2.5 items-center justify-between p-2 box-border">
-                <Button className="flex gap-2.5" onClick={handleLaunchWorkflow}>
-                    <PlayIcon /> Execute Workflow
-                </Button>
+                <div className="flex items-center gap-4">
+                    <Button
+                        className="flex gap-2.5"
+                        onClick={handleLaunchWorkflow}
+                    >
+                        <PlayIcon /> Execute Workflow
+                    </Button>
+                    <Button
+                        className="flex gap-2.5"
+                        onClick={() => {
+                            handleUpdateWorkflow();
+                        }}
+                    >
+                        <Save />
+                    </Button>
+                </div>
+
                 <div className="flex flex-row items-center gap-x-4">
                     {/*<WorkflowSelector />*/}
 
@@ -259,29 +288,29 @@ const BPMNModeler = observer(
                 // eslint-disable-next-line unicorn/consistent-function-scoping
                 const attachModeler = async () => {
                     console.log("BPMNModeler", containerRef.current);
-                
+
                     modeler.attachTo(containerRef.current);
-    
+
                     try {
-                        const { warnings } = await modeler.importXML(currentWorkflow);
+                        const { warnings } =
+                            await modeler.importXML(currentWorkflow);
                         if (warnings.length > 0) {
                             console.log("importXML", warnings);
                         }
                         modeler.get("canvas").zoom("fit-viewport");
                     } catch (error) {
                         console.error(error);
-                    } 
-                }
-                
-                attachModeler();
-            }, 1000)
+                    }
+                };
 
+                attachModeler();
+            }, 1000);
 
             return () => {
                 modeler?.clear();
                 modeler?.detach();
             };
-        }, [containerRef.current])
+        }, [containerRef.current]);
 
         return (
             <div ref={containerRef} className="h-full">

@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import type { Workflow } from '@prisma/client';
 import { PrismaService } from '@shared/services/prisma.service';
 
 @Injectable()
 export class WorkflowService {
+  private logger = new Logger('WorkflowService');
+
   constructor(private prisma: PrismaService) {} // private user: UserService,
 
   async checkValidUser(wid: string, userEmail: string) {
@@ -23,22 +25,37 @@ export class WorkflowService {
     return user.workflows.some((wf) => wf.wid === wid);
   }
 
-  async getWorkflowsByEmail(userEmail: string): Promise<Workflow[]> {
+  async getWorkflowsByEmail(pid, userEmail: string): Promise<Workflow[]> {
     return this.prisma.workflow.findMany({
       where: {
         user: {
           email: userEmail.toString(),
+          projects: {
+            some: {
+              pid: pid.toString(),
+            },
+          },
         },
       },
     });
   }
 
-  async getWorkflowByWid(wid: string): Promise<Workflow | null> {
-    return this.prisma.workflow.findFirst({
-      where: {
-        wid: wid.toString(),
-      },
-    });
+  async getWorkflowByWid(wid: string): Promise<Workflow> {
+    this.logger.log(`Getting workflow ${wid}`);
+
+    return this.prisma.workflow
+      .findFirst({
+        where: {
+          wid: wid.toString(),
+        },
+      })
+      .then((wf) => {
+        if (!wf) {
+          throw new Error('Workflow not found');
+        }
+
+        return wf;
+      });
   }
 
   async createWorkflow(
