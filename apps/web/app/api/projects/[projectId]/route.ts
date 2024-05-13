@@ -13,7 +13,7 @@ export async function GET(
     }
 ) {
     // get params from request
-    const { headers, url } = req;
+    const { headers } = req;
     // extract the Bearer Token from the request headers
     const token = headers.get("Authorization")?.split(" ")[1];
 
