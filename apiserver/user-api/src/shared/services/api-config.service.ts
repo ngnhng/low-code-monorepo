@@ -124,7 +124,7 @@ export class ApiConfigService {
     return {
       clientId: this.getString('YALC_OAUTH_GOOGLE_CLIENT_ID'),
       clientSecret: this.getString('YALC_OAUTH_GOOGLE_CLIENT_SECRET'),
-      redirectUri: this.getString('YALC_OAUTH_GOOGLE_REDIRECT_URI'),
+      redirectUri: this.getString('YALC_OAUTH_GOOGLE_REDIRECT_URL'),
     };
   }
 

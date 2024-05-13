@@ -70,7 +70,10 @@ export const conf: Config<
     },
     interactive: {
       title: "Actions",
-      components: [],
+      components: [
+		"Form",
+		"FormTable",
+	  ],
     },
   },
   components: {

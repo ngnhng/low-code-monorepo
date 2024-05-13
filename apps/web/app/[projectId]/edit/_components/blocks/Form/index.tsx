@@ -76,7 +76,7 @@ export const Form: ComponentConfig<FormProps> = {
         };
 
         return (
-            <div className="flex flex-col gap-2.5 w-96 ml-auto mr-auto">
+            <div className="flex flex-col gap-2.5 w-96 ml-auto mr-auto p-2.5">
                 <div className="font-bold">{formName}</div>
                 <div className="bg-slate-100 p-5 rounded-md flex flex-col gap-2.5">
                     {inputs ? (

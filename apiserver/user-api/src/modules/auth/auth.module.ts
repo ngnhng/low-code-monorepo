@@ -10,6 +10,7 @@ import { OAuthController } from './controllers/oauth.controller';
 import { CustomGoogleStrategy } from './strategies/google-oauth-custom.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PasetoStrategy } from './strategies/paseto.strategy';
+import { UserService } from '@modules/user/services/user.service';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PasetoStrategy } from './strategies/paseto.strategy';
     CustomGoogleStrategy,
     JwtStrategy,
     PasetoStrategy,
+    UserService,
   ],
   exports: [AuthenticationService],
 })

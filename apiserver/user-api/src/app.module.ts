@@ -22,6 +22,12 @@ import { PasetoAuthGuard } from './guards/paseto-auth.guard';
 import { LoggingInterceptor } from './shared/interceptor/logging.interceptor';
 import { SerializerInterceptor } from './shared/interceptor/serializer.interceptor';
 import { ApiConfigService } from './shared/services/api-config.service';
+import { ProjectController } from '@modules/project/controllers/project.controller';
+import { ProjectModule } from '@modules/project/project.module';
+import { WorkflowController } from '@modules/workflow/controllers/workflow.controller';
+import { WorkflowModule } from '@modules/workflow/workflow.module';
+import { DataIntegrationModule } from '@modules/data-integration/data-integration.module';
+import { DataIntegrationController } from '@modules/data-integration/controllers/data-integration.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,10 +39,16 @@ import { ApiConfigService } from './shared/services/api-config.service';
     SharedModule,
     UserModule,
     AuthModule,
+    ProjectModule,
+    WorkflowModule,
+    DataIntegrationModule,
   ],
   controllers: [
     AppController,
     UserController,
+    ProjectController,
+    WorkflowController,
+    DataIntegrationController,
     //AuthenticationController,
     //OAuthController,
   ],

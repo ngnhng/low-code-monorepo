@@ -69,7 +69,6 @@ services:
     networks:
       - dev-network
     volumes:
-      - ../../apiserver/user-api:/app
       - /app/node_modules # exclude node_modules from the volume
     depends_on:
       reverse-proxy:
@@ -89,23 +88,23 @@ services:
       - "traefik.http.middlewares.user-api-stripprefix.stripprefix.prefixes=/user-api"
       - "traefik.http.routers.user-api.middlewares=user-api-stripprefix@docker,user-api-forwardauth@docker"
 
-  table-api:
-    build:
-      context: ../../apiserver/table-api/app
-      dockerfile: Dockerfile.dev
-    networks:
-      - dev-network
-    env_file:
-      - ./.env
-    depends_on:
-      reverse-proxy:
-        condition: service_started
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.table-api.rule=Host(`localhost`) && PathPrefix(`/dbms`)"
-      - "traefik.http.routers.table-api.entrypoints=web"
-      - "traefik.http.middlewares.table-api-stripprefix.stripprefix.prefixes=/dbms"
-      - "traefik.http.routers.table-api.middlewares=table-api-stripprefix@docker"
+  #table-api:
+  #  build:
+  #    context: ../../apiserver/table-api/app
+  #    dockerfile: Dockerfile.dev
+  #  networks:
+  #    - dev-network
+  #  env_file:
+  #    - ./.env
+  #  depends_on:
+  #    reverse-proxy:
+  #      condition: service_started
+  #  labels:
+  #    - "traefik.enable=true"
+  #    - "traefik.http.routers.table-api.rule=Host(`localhost`) && PathPrefix(`/dbms`)"
+  #    - "traefik.http.routers.table-api.entrypoints=web"
+  #    - "traefik.http.middlewares.table-api-stripprefix.stripprefix.prefixes=/dbms"
+  #    - "traefik.http.routers.table-api.middlewares=table-api-stripprefix@docker"
 
   ##table-api-swagger:
   ##    image: swaggerapi/swagger-ui
