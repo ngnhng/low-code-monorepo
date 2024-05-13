@@ -69,7 +69,6 @@ services:
     networks:
       - dev-network
     volumes:
-      - ../../apiserver/user-api:/usr/src/app
       - /app/node_modules # exclude node_modules from the volume
     depends_on:
       reverse-proxy:

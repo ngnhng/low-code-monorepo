@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -36,6 +37,9 @@ import {
 } from "@repo/ui";
 
 import { CreateProjectForm } from "./create-project-form";
+import useSWR from "swr";
+import { useMobxStore } from "../../../lib/mobx/store-provider";
+import { observer } from "mobx-react-lite";
 // import { ConfirmModal } from "./confirm-modal";
 
 const pseudoProjects = [
@@ -130,6 +134,10 @@ const TopSection = ({ setSearch }): JSX.Element => {
 const ProjectList = ({ projectList, search }): JSX.Element => {
     const router = useRouter();
 
+    const {
+        user: { currentUser },
+    } = useMobxStore();
+
     const handleClick = (
         e: React.MouseEvent<HTMLButtonElement>
         // eslint-disable-next-line unicorn/consistent-function-scoping
@@ -153,10 +161,11 @@ const ProjectList = ({ projectList, search }): JSX.Element => {
                         .filter((project) => {
                             return search === ""
                                 ? project
-                                : project.name
+                                : project.title
                                       .toLowerCase()
                                       .includes(search.toLowerCase()) ||
-                                      project.owner
+                                      currentUser?.email ||
+                                      ""
                                           .toLowerCase()
                                           .includes(search.toLowerCase());
                         })
@@ -165,20 +174,22 @@ const ProjectList = ({ projectList, search }): JSX.Element => {
                                 key={`${project.id}${idx}`}
                                 className="border-0"
                                 onClick={() => {
-                                    router.push(`/${project.id}/edit`);
+                                    router.push(`/${project.pid}/edit`);
                                 }}
                             >
                                 <TableCell className="py-5">
-                                    {project.name}
+                                    {project.title}
                                 </TableCell>
-                                <TableCell>{project.owner}</TableCell>
+                                <TableCell>{currentUser?.email}</TableCell>
                                 <TableCell width={200}>
-                                    {project.updatedAt}
+                                    {new Intl.DateTimeFormat("en-US").format(
+                                        new Date(project.updatedAt)
+                                    )}{" "}
                                 </TableCell>
                                 <TableCell>
                                     <ConfirmModal
                                         handleClick={handleClick}
-                                        projectId={project.id}
+                                        projectId={project.pid}
                                     />
                                 </TableCell>
                             </TableRowButton>
@@ -223,15 +234,29 @@ const ConfirmModal = ({ handleClick, projectId }) => {
     );
 };
 
-export const ProjectLists = () => {
+export const ProjectLists = observer(() => {
     const [search, setSearch] = useState("");
-    const [list] = useState(pseudoProjects);
+
+    const {
+        projectData: { projects, fetchProjectList },
+    } = useMobxStore();
+
+    const { isLoading } = useSWR("/api/projects", () => fetchProjectList(), {
+        revalidateIfStale: false,
+        revalidateOnFocus: false,
+    });
+
+    if (isLoading || !projects) {
+        return <div>Loading...</div>;
+    }
+
+    console.log(projects);
 
     return (
         <>
             <TopSection setSearch={setSearch} />
             <div className="w-full h-[1px] bg-slate-300"></div>
-            <ProjectList search={search} projectList={list} />
+            <ProjectList search={search} projectList={projects} />
         </>
     );
-};
+});
