@@ -10,6 +10,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UnauthorizedException,
   UseGuards,
@@ -26,23 +27,45 @@ export class WorkflowController {
 
   constructor(private workflow: WorkflowService) {}
 
-  @Get()
-  async getWorkflows(@Req() req): Promise<Workflow[]> {
+  @Get(':pid')
+  async getWorkflows(
+    @Param('pid') pid: string,
+    @Query('workflowId') workflowId: string,
+    @Req() req,
+  ): Promise<Workflow[]> {
     const email: string = req.user.email;
 
-    return this.workflow.getWorkflowsByEmail(email);
+    this.logger.log(`Getting workflows for project ${pid} by ${email}`);
+
+    if (workflowId) {
+      await this.workflow
+        .getWorkflowByWid(workflowId)
+        .then((wf) => [wf])
+        .catch((error) => {
+          this.logger.error(`Error getting workflow ${workflowId}`, error);
+
+          throw new NotFoundException(`Workflow ${workflowId} not found`);
+        });
+    }
+
+    return this.workflow.getWorkflowsByEmail(pid, email);
   }
 
-  @Post()
+  @Post(':pid')
   async createWorkflow(
     @Req() req,
-    @Body() createWorkflow: CreateWorkflowDto,
+    @Param('pid') pid: string,
+    @Query('title') title: string,
+    //@Body() createWorkflow: CreateWorkflowDto,
+    @Body() wfData: string,
   ): Promise<Workflow> {
     const wid: string = uuidv4();
-    const title: string = createWorkflow.title;
     const userEmail: string = req.user.email;
-    const wfData: string = createWorkflow.wfData;
-    const pid: string = createWorkflow.pid;
+
+    this.logger.log(
+      `Creating workflow ${title} for project ${pid} by ${userEmail}`,
+    );
+    this.logger.log(`Workflow data: ${wfData}`);
 
     return this.workflow.createWorkflow(pid, userEmail, {
       wid,
@@ -51,7 +74,7 @@ export class WorkflowController {
     });
   }
 
-  @Get(':wid')
+  @Get(':id')
   async getWorkflowByWid(@Param('wid') wid: string, @Req() req) {
     const email: string = req.user.email;
 
@@ -82,6 +105,10 @@ export class WorkflowController {
 
     if (!isValid) {
       return new UnauthorizedException();
+    }
+
+    if (!wfData) {
+      throw new NotFoundException('Workflow data not provided');
     }
 
     return this.workflow.updateWorkflowByWid(wid, wfData);

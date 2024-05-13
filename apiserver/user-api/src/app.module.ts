@@ -27,6 +27,7 @@ import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { PasetoAuthGuard } from './guards/paseto-auth.guard';
 import { PrometheusMiddleware } from './middlewares/metrics';
+import { XMLMiddleware } from './middlewares/xml.middleware';
 import { MetricsModule } from './modules/metrics/metrics.module';
 import { LoggingInterceptor } from './shared/interceptor/logging.interceptor';
 import { SerializerInterceptor } from './shared/interceptor/serializer.interceptor';
@@ -107,5 +108,15 @@ export class AppModule implements NestModule {
       path: '*',
       method: RequestMethod.ALL,
     });
+    consumer.apply(XMLMiddleware).forRoutes(
+      {
+        path: 'workflows/*',
+        method: RequestMethod.POST,
+      },
+      {
+        path: 'workflows/*',
+        method: RequestMethod.PUT,
+      },
+    );
   }
 }
