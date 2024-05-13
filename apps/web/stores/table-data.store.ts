@@ -58,11 +58,7 @@ export class TableDataStore implements ITableDataStore {
         yalcToken,
       });
 
-      if (response) {
-        return response;
-      } else {
-        throw new Error("Table data not found");
-      }
+      return response;
     } catch (error) {
       console.log(error);
       throw error;
@@ -77,13 +73,10 @@ export class TableDataStore implements ITableDataStore {
         yalcToken,
       });
 
-      if (response) {
-        return response.data;
-      } else {
-        throw new Error("Table data not found");
-      }
+      return response;
     } catch (error) {
       console.log("[FETCH_TABLE_COL_ERROR]", error);
+      throw error;
     }
   };
 
@@ -134,27 +127,10 @@ export class TableDataStore implements ITableDataStore {
         yalcToken: yalcToken,
       });
 
-      if (response) {
-        return response;
-      } else {
-        throw new Error("Table data not found");
-      }
-    } catch (error) {
-      console.log("ERROR", error);
-      throw error;
-    }
-  };
-
-  fetchTableRecords = async (tableId: string) => {
-    try {
-      const response = await this.tableDataService.getTableRecords(
-        this.rootStore.projectData.currentProjectId,
-        tableId
-      );
-
       return response;
-    } catch {
-      console.log("error fetching table records");
+    } catch (error) {
+      console.log("FETCH_TABLE_ERROR", error);
+      throw error;
     }
   };
 }

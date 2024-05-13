@@ -36,7 +36,7 @@ export async function POST(
     config
   );
 
-  return new NextResponse(JSON.stringify("OK"), {
+  return new NextResponse(JSON.stringify(response), {
     status: 200,
   });
 }

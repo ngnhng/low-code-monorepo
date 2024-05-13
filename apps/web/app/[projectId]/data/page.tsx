@@ -42,9 +42,20 @@ export default function Page() {
     tableData: { fetchTables },
   } = useMobxStore();
 
-  const { data, isLoading } = useSWR(`TABLE_DATA-${currentProjectId}-all`, () =>
-    fetchTables(yalcToken)
+  const { data, isLoading, error } = useSWR(
+    [`TABLE_DATA`, `all`, currentProjectId],
+    () => fetchTables(yalcToken),
+    {
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+    }
   );
+
+  if (error) {
+    console.log("BEFORE:", error);
+
+    return <div>Error</div>;
+  }
 
   if (!data || isLoading) {
     return <div>Loading...</div>;

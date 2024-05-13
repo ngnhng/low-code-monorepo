@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  ColumnDef,
   // GetTableDataResponse,
   DataTable,
   GetTablesResponse,
@@ -7,33 +9,54 @@ import {
 import { RouteHandlerAPIService } from "./route-handler.service";
 import { TableItem } from "types/table-data";
 import { mappingTypeToUI } from "app/api/dbms/_utils/utils";
+import { CLIENT_BASE_URL } from "helpers/common.helper";
 export class TableDataService extends RouteHandlerAPIService {
   constructor() {
-    super();
+    super(CLIENT_BASE_URL);
   }
 
   async getTableColumns({ projectId, tableId, yalcToken }) {
+    const configs = {
+      headers: {
+        Authorization: `Bearer ${yalcToken}`,
+      },
+    };
+
     const response = await this.getServerSide(
       `/api/dbms/${projectId}/${tableId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${yalcToken}`,
-        },
-      }
+      configs
     );
 
-    return response;
+    const modifiedColumns: ColumnDef[] = response.data.columns.map(
+      (column) => ({
+        id: column.id,
+        label: column.label,
+        name: column.name,
+        type: mappingTypeToUI(column.type),
+        referenceTable: column.reference?.table_id,
+        isActive: true,
+        isPrimaryKey: false,
+        isForeignKey: false,
+      })
+    );
+
+    return {
+      ...response.data,
+      columns: modifiedColumns,
+    };
   }
 
   async getTableData({ projectId, tableId, query, yalcToken }) {
+    const configs = {
+      headers: {
+        Authorization: `Bearer ${yalcToken}`,
+      },
+    };
+
     const response = await this.postServerSide(
       `/api/dbms/${projectId}/${tableId}`,
       query,
-      {
-        headers: {
-          Authorization: `Bearer ${yalcToken}`,
-        },
-      }
+      configs
     );
 
     const result = {
@@ -50,27 +73,8 @@ export class TableDataService extends RouteHandlerAPIService {
     return result;
   }
 
-  async postTableData(): Promise<DataTable> {
-    const result = {
-      columns: [],
-      rows: [],
-      pagination: {
-        page: 0,
-        pageSize: 0,
-        totalPage: 0,
-      },
-      maxIndex: 0,
-    };
-
-    return result;
-  }
-
   async getTables({ projectId, yalcToken }): Promise<GetTablesResponse[]> {
-    const response = await this.getServerSide(`/api/dbms/${projectId}/all`, {
-      headers: {
-        Authorization: `Bearer ${yalcToken}`,
-      },
-    });
+    const response = await this.get(`/api/dbms/${projectId}/all`);
 
     const rawTables = response.data;
     const processedTables: TableItem[] = rawTables.map((table) => ({
@@ -98,16 +102,6 @@ export class TableDataService extends RouteHandlerAPIService {
     );
 
     const result: TableItem[] = response.data;
-
-    return result;
-  }
-
-  async getTableRecords(projectId: string, tableId: string) {
-    const response = await this.getServerSide(
-      `/api/mock/${projectId}/data/${tableId}/rows`
-    );
-
-    const result: RowDef[] = response.data;
 
     return result;
   }
