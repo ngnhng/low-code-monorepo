@@ -1,5 +1,5 @@
 import type { NestMiddleware } from '@nestjs/common';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import type { Histogram } from 'prom-client';
 
@@ -9,7 +9,10 @@ import { MetricsService } from '../modules/metrics/metrics.service';
 export class PrometheusMiddleware implements NestMiddleware {
   httpRequests: Histogram<string>;
 
+  private logger = new Logger('PromettheusMiddleware');
+
   constructor(private prometheus: MetricsService) {
+    this.logger.log("Called!");
     this.httpRequests = this.prometheus.createHistogram({
       help: 'Tracks HTTP requests',
       name: 'http_requests',

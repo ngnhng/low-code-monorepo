@@ -22,6 +22,6 @@ export class MetricsModule implements NestModule, OnApplicationBootstrap {
   }
 
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(PrometheusMiddleware).forRoutes('*');
+    // consumer.apply(PrometheusMiddleware).forRoutes('*');
   }
 }
