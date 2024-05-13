@@ -88,6 +88,7 @@ const translateData = (data): TableItem => {
   return {
     id: tableId as string,
     name: data.tablename as string,
+    label: "",
     source: "Source 1",
     created: "2021-08-01",
     updated: "2021-08-01",
@@ -283,6 +284,7 @@ export async function PUT(
       const newColumns: ColumnDef = {
         id: `${params.tableId}-${referenceTable.id}`,
         label: `${params.tableId}-${referenceTable.id}`,
+        name: "",
         type: "link",
         isActive: true,
         isPrimaryKey: false,

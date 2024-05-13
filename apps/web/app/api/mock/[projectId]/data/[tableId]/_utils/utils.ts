@@ -5,6 +5,7 @@ export const columns: ColumnDef[] = [
   {
     id: "id",
     label: "ID",
+    name: "",
     type: "number",
     isActive: true,
     isPrimaryKey: true,
@@ -14,6 +15,7 @@ export const columns: ColumnDef[] = [
   {
     id: "name",
     label: "Name",
+    name: "",
     type: "text",
     isActive: true,
     isPrimaryKey: false,
@@ -23,6 +25,8 @@ export const columns: ColumnDef[] = [
   {
     id: "username",
     label: "Username",
+    name: "",
+
     type: "text",
     isActive: true,
     isPrimaryKey: false,
@@ -32,6 +36,8 @@ export const columns: ColumnDef[] = [
   {
     id: "phone",
     label: "Phone",
+    name: "",
+
     type: "text",
     isActive: true,
     isPrimaryKey: false,
@@ -42,6 +48,8 @@ export const columns: ColumnDef[] = [
     id: "website",
     label: "Website",
     type: "text",
+    name: "",
+
     isActive: true,
     isPrimaryKey: false,
     isForeignKey: false,
@@ -55,6 +63,8 @@ export const addresses: ColumnDef[] = [
     label: "ID",
     type: "number",
     isActive: true,
+    name: "",
+
     isPrimaryKey: true,
     isForeignKey: false,
     foreignKeyId: "",
@@ -63,6 +73,8 @@ export const addresses: ColumnDef[] = [
     id: "city",
     label: "City",
     type: "text",
+    name: "",
+
     isActive: true,
     isPrimaryKey: false,
     isForeignKey: true,
@@ -72,6 +84,8 @@ export const addresses: ColumnDef[] = [
     id: "country",
     label: "Country",
     type: "text",
+    name: "",
+
     isActive: true,
     isPrimaryKey: false,
     isForeignKey: false,
@@ -81,6 +95,8 @@ export const addresses: ColumnDef[] = [
     id: "userID",
     label: "User",
     type: "number",
+    name: "",
+
     isActive: true,
     isPrimaryKey: false,
     isForeignKey: true,
@@ -93,6 +109,8 @@ export const posts: ColumnDef[] = [
     id: "id",
     label: "ID",
     type: "number",
+    name: "",
+
     isActive: true,
     isPrimaryKey: true,
     isForeignKey: false,
@@ -102,6 +120,8 @@ export const posts: ColumnDef[] = [
     id: "title",
     label: "Title",
     type: "text",
+    name: "",
+
     isActive: true,
     isPrimaryKey: false,
     isForeignKey: false,

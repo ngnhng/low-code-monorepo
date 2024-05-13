@@ -9,9 +9,9 @@ import fsa from "node:fs/promises";
 import path from "node:path";
 import { columns, addresses, posts } from "../[tableId]/_utils/utils";
 
-import { TableItem } from "types/table-data";
+// import { TableItem } from "types/table-data";
 
-const TABLES: TableItem[] = [
+const TABLES = [
   {
     id: "0",
     name: "Table 1",
