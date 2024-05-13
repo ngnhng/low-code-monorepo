@@ -9,7 +9,8 @@ import { UserController } from '@modules/user/controllers/user.controller';
 import { UserModule } from '@modules/user/user.module';
 import { WorkflowController } from '@modules/workflow/controllers/workflow.controller';
 import { WorkflowModule } from '@modules/workflow/workflow.module';
-import { Module } from '@nestjs/common';
+import type { MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import {
   APP_FILTER,
@@ -25,6 +26,7 @@ import { GlobalExceptionFilter } from './filters/all.filter';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { PasetoAuthGuard } from './guards/paseto-auth.guard';
+import { PrometheusMiddleware } from './middlewares/metrics';
 import { MetricsModule } from './modules/metrics/metrics.module';
 import { LoggingInterceptor } from './shared/interceptor/logging.interceptor';
 import { SerializerInterceptor } from './shared/interceptor/serializer.interceptor';
@@ -99,4 +101,11 @@ import { ApiConfigService } from './shared/services/api-config.service';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(PrometheusMiddleware).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL,
+    });
+  }
+}

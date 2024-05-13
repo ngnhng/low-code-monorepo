@@ -10,6 +10,12 @@ import { map } from 'rxjs';
 @Injectable()
 export class SerializerInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler) {
+    const req = context.switchToHttp().getRequest();
+
+    if (req.url === "/api/metrics") {
+      return next.handle();
+    }
+
     return next.handle().pipe(
       map((data) => {
         const res = context.switchToHttp().getResponse();
