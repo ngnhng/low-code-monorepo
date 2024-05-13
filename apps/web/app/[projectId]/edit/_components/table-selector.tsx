@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Select } from "@repo/ui";
 import { useMobxStore } from "../../../../lib/mobx/store-provider";
 import useSWR from "swr";
