@@ -39,7 +39,7 @@ export const DBListInstance: DB[] = [
     requiredFields: ["PrivateKey"],
   },
   {
-    name: "Sheet",
+    name: "GoogleSheet",
     img: "/db-icon/gg-sheet.svg",
     requiredFields: ["PrivateKey"],
   },

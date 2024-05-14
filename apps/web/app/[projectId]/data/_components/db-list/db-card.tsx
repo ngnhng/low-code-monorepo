@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Button } from "@repo/ui";
 
 import { OptionDialog } from "../table-list/options-cards";
+import { SheetAddForm } from "./sheet-add-form";
 import { DBAddForm } from "./db-add-form";
 
 // import Icon from "./db-icon/mongodb.svg"
@@ -38,12 +39,23 @@ const DBCard = ({ name, img }: DBCardProps) => {
             </Button>
           }
         >
-          <DBAddForm />
+          {addFormComponent(name)}
         </OptionDialog>
-        {/* <Button size={"sm"} variant={"outline"} onClick={() => console.log("Button Trigger")}>Add</Button> */}
       </div>
     </div>
   );
+};
+
+const addFormComponent = (name: string) => {
+  switch (name) {
+    case "GoogleSheet": {
+      return <SheetAddForm />;
+    }
+
+    default: {
+      return <DBAddForm />;
+    }
+  }
 };
 
 export default DBCard;
