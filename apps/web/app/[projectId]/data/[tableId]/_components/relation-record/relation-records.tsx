@@ -81,7 +81,6 @@ const RelationRecords = ({
         linkedState: rowData.children_ids.includes(record.id),
       }));
 
-      console.log(data.rows);
       setLinkedData(mappingData);
     }
   }, [data]);

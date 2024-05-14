@@ -39,7 +39,7 @@ interface DataTable {
   maxIndex: number;
 }
 
-type ColumnType = "date" | "text" | "number" | "boolean" | LinkColumn | "link";
+type ColumnType = "date" | "text" | "number" | "boolean" | "link";
 
 export type ColumnDef = { id: string } & ColumnAttributes;
 

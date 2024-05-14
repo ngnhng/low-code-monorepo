@@ -22,10 +22,7 @@ export class TableDataService extends RouteHandlerAPIService {
       },
     };
 
-    const response = await this.getServerSide(
-      `/api/dbms/${projectId}/${tableId}`,
-      configs
-    );
+    const response = await this.get(`/api/dbms/${projectId}/${tableId}`);
 
     const modifiedColumns: ColumnDef[] = response.data.columns.map(
       (column) => ({
@@ -53,10 +50,9 @@ export class TableDataService extends RouteHandlerAPIService {
       },
     };
 
-    const response = await this.postServerSide(
+    const response = await this.post(
       `/api/dbms/${projectId}/${tableId}`,
-      query,
-      configs
+      query
     );
 
     const result = {
@@ -104,5 +100,19 @@ export class TableDataService extends RouteHandlerAPIService {
     const result: TableItem[] = response.data;
 
     return result;
+  }
+
+  async getRelationalTable({ projectId, tableId }) {
+    try {
+      const response = await this.get(`/api/dbms/${projectId}/${tableId}`);
+
+      const referenceTableIds = response.data.columns
+        .filter((column) => column.type === "link")
+        .map((column) => column.reference.table_id);
+
+      return referenceTableIds;
+    } catch (error) {
+      console.log("REALTIONAL_ERROR:", error);
+    }
   }
 }
