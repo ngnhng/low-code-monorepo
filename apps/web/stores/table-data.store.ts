@@ -1,11 +1,12 @@
 "use client";
 
-import { action, makeObservable, observable } from "mobx";
+import { action, makeObservable, observable, runInAction } from "mobx";
 
 import { RootStore } from "./root";
 import {
   GetTableDataParams,
-  GetTableDataResponse,
+  GetTablesResponse,
+  // GetTableDataResponse,
   TableQueries,
 } from "types/table-data";
 import { TableDataService } from "services/table-data.service";
@@ -14,10 +15,10 @@ export interface ITableDataStore {
   tableIds: string[];
   appliedQueries: TableQueries;
   // eslint-disable-next-line no-unused-vars
-  fetchTableData: (a0: GetTableDataParams) => Promise<GetTableDataResponse>;
+  fetchTableData: (a0: GetTableDataParams, yalcToken) => any;
   // eslint-disable-next-line no-unused-vars
   fetchAppliedQueries: (tableId: string) => any;
-  fetchTables: () => any;
+  fetchTables: (yalcToken: string) => any;
 }
 
 export class TableDataStore implements ITableDataStore {
@@ -30,6 +31,7 @@ export class TableDataStore implements ITableDataStore {
 
   // service
   tableDataService: TableDataService;
+  tables: GetTablesResponse[] = [];
 
   constructor(_rootStore: RootStore) {
     makeObservable(this, {
@@ -46,30 +48,36 @@ export class TableDataStore implements ITableDataStore {
     this.tableDataService = new TableDataService();
   }
 
-  fetchTableData = async ({
-    tableId,
-    page,
-    limit,
-    query,
-  }: GetTableDataParams): Promise<GetTableDataResponse> => {
+  fetchTableData = async (
+    { tableId, query }: GetTableDataParams,
+    yalcToken
+  ) => {
     try {
       const response = await this.tableDataService.getTableData({
         projectId: this.rootStore.projectData.currentProjectId,
         tableId,
-        page,
-        limit,
         query,
+        yalcToken,
       });
 
-      // temporary action that is immediately invoked
-      if (response) {
-        // validate
-        return response;
-      } else {
-        throw new Error("Table data not found");
-      }
+      return response;
     } catch (error) {
       console.log(error);
+      throw error;
+    }
+  };
+
+  fetchTableColumns = async (yalcToken: string, tableId: string) => {
+    try {
+      const response = await this.tableDataService.getTableColumns({
+        projectId: this.rootStore.projectData.currentProjectId,
+        tableId,
+        yalcToken,
+      });
+
+      return response;
+    } catch (error) {
+      console.log("[FETCH_TABLE_COL_ERROR]", error);
       throw error;
     }
   };
@@ -114,33 +122,40 @@ export class TableDataStore implements ITableDataStore {
     }
   };
 
-  fetchTables = async () => {
+  fetchTables = async (yalcToken: string) => {
     try {
       const response = await this.tableDataService.getTables({
         projectId: this.rootStore.projectData.currentProjectId,
+        yalcToken: yalcToken,
       });
 
-      if (response) {
-        return response;
-      } else {
-        throw new Error("Table data not found");
-      }
+      runInAction(() => {
+        this.tables = response;
+      });
+
+      return response;
     } catch (error) {
-      console.log(error);
+      console.log("FETCH_TABLE_ERROR", error);
       throw error;
     }
   };
 
-  fetchTableRecords = async (tableId: string) => {
+  fetchRelationalTables = async (tableId: string) => {
     try {
-      const response = await this.tableDataService.getTableRecords(
-        this.rootStore.projectData.currentProjectId,
-        tableId
+      const response = await this.tableDataService.getRelationalTable({
+        projectId: this.rootStore.projectData.currentProjectId,
+        tableId: tableId,
+      });
+
+      response.push(tableId);
+
+      const results = this.tables.filter((table) =>
+        response.includes(table.id)
       );
 
-      return response;
-    } catch {
-      console.log("error fetching table records");
+      return results;
+    } catch (error) {
+      console.log("STORE_RELATIONAL_TABLES:", error);
     }
   };
 }

@@ -93,7 +93,7 @@ export function WorkflowTable<WorkflowItem, TValue>({
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead key={header.id}>
+                                        <TableHead key={header.id} className="pl-8">
                                             {header.isPlaceholder
                                                 ? undefined
                                                 : flexRender(

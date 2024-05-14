@@ -1,85 +1,124 @@
-import { makeObservable, observable, action, runInAction } from 'mobx';
-import { RootStore } from './root';
-import { ProjectService } from '../services/project.service';
-import { GetProjectParams, GetProjectResponse } from '../types/project';
+import { makeObservable, observable, action, runInAction } from "mobx";
+import { RootStore } from "./root";
+import { ProjectService } from "../services/project.service";
 
 export interface IProjectStore {
-  projectIds: string[];
-  currentProjectId: string;
+    projectIds: string[];
+    projects: any;
+    currentProjectId: string;
 
-  // eslint-disable-next-line no-unused-vars
-  fetchProject: (a0: GetProjectParams) => Promise<GetProjectResponse>;
-  getCurrentProjectId: () => string;
-  // eslint-disable-next-line no-unused-vars
-  setCurrentProjectId: (projectId: string) => void;
+    viewsIds: string[];
+    views: { [key: string]: any }[];
+    currentView: any;
+
+    currentViewId: string;
+
+    getCurrentProjectId: () => string;
+    setCurrentProjectId: (projectId: string) => void;
+    fetchProjectList: () => any;
+    getProjectById: (projectId: string) => any;
+    saveView: (view: any, pid: string, viewId: string) => void;
+    createView: (route: string, title: string, pid: string) => void;
 }
 
 export class ProjectStore implements IProjectStore {
-  // observables
-  projectIds: string[] = [];
-  currentProjectId: string = '';
+    // observables
+    projectIds: string[] = [];
+    currentProjectId: string = "";
+    projects: any;
 
-  // root store
-  rootStore: RootStore;
+    viewsIds: string[] = [];
+    views: { [key: string]: any }[] = [];
+    currentView: any;
+    currentViewId: string = "";
 
-  // service
-  projectSerivce: ProjectService;
+    // root store
+    rootStore: RootStore;
 
-  constructor(_rootStore: RootStore) {
-    makeObservable(this, {
-      //observables
-      projectIds: observable,
-	  currentProjectId: observable,
-      //use .ref annotation since immutability of projectData is expected.
-      //see: https://mobx.js.org/observable-state.html#available-annotations
-      //actions
-      fetchProject: action,
-	  getCurrentProjectId: action,
-	  setCurrentProjectId: action,
-    });
+    // service
+    projectSerivce: ProjectService;
 
-    this.rootStore = _rootStore;
-    this.projectSerivce = new ProjectService();
-  }
-
-  fetchProject = async ({
-    projectId,
-    page,
-    limit,
-    search,
-    sort,
-    order,
-    filter,
-  }: GetProjectParams): Promise<GetProjectResponse> => {
-    try {
-      const response = await this.projectSerivce.getProject({
-        projectId,
-        page,
-        limit,
-        search,
-        sort,
-        order,
-        filter,
-      });
-
-      if (response) {
-        runInAction(() => {
-          this.projectIds = response.projectIds;
+    constructor(_rootStore: RootStore) {
+        makeObservable(this, {
+            //observables
+            projectIds: observable,
+            currentProjectId: observable,
+            projects: observable.ref,
+            viewsIds: observable,
+            views: observable,
+            currentView: observable,
+            currentViewId: observable,
+            //use .ref annotation since immutability of projectData is expected.
+            //see: https://mobx.js.org/observable-state.html#available-annotations
+            //actions
+            getCurrentProjectId: action,
+            setCurrentProjectId: action,
+            fetchProjectList: action,
+            getProjectById: action,
         });
-      }
 
-      return response;
-    } catch (error) {
-      console.log(error);
-      throw error;
+        this.rootStore = _rootStore;
+        this.projectSerivce = new ProjectService();
     }
-  };
 
-  getCurrentProjectId = (): string => {
-	return this.rootStore.projectData.currentProjectId;
-  };
+    getCurrentProjectId = (): string => {
+        return this.rootStore.projectData.currentProjectId;
+    };
 
-  setCurrentProjectId = (projectId: string) => {
-	this.rootStore.projectData.currentProjectId = projectId;
-  };
+    setCurrentProjectId = (projectId: string) => {
+        this.rootStore.projectData.currentProjectId = projectId;
+    };
+
+    fetchProjectList = async () => {
+        try {
+            const response = await this.projectSerivce.getProjectList();
+
+            if (response) {
+                runInAction(() => {
+                    this.projects = response.data;
+                });
+            }
+
+            return response.data;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    };
+
+    getProjectById = async (projectId: string) => {
+        const data = await this.projectSerivce.getProject(projectId);
+        runInAction(() => {
+            this.views = data.views;
+        });
+
+        return data;
+    };
+
+    getViewByRoute = async (route: string) => {
+        // search in this.views
+        return this.views.find((view) => view.route === route);
+    };
+
+    saveView = async (view: any, pid: string, viewId: string) => {
+        try {
+            await this.projectSerivce.saveView(pid, view, viewId).then(() => {
+                return true;
+            });
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    };
+
+    createView = async (route: string, title: string, pid: string) => {
+        try {
+            await this.projectSerivce.createView(route, title, pid).then(() => {
+                return true;
+            });
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    };
 }

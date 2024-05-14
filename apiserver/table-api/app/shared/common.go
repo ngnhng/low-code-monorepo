@@ -150,9 +150,9 @@ func InSlice[id comparable](needle id, haystack []id) bool {
 
 func ParseValue(colType domain.ColumnType, v string) (interface{}, error) {
 
-	if v == "" {
-		return nil, fmt.Errorf("value is empty")
-	}
+	// if v == "" {
+	// 	return nil, fmt.Errorf("value is empty")
+	// }
 
 	// if v is not empty, try to parse it
 	switch colType {
@@ -165,6 +165,11 @@ func ParseValue(colType domain.ColumnType, v string) (interface{}, error) {
 	case domain.ColumnTypeCurrency:
 		return decimal.NewFromString(v)
 	case domain.ColumnTypeDate:
+		if v == "" {
+			// handle nil v here
+			// for example, return a zero value
+			return pgtype.Date{Valid: false}, nil
+		}
 		//return time.Parse("2006-01-02", v)
 		d := pgtype.Date{}
 		d.Time, _ = time.Parse("2006-01-02", v)
@@ -173,7 +178,11 @@ func ParseValue(colType domain.ColumnType, v string) (interface{}, error) {
 		return d, nil
 
 	case domain.ColumnTypeInteger:
-		//return strconv.ParseInt(v, 10, 64)
+		if v == "" {
+			// handle nil v here
+			// for example, return a zero value
+			return pgtype.Int8{Int64: 0, Valid: false}, nil
+		}
 		i := pgtype.Int8{}
 		r, err := strconv.ParseInt(v, 10, 64)
 		if err != nil {
@@ -184,13 +193,16 @@ func ParseValue(colType domain.ColumnType, v string) (interface{}, error) {
 		return i, nil
 
 	case domain.ColumnTypeString:
-		//return fmt.Sprintf("'%s'", v), nil
 		s := pgtype.Text{}
 		s.String = v
 		s.Valid = true
 		return s, nil
 	case domain.ColumnTypeTime:
-		//return time.Parse("15:04:05", v)
+		if v == "" {
+			// handle nil v here
+			// for example, return a zero value
+			return pgtype.Time{Valid: false}, nil
+		}
 		t := pgtype.Time{}
 		// get ms from time
 		ms, err := time.Parse("15:04:05", v)
@@ -203,7 +215,11 @@ func ParseValue(colType domain.ColumnType, v string) (interface{}, error) {
 		return t, nil
 
 	case domain.ColumnTypeDateTime:
-		//return time.Parse("2006-01-02 15:04:05", v)
+		if v == "" {
+			// handle nil v here
+			// for example, return a zero value
+			return pgtype.Timestamptz{Valid: false}, nil
+		}
 		dt := pgtype.Timestamptz{}
 		t, err := time.Parse("2006-01-02 15:04:05", v)
 		if err != nil {

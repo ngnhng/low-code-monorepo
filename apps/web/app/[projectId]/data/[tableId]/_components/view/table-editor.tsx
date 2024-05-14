@@ -42,6 +42,9 @@ type TableEditorProps = {
   tableId: string;
   tableData: DataTable;
   onCommit: CommitFunc;
+  yalcToken: string;
+  isSubmitting: boolean;
+  onSuccessCreateColumn: any;
 };
 
 // TODO: handle types
@@ -55,6 +58,9 @@ export const TableEditor = ({
   tableId,
   tableData,
   onCommit,
+  yalcToken,
+  isSubmitting,
+  onSuccessCreateColumn,
 }: TableEditorProps) => {
   const [localData, setLocalData] = useState<RowDef[]>(tableData.rows);
   const [localColumns, setLocalColumns] = useState<ColumnDef[]>(
@@ -75,17 +81,20 @@ export const TableEditor = ({
   const createdColumn = useMemo(() => new Set<string>(), [tableId]);
   const deletedColumn = useMemo(() => new Set<string>(), [tableId]);
 
+  // console.log("ROWS:", localData);
+  // console.log("COLUMNS:", localColumns);
+
   useEffect(() => {
     const createColumn = (column) => {
       const isLinkType = column.type === "link";
       const isId = column.id === "id";
       const colType = isLinkType
-        ? colTypeMapper(column.type, column, tableId)
+        ? colTypeMapper(column.type, column, tableId, yalcToken)
         : colTypeMapper(column.type);
       const disabled = isId;
 
       return {
-        ...keyColumn<RowDef>(column.id, colType),
+        ...keyColumn<RowDef>(column.name, colType),
         title: (
           <TitleDataSheet
             column={column}
@@ -98,6 +107,9 @@ export const TableEditor = ({
     };
 
     const columns = localColumns.map((element) => createColumn(element));
+
+    // console.log("ROWS:", localData);
+    // console.log("COLUMNS:", columns);
 
     setFields(columns.filter((column) => column.id !== "id"));
   }, [localColumns, tableId]);
@@ -153,6 +165,7 @@ export const TableEditor = ({
     updatedRowIds.clear();
     createdRowIds.clear();
     deletedRowIds.clear();
+    createdColumn.clear();
     setNewReferenceTableId([]);
   };
 
@@ -178,6 +191,9 @@ export const TableEditor = ({
         newReferenceTableId={newReferenceTableId}
         setNewReferenceTableId={setNewReferenceTableId}
         tableId={tableId}
+        yalcToken={yalcToken}
+        isSubmitting={isSubmitting}
+        onSuccessCreateColumn={onSuccessCreateColumn}
       />
       <div className="mx-4 h-full">
         <DynamicDataSheetGrid
@@ -193,7 +209,7 @@ export const TableEditor = ({
             const rowReturn = {
               ...Object.fromEntries(
                 localColumns.map((col) => [
-                  col.id,
+                  col.name,
                   returnDefaultValue(col.type, col.referenceTable),
                 ])
               ),
@@ -246,64 +262,30 @@ const TitleDataSheet = ({
   return (
     <div className="flex items-center justify-between">
       <div>{column.label}</div>
-
-      {/* <DropdownMenu>
-        <DropdownMenuTrigger>
-          <FlaskConical size={24} />
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent>
-          <DropdownMenuLabel>Action Filter</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-
-          <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => handleSortClickAsc(column)}>
-              Sort A - Z
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSortClickDesc(column)}>
-              Sort Z - A
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-        </DropdownMenuContent>
-      </DropdownMenu> */}
     </div>
   );
 };
 
-const LinkCell = ({ rowData, columnData }) => {
-  // * rowData: is the value of the cell
-  // * columnData: is the props (attributes) of the column containing cells
-  const [numberOfRecords, setNumberOfRecords] = useState();
-
-  if (!rowData) {
-    rowData = {
-      referenceTableId: columnData.referenceTable,
-      referenceRecords: [],
-    };
-  }
-
-  // console.log(rowData);
-  // console.log(columnData);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const LinkCell = ({ rowData, columnData, setRowData }) => {
+  const [numberOfRecords, setNumberOfRecords] = useState(rowData.count);
 
   return (
     <div className="flex items-center">
       <RelationRecords
-        referenceTableId={rowData.referenceTableId}
-        linkedRecordIds={rowData.referenceRecords}
+        referenceTableId={rowData.children_table}
+        linkedRecordIds={rowData.children_ids}
         setNumberOfRecords={setNumberOfRecords}
         rowData={rowData}
         columnData={columnData}
+        setRowData={setRowData}
       />
-      <span>
-        {numberOfRecords} records -{" "}
-        <span className="text-emerald-500">{columnData.referenceTable}</span>
-      </span>
+      <span>{numberOfRecords} records</span>
     </div>
   );
 };
 
-const LinkColumnCell = (columnData, tableId) => {
+const LinkColumnCell = (columnData, tableId, yalcToken) => {
   columnData = { ...columnData, tableId: tableId };
 
   return {
@@ -311,14 +293,15 @@ const LinkColumnCell = (columnData, tableId) => {
     deleteValue: () => "",
     copyValue: ({ rowData }) => rowData,
     pasteValue: ({ value }) => value,
-    columnData: { ...columnData, tableId: tableId },
+    columnData: { ...columnData, tableId: tableId, yalcToken: yalcToken },
   };
 };
 
 const colTypeMapper = (
   type: ColumnType,
   columnData?: any,
-  tableId?: string
+  tableId?: string,
+  yalcToken?: string
 ) => {
   switch (type) {
     case "text": {
@@ -331,7 +314,7 @@ const colTypeMapper = (
       return checkboxColumn;
     }
     case "link": {
-      return LinkColumnCell(columnData, tableId);
+      return LinkColumnCell(columnData, tableId, yalcToken);
     }
     case "date": {
       return isoDateColumn;
@@ -379,8 +362,9 @@ function returnDefaultValue(type: ColumnType, referenceTable?: string) {
     }
     case "link": {
       return {
-        referenceTableId: referenceTable,
-        referenceRecords: [],
+        count: 0,
+        children_ids: [],
+        children_table: referenceTable,
       };
     }
     case "date": {

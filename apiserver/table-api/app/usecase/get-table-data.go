@@ -157,7 +157,7 @@ func (uc *GetTableDataUseCase) ExecuteV2(
 
 			table, err := connPool.LookupTableInfo(cc, tableId)
 			if err != nil {
-				uc.Logger.Debugf("error looking up table info: %v", err)
+				uc.Logger.Errorf("error looking up table info: %v", err)
 				return err
 			}
 
@@ -256,6 +256,8 @@ func (uc *GetTableDataUseCase) ExecuteV2(
 			}
 
 			result.Data = resultRows
+
+			rows.Close()
 
 			// Get the total count
 			sql = `SELECT COUNT(*) FROM "%s" WHERE %s`

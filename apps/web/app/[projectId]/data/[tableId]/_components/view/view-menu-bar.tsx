@@ -22,6 +22,9 @@ interface ViewMenuBarProps {
   localData: RowDef[];
   tableId: string;
   newReferenceTableId: string[];
+  yalcToken: string;
+  isSubmitting: boolean;
+  onSuccessCreateColumn: any;
 }
 
 export const ViewMenuBar = ({
@@ -39,12 +42,15 @@ export const ViewMenuBar = ({
   tableId,
   setNewReferenceTableId,
   newReferenceTableId,
+  yalcToken,
+  isSubmitting,
+  onSuccessCreateColumn,
 }: ViewMenuBarProps) => {
   return (
     <div className="flex items-center justify-between w-full px-4">
       <div className="flex flex-start space-x-4">
         <Button
-          // disabled
+          disabled={isSubmitting}
           onClick={() =>
             onCommit(
               localColumns,
@@ -60,7 +66,14 @@ export const ViewMenuBar = ({
           Commit
         </Button>
         <Button onClick={discardData}>Discard</Button>
-        <QueryBuilderList columns={localColumns} tableId={tableId} />
+        <QueryBuilderList
+          columns={localColumns}
+          tableId={tableId}
+          yalcToken={yalcToken}
+          setLocalColumns={setLocalColumns}
+          setLocalData={setLocalData}
+          localColumns={localColumns}
+        />
       </div>
 
       <div className="flex flex-end space-x-4 mb-4">
@@ -79,6 +92,7 @@ export const ViewMenuBar = ({
             tableId={tableId}
             setNewReferenceTableId={setNewReferenceTableId}
             createdColumns={createdColumns}
+            onSuccessCreateColumn={onSuccessCreateColumn}
           />
         </div>
       </div>

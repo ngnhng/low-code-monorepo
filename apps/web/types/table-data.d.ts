@@ -1,7 +1,7 @@
 export type GetTableDataParams = {
   tableId: string;
-  page: number;
-  limit: number;
+  offset?: number;
+  limit?: number;
   query?: any;
 };
 
@@ -31,7 +31,7 @@ export type TableItem = { id: string } & TableListAttributes;
 interface DataTable {
   columns: ColumnDef[] | [];
   rows: RowDef[] | [];
-  pagination: {
+  pagination?: {
     page: number;
     pageSize: number;
     totalPage: number;
@@ -39,7 +39,7 @@ interface DataTable {
   maxIndex: number;
 }
 
-type ColumnType = "date" | "text" | "number" | "boolean" | LinkColumn | "link";
+type ColumnType = "date" | "text" | "number" | "boolean" | "link";
 
 export type ColumnDef = { id: string } & ColumnAttributes;
 
@@ -51,6 +51,7 @@ export type RowAttributes = {
 
 export type ColumnAttributes = {
   label: string;
+  name: string;
   type: ColumnType;
   isActive: boolean;
   isPrimaryKey: boolean;
@@ -62,11 +63,12 @@ export type ColumnAttributes = {
 
 export type TableListAttributes = {
   name: string;
+  label: string;
   source: string;
   created: string;
   updated: string;
   status: string;
-  referenceTables: string[];
+  referenceTables?: string[];
   columns: ColumnDef[];
 };
 

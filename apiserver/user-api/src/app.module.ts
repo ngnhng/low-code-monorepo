@@ -1,9 +1,16 @@
 import { AuthModule } from '@modules/auth/auth.module';
 import { AuthenticationController } from '@modules/auth/controllers/authentication.controller';
 import { OAuthController } from '@modules/auth/controllers/oauth.controller';
+import { DataIntegrationController } from '@modules/data-integration/controllers/data-integration.controller';
+import { DataIntegrationModule } from '@modules/data-integration/data-integration.module';
+import { ProjectController } from '@modules/project/controllers/project.controller';
+import { ProjectModule } from '@modules/project/project.module';
 import { UserController } from '@modules/user/controllers/user.controller';
 import { UserModule } from '@modules/user/user.module';
-import { Module } from '@nestjs/common';
+import { WorkflowController } from '@modules/workflow/controllers/workflow.controller';
+import { WorkflowModule } from '@modules/workflow/workflow.module';
+import type { MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import {
   APP_FILTER,
@@ -19,6 +26,9 @@ import { GlobalExceptionFilter } from './filters/all.filter';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { PasetoAuthGuard } from './guards/paseto-auth.guard';
+import { PrometheusMiddleware } from './middlewares/metrics';
+import { XMLMiddleware } from './middlewares/xml.middleware';
+import { MetricsModule } from './modules/metrics/metrics.module';
 import { LoggingInterceptor } from './shared/interceptor/logging.interceptor';
 import { SerializerInterceptor } from './shared/interceptor/serializer.interceptor';
 import { ApiConfigService } from './shared/services/api-config.service';
@@ -30,15 +40,27 @@ import { ApiConfigService } from './shared/services/api-config.service';
         ? { envFilePath: process.env.YALC_ENV_FILE }
         : {}),
     }),
+    //PrometheusModule.register({
+    //  path: '/metrics',
+    //}),
     SharedModule,
     UserModule,
     AuthModule,
+    ProjectModule,
+    WorkflowModule,
+    DataIntegrationModule,
+    MetricsModule,
   ],
   controllers: [
     AppController,
     UserController,
+    ProjectController,
+    WorkflowController,
+    DataIntegrationController,
     //AuthenticationController,
     //OAuthController,
+    AuthenticationController,
+    OAuthController,
   ],
   providers: [
     AppService,
@@ -80,4 +102,21 @@ import { ApiConfigService } from './shared/services/api-config.service';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(PrometheusMiddleware).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL,
+    });
+    consumer.apply(XMLMiddleware).forRoutes(
+      {
+        path: 'workflows/*',
+        method: RequestMethod.POST,
+      },
+      {
+        path: 'workflows/*',
+        method: RequestMethod.PUT,
+      },
+    );
+  }
+}

@@ -8,13 +8,23 @@ volumes:
   user-data:
   table-data:
   token-cache-data:
+  monitoring:
 
 services:
   reverse-proxy:
     # The official v2 Traefik docker image
     image: traefik:v2.10
     # Enables the web UI and tells Traefik to listen to docker
-    command: --api.insecure=true --providers.docker --entrypoints.web.address=:80 --accesslog=true
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--entrypoints.web.address=:80"
+      - "--accesslog=true"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+      - "--providers.docker=true"
+      - "--providers.docker.watch"
+
     ports:
       # The HTTP port
       - "80:80"
@@ -25,6 +35,11 @@ services:
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
+
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   auth-api:
     build:
@@ -107,20 +122,6 @@ services:
       - "traefik.http.middlewares.table-api-stripprefix.stripprefix.prefixes=/dbms"
       - "traefik.http.routers.table-api.middlewares=table-api-stripprefix@docker"
 
-  ##table-api-swagger:
-  ##    image: swaggerapi/swagger-ui
-  ##    networks:
-  ##        - dev-network
-  ##    environment:
-  ##        API_URL: http://table-api:3000/
-  ##    labels:
-  ##        - "traefik.enable=true"
-  ##        - "traefik.http.routers.table-api-swagger.rule=Host(`localhost`) && PathPrefix(`/tables/swagger`)"
-  ##        - "traefik.http.routers.table-api-swagger.entrypoints=web"
-  ##    depends_on:
-  ##        table-api:
-  ##            condition: service_started
-
   # workflow:
   #     build:
   #         context: ../../apiserver/bpmn-engine
@@ -169,32 +170,66 @@ services:
   #         - "traefik.enable=false"
   #     cpus: '0.25'
 
-  # user-db:
-  #   build:
-  #     context: ../../apiserver/user-api/user-db
-  #     dockerfile: Dockerfile.dev
-  #   healthcheck:
-  #     test: ["CMD", "pg_isready", "-U", "postgres"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 5s
-  #   networks:
-  #     - dev-network
-  #   volumes:
-  #     - user-data:/var/lib/postgresql/data
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: prometheus
+    #ports:
+    #- 9090:9090
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yaml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.size=256MB"
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
 
-  # table-db:
-  #   build:
-  #     context: ../../apiserver/table-api/table-db
-  #     dockerfile: Dockerfile.dev
-  #   healthcheck:
-  #     test: ["CMD", "pg_isready", "-U", "postgres"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 5s
-  #   networks:
-  #     - dev-network
-  #   volumes:
-  #     - table-data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
+      - "traefik.http.routers.prometheus.entrypoints=web"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+
+  grafana:
+    image: grafana/grafana-oss:10.4.2
+    container_name: grafana
+    #ports:
+    #    - "3000:3000"
+    volumes:
+      - monitoring:/var/lib/grafana
+    networks:
+      - dev-network
+    #password: root123
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+  #node_exporter:
+  #    image: quay.io/prometheus/node-exporter:v1.5.0
+  #    container_name: node_exporter
+  #    command: "--path.rootfs=/host"
+  #    pid: host
+  #    volumes:
+  #        - /:/host:ro,rslave
+  #    networks:
+  #        - dev-network
+
+  #cadvisor:
+  #    image: gcr.io/cadvisor/cadvisor:v0.47.0
+  #    container_name: cadvisor
+  #    command:
+  #        - "-port=8098"
+  #    volumes:
+  #        - /:/rootfs:ro
+  #        - /var/run:/var/run:ro
+  #        - /sys:/sys:ro
+  #        - /var/lib/docker/:/var/lib/docker:ro
+  #        - /dev/disk/:/dev/disk:ro
+  #    devices:
+  #        - /dev/kmsg
+  #    privileged: true
+  #    networks:
+  #        - dev-network

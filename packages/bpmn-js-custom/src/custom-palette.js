@@ -1,4 +1,4 @@
-import QAIcon, { GSIcon64 } from "./custom-icons";
+import QAIcon, { GSIcon64, mailIcon } from "./custom-icons";
 
 const SUITABILITY_SCORE_HIGH = 100,
     SUITABILITY_SCORE_AVERGE = 50,
@@ -47,6 +47,21 @@ export default class CustomPalette {
             };
         }
 
+        function createMailServiceTask(type) {
+            return function (event) {
+                const businessObject = bpmnFactory.create(type);
+
+                businessObject.isMailService = true;
+
+                const shape = elementFactory.createShape({
+                    type: type,
+                    businessObject: businessObject,
+                });
+
+                create.start(event, shape);
+            };
+        }
+
         return {
             // "create.qa-task": {
             //     group: "activity",
@@ -65,6 +80,16 @@ export default class CustomPalette {
                 action: {
                     dragstart: createGSTask("bpmn:ServiceTask"),
                     click: createGSTask("bpmn:ServiceTask"),
+                },
+            },
+            "create.mail-service-task": {
+                group: "activity",
+                title: translate("Create Mail Sender Service Task"),
+                imageUrl: mailIcon,
+                className: "bpmn-custom-palette-icon",
+                action: {
+                    dragstart: createMailServiceTask("bpmn:ServiceTask"),
+                    click: createMailServiceTask("bpmn:ServiceTask"),
                 },
             },
             //"create.average-task": {
@@ -89,10 +114,4 @@ export default class CustomPalette {
     }
 }
 
-CustomPalette.$inject = [
-    "bpmnFactory",
-    "create",
-    "elementFactory",
-    "palette",
-    "translate",
-];
+CustomPalette.$inject = ["bpmnFactory", "create", "elementFactory", "palette", "translate"];

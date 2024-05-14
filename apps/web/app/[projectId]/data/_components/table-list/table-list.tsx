@@ -88,15 +88,16 @@ export function DataTable<TableItem, TValue>({
   }, []);
 
   return (
-    <div>
-      <div className="rounded-md border">
+    // <div>
+    <div className="rounded-md border">
+      <div className="overflow-auto max-h-[calc(100vh-430px)]">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="pl-8">
                       {header.isPlaceholder
                         ? undefined
                         : flexRender(
@@ -121,12 +122,16 @@ export function DataTable<TableItem, TValue>({
                     router.push(
                       window.location.pathname +
                         "/" +
-                        (row.original as { id: string }).id
+                        (
+                          row.original as {
+                            id: string;
+                          }
+                        ).id
                     );
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="p-8">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -147,10 +152,11 @@ export function DataTable<TableItem, TValue>({
             )}
           </TableBody>
         </Table>
-        <div className="py-5 mx-10">
-          <DataTablePagination table={table} />
-        </div>
+      </div>
+      <div className="py-5 mx-10">
+        <DataTablePagination table={table} />
       </div>
     </div>
+    // </div>
   );
 }

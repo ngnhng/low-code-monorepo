@@ -1,11 +1,14 @@
 package usecase
 
 import (
+	"context"
 	"yalc/dbms/domain"
 	"yalc/dbms/modules/config"
 	"yalc/dbms/modules/logger"
 	"yalc/dbms/modules/pgx"
 	"yalc/dbms/shared"
+
+	v5 "github.com/jackc/pgx/v5"
 
 	"go.uber.org/fx"
 )
@@ -37,21 +40,34 @@ func NewGetTableInfoUseCase(p GetTableInfoUseCaseParams) *GetTableInfoUseCase {
 }
 
 func (uc *GetTableInfoUseCase) Execute(
-	c shared.RequestContext,
+	ctx shared.RequestContext,
 	projectId string,
 	tableId string,
 ) (*domain.Table, error) {
 
-	connPool, err := uc.Pgx.GetOrCreatePgxPool(shared.GenerateDatabaseName(projectId, c.GetUserId()))
+	c := ctx.GetContext()
+
+	connPool, err := uc.Pgx.GetOrCreatePgxPool(shared.GenerateDatabaseName(projectId, ctx.GetUserId()))
 	if err != nil {
 		return nil, err
 	}
 
-	table, err := connPool.LookupTableInfo(c.GetContext(), tableId)
-	if err != nil {
-		uc.Logger.Debug("error getting table info: %v", err)
-		return nil, err
-	}
+	//table, err := connPool.LookupTableInfo(c.GetContext(), tableId)
+	//if err != nil {
+	//	uc.Logger.Debug("error getting table info: %v", err)
+	//	return nil, err
+	//}
+
+	var table *domain.Table
+
+	connPool.ExecuteTransaction(c, func(cc context.Context, tx v5.Tx) error {
+		table, err = connPool.LookupTableInfo(cc, tableId)
+		if err != nil {
+			uc.Logger.Debug("error getting table info: %v", err)
+			return err
+		}
+		return nil
+	})
 
 	return table, err
 }

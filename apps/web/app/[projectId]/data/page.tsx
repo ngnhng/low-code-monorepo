@@ -21,6 +21,7 @@ import {
 } from "@repo/ui";
 
 import useSWR from "swr";
+import { useLocalStorage } from "hooks/use-local-storage";
 
 import { Database, Download, Table, User } from "react-feather";
 import { DataTable, columns } from "./_components/table-list/table-list";
@@ -34,18 +35,33 @@ import { useMobxStore } from "../../../lib/mobx/store-provider";
 import CreateTableForm from "./_components/create-form/create-table-form";
 
 export default function Page() {
+  const [yalcToken] = useLocalStorage("yalc_at", "");
+
   const {
     projectData: { currentProjectId },
     tableData: { fetchTables },
   } = useMobxStore();
 
-  const { data, isLoading } = useSWR(`TABLE_DATA-${currentProjectId}-all`, () =>
-    fetchTables()
+  const { data, isLoading, error } = useSWR(
+    [`TABLE_DATA`, `all`, currentProjectId],
+    () => fetchTables(yalcToken),
+    {
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+    }
   );
+
+  if (error) {
+    console.log("BEFORE:", error);
+
+    return <div>Error</div>;
+  }
 
   if (!data || isLoading) {
     return <div>Loading...</div>;
   }
+
+  console.log("TABLE_DATA:", data);
 
   return (
     <>
@@ -53,6 +69,7 @@ export default function Page() {
         data={data}
         columns={columns}
         projectId={currentProjectId}
+        yalcToken={yalcToken}
       />
     </>
   );
@@ -64,8 +81,13 @@ const HorizontalList = ({ children, ...props }) => (
   </ul>
 );
 
-const DatabaseTabs = ({ data, columns, projectId }) => {
+const DatabaseTabs = ({ data, columns, projectId, yalcToken }) => {
   // const tableRef = useRef<ReactComponentElement>(null);
+
+  const transformData = data.map((table) => ({
+    ...table,
+    name: table.label,
+  }));
 
   return (
     <Tabs defaultValue="tables" className="w-11/12 m-4">
@@ -86,7 +108,7 @@ const DatabaseTabs = ({ data, columns, projectId }) => {
       <TabsContent value="tables">
         <div className="container mr-auto">
           <HorizontalList>
-            <CreateTableForm projectId={projectId} />
+            <CreateTableForm projectId={projectId} yalcToken={yalcToken} />
 
             <CardButtonWithIcon
               className="flex flex-col justify-between items-start space-y-2 w-64 h-32 p-4 hover:bg-gray-200 "
@@ -115,7 +137,7 @@ const DatabaseTabs = ({ data, columns, projectId }) => {
 
           <Separator className="my-4" />
 
-          <DataTable columns={columns} data={data} />
+          <DataTable columns={columns} data={transformData} />
         </div>
       </TabsContent>
       <TabsContent value="members">

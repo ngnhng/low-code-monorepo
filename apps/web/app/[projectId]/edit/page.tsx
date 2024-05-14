@@ -1,151 +1,182 @@
 "use client";
 
-import "./style.css";
-
-import type { Data } from "@measured/puck";
-import { Render, Puck } from "@measured/puck";
-import "@measured/puck/puck.css";
-
-import { useState } from "react";
-import config from "./_config";
-import { Switch, Label, Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@repo/ui";
-import axios from "axios";
+import Title from "components/title/title";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+    Button,
+    Dialog,
+    DialogTrigger,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    Input,
+    Label,
+    DialogFooter,
+    DialogClose,
+} from "@repo/ui";
 import useSWR from "swr";
+import { Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useMobxStore } from "../../../lib/mobx/store-provider";
+import { observer } from "mobx-react-lite";
+import { toast } from "sonner";
+import { useState } from "react";
 
-export default function Page() {
-    const [route, setRoute] = useState<string>("/");
-    const componentKey = Buffer.from(Object.keys(config.components).join("-")).toString("base64");
-    const key = `puck-demo:${componentKey}:${route}`;
+const Loading = () => <div>Loading...</div>;
 
+const Error = ({ message }) => <div>{message}</div>;
 
-    const { data: dataFromAPI, isLoading } = useSWR("/api/ui", async (url) => {
-        const res = await axios.get(url);
-        console.log(res.data);
-        return res.data;
-    });
+const RouteRow = ({ routeData, projectId }) => (
+    <TableRow className="hover:bg-slate-100 p-0" key={routeData.id}>
+        <TableCell className="font-medium w-full relative">
+            <Link
+                href={`/${projectId}/edit${routeData.uiData.route}`}
+                className="w-full hover:cursor-pointer"
+            >
+                <div className="w-full p-5">{routeData.uiData.route}</div>
+            </Link>
+        </TableCell>
+        <TableCell className="text-right">
+            <button className="p-2.5 rounded-md hover:text-red-500">
+                <Trash2 />
+            </button>
+        </TableCell>
+    </TableRow>
+);
 
-    const [isEdit, setIsEdit] = useState<boolean>(true);
+const ViewsTable = observer(
+    ({ projectId, data }: { projectId: string; data: any }) => {
+        const routeRows: JSX.Element[] = [];
+        for (const route of data.views) {
+            console.log(route);
+            routeRows.push(
+                <RouteRow
+                    key={route.id}
+                    routeData={route}
+                    projectId={projectId}
+                />
+            );
+        }
 
-    const handleToggle = () => {
-        setIsEdit(!isEdit);
+        return (
+            <div className="w-full rounded-md border-2 border-slate-300 p-5">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[100px]">Route</TableHead>
+                            <TableHead></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>{routeRows}</TableBody>
+                </Table>
+            </div>
+        );
+    }
+);
+
+const CreatePageDialog = observer(({ mutate }: { mutate: any }) => {
+    const {
+        projectData: { currentProjectId, createView },
+    } = useMobxStore();
+
+    const [route, setRoute] = useState("");
+    const [title, setTitle] = useState("");
+
+    const handleCreatePage = async (route: string, title: string) => {
+        if (!route || !title || !currentProjectId) {
+            toast.error("Route and title are required!");
+            return;
+        }
+        await createView(route, title, currentProjectId)
+            .then(() => {
+                toast.success("Page created successfully!");
+                mutate();
+            })
+            .catch((error) => {
+                toast.error(error.message);
+            });
     };
 
-    const editSwitch = <SwitchGroup handleToggle={handleToggle} isOn={isEdit} disabled={isLoading} />;
-    const selectRoute = (
-        <div className="flex gap-2.5 items-center">
-            <Label>Select Route</Label>
-            <Select
-                onValueChange={(value) => {
-                    setRoute(value);
-                    console.log(dataFromAPI[value]);
-                }}
-                defaultValue={route}
-            >
-                <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select a route" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectGroup>
-                        {Object.keys(dataFromAPI ?? {}).map((route) => (
-                            <SelectItem value={route} key={route}>
-                                {route}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
-        </div>
-    );
-
-    const toolbarItems = [
-        { key: "edit", icon: "/edit.png", component: editSwitch },
-        { key: "route", icon: "/edit.png", component: selectRoute },
-    ];
-
     return (
-        <div className="flex-1 flex flex-col gap-2.5">
-            <Toolbar items={toolbarItems} />
-            {isLoading ? (
-                ""
-            ) : (
-                <div
-                    className={`${isEdit ? "flex" : "border-2 border-slate-300 rounded-md"} flex-1 box-border puckContainer ${
-                        isEdit ? "overflow-hidden" : "overflow-auto"
-                    }`}
-                >
-                    {isEdit ? (
-                        // https://puckeditor.com/docs/extending-puck/custom-interfaces
-                        <Puck
-                            config={config}
-                            data={dataFromAPI[route]}
-                            headerPath={route}
-                            // onChange={setData}
-                            onPublish={async (data: Data) => {
-                                localStorage.setItem(key, JSON.stringify(data));
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button className="w-full">Create new page</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>
+                        Create a new page for your project
+                    </DialogTitle>
+                </DialogHeader>
+                <form className="flex flex-col gap-5">
+                    <div>
+                        <Label htmlFor="route">Route</Label>
+                        <Input
+                            id="route"
+                            aria-label="Route"
+                            placeholder="/new-page"
+                            value={route}
+                            className="w-full"
+                            onChange={(event) => setRoute(event.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="title">Title</Label>
+                        <Input
+                            id="title"
+                            aria-label="Title"
+                            placeholder="New Page"
+                            className="w-full"
+                            value={title}
+                            onChange={(event) => setTitle(event.target.value)}
+                        />
+                    </div>
+                </form>
+                <DialogFooter className="sm:justify-start">
+                    <DialogClose asChild>
+                        <Button
+                            onClick={() => {
+                                handleCreatePage(route, title);
                             }}
-                            key={route}
                         >
-                            <div className="gap-2.5 flex-1 overflow-hidden flex">
-                                <div className="bg-slate-100 rounded-md border-2 border-slate-300 w-52 overflow-auto">
-                                    <Puck.Fields />
-                                </div>
-                                <div className="h-full flex-1 border-2 border-slate-300 rounded-md p-2.5 overflow-auto">
-                                    <Puck.Preview />
-                                </div>
-                                <div className="bg-slate-100 p-2.5 rounded-md border-2 border-slate-300 w-52 overflow-auto">
-                                    <Puck.Components />
-                                </div>
-                            </div>
-                        </Puck>
-                    ) : (
-                        <div className="flex-1 overflow-auto">
-                            <div className="w-full h-full overflow-auto">
-                                <Render
-                                    config={config}
-                                    data={
-                                        dataFromAPI[route] ?? {
-                                            content: [],
-                                            root: { props: { title: "Test" } },
-                                            zones: {},
-                                        }
-                                    }
-                                />
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
-        </div>
+                            Create
+                        </Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
-}
+});
 
-interface ToolbarProps {
-    items: ToolbarItemProps[];
-}
+export default function Page({ params }: { params: { projectId: string } }) {
+    const { projectId } = params;
+    const {
+        projectData: { getProjectById },
+    } = useMobxStore();
 
-interface ToolbarItemProps {
-    key: string;
-    icon: any;
-    component: any;
-}
-
-function Toolbar({ items }: ToolbarProps) {
-    return (
-        <div className="w-full border-2 border-slate-300 rounded-md h-14 flex gap-5 items-center px-5 box-border">
-            {items.map((item) => (
-                <div className="toolbar-item" key={item.key}>
-                    {item.component}
-                </div>
-            ))}
-        </div>
+    const { data, isLoading, error, mutate } = useSWR<any>(
+        ["view", projectId],
+        () => getProjectById(projectId),
+        {
+            revalidateOnFocus: false,
+            revalidateIfStale: false,
+        }
     );
-}
 
-function SwitchGroup({ isOn, handleToggle, disabled }: { isOn: boolean; handleToggle: any; disabled?: boolean }) {
+    if (isLoading || !data) return <Loading />;
+    if (error) return <Error message={error.message} />;
+
     return (
-        <>
-            <Label htmlFor="toggle-preview">Preview</Label>
-            <Switch id="toggle-preview" checked={!isOn} onCheckedChange={() => handleToggle()} disabled={disabled} />
-        </>
+        <div className="w-full h-full rounded-md border-2 border-slate-300 p-[30px] flex flex-col gap-5">
+            <Title name="UI Builder" description="Think fast!" />
+            <div className="w-full h-[1px] bg-slate-300"></div>
+            <CreatePageDialog mutate={mutate} />
+            <ViewsTable projectId={projectId} data={data} />
+        </div>
     );
 }

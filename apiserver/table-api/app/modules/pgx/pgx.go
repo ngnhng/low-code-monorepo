@@ -19,7 +19,7 @@ const (
 	maxConnIdleTime   = 1 * time.Minute
 	maxConnLifetime   = 3 * time.Minute
 	minConns          = 2
-	maxPoolSize       = 10
+	maxPoolSize       = 20
 )
 
 type (

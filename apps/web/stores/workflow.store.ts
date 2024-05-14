@@ -9,14 +9,18 @@ import {
 } from "mobx";
 import { RootStore } from "./root";
 import { BpmnWorkflowService } from "services/bpmn-workflow.service";
-import defaultXml from "../app/[projectId]/workflow/_testdata/default-xml";
 import googleSheetXml from "../app/[projectId]/workflow/_testdata/google-sheet-xml";
 
 export interface IWorkflowStore {
     newRenderer: (options?: any) => Promise<any> | any;
     //  setRenderer: (renderer: any) => void;
 
-    workflowNameList: Set<string>;
+    workflowNameList: Set<{
+        title: string;
+        wid: string;
+        data: string;
+        created: string;
+    }>;
 
     currentWorkflow: any;
     modeler: any;
@@ -26,7 +30,7 @@ export interface IWorkflowStore {
     currentExecutingElementId: string;
     currentExecutingStatus: string;
 
-	setWorkflowId: (workflowId: string) => void;
+    setWorkflowId: (workflowId: string) => void;
     setCurrentWorkflow: (workflow: any) => void;
     getCurrentWorkflow: () => any;
     setModeler: (modeler: any) => void;
@@ -36,17 +40,44 @@ export interface IWorkflowStore {
 
     launchWorkflow: () => Promise<[string, boolean]>;
     fetchWorkflow: () => Promise<any>;
-	fetchWorkflowById: (workflowId: string) => Promise<any>;
-    fetchWorkflowNameList: () => Promise<Set<string>>;
+    fetchWorkflowById: (workflowId: string) => Promise<any>;
+    fetchWorkflowNameList: () => Promise<
+        Set<{
+            title: string;
+            wid: string;
+            data: string;
+            created: string;
+        }>
+    >;
+    fetchDefaultWorkflow: () => Promise<any>;
+    saveWorkflow: (title: string) => Promise<any>;
+    updateWorkflow: (wid: string) => Promise<any>;
 
     // per user set names of the bpmn workflows
     workflowName: string;
 }
 
+const defaultXml = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+    id="Definitions_1pak3fd" 
+    targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_0ritvl1" isExecutable="false" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0ritvl1" />
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>`;
+
 export class WorkflowStore {
     //observables
     workflowName = "default";
-    workflowNameList: Set<string>;
+    workflowNameList: Set<{
+        title: string;
+        wid: string;
+        data: string;
+        created: string;
+    }>;
     currentWorkflow: any;
     modeler: any;
     activeElement: any;
@@ -75,7 +106,7 @@ export class WorkflowStore {
             currentExecutingStatus: observable,
             //action
             //  setRenderer: action,
-			setWorkflowId: action,
+            setWorkflowId: action,
             setCurrentWorkflow: action,
             setModeler: action,
             setActiveElement: action,
@@ -111,9 +142,9 @@ export class WorkflowStore {
     //    this.renderer = await this.workflowService.renderer();
     //  };
 
-	setWorkflowId = (workflowId: string) => {
-		this.currentWorkflowId = workflowId;
-	};
+    setWorkflowId = (workflowId: string) => {
+        this.currentWorkflowId = workflowId;
+    };
 
     setCurrentWorkflow = (workflow: any) => {
         this.currentWorkflow = workflow;
@@ -186,10 +217,7 @@ export class WorkflowStore {
     };
 
     fetchWorkflow = async (): Promise<any> => {
-        console.log(
-            "fetchWorkflowByName",
-            this.workflowName,
-        );
+        console.log("fetchWorkflowByName", this.workflowName);
 
         switch (this.workflowName) {
             case "default": {
@@ -213,20 +241,104 @@ export class WorkflowStore {
         }
     };
 
-    fetchWorkflowNameList = async (): Promise<Set<string>> => {
-        const response = await this.workflowService.fetchWorkflowNameList();
-        runInAction(() => {
-            this.workflowNameList = response;
-        });
-        return response;
+    fetchWorkflowNameList = async (): Promise<
+        Set<{
+            title: string;
+            wid: string;
+            data: string;
+            created: string;
+        }>
+    > => {
+        return await this.workflowService
+            .fetchWorkflowNameList(this.rootStore.projectData.currentProjectId)
+            .then((res) => {
+                runInAction(() => {
+                    console.log("fetchWorkflowNameList", res);
+                    this.workflowNameList = res;
+                });
+                return res;
+            })
+            .catch((error) => {
+                console.error(error);
+                return new Set();
+            });
     };
 
-	fetchWorkflowById = async (workflowId: string): Promise<any> => {
-		console.log("fetchWorkflowById", workflowId);
-		const response = await this.workflowService.fetchWorkflowById(workflowId);
-		runInAction(() => {
-			this.currentWorkflow = response;
-		});
-		return response;
-	}
+    fetchWorkflowById = async (workflowId: string): Promise<any> => {
+        console.log("fetchWorkflowById", workflowId);
+        await this.workflowService
+            .fetchWorkflowById(
+                this.rootStore.projectData.currentProjectId,
+                workflowId
+            )
+            .then((res) => {
+                runInAction(() => {
+                    this.currentWorkflow = res;
+                });
+
+                console.log("fetchWorkflowById", res);
+
+                return res;
+            })
+            .catch((error) => {
+                console.error(error);
+                throw error;
+            });
+    };
+
+    fetchDefaultWorkflow = async (): Promise<any> => {
+        runInAction(() => {
+            this.currentWorkflow = defaultXml;
+        });
+        return defaultXml;
+    };
+
+    saveWorkflow = async (title: string): Promise<any> => {
+        console.log("saveWorkflow", title);
+
+        const data = await this.modeler
+            .saveXML({ format: true })
+            .then((res: any) => {
+                console.log("saveWorkflow", res?.xml);
+                return res;
+            });
+        return await this.workflowService
+            .saveWorkflow(
+                this.rootStore.projectData.currentProjectId,
+                title,
+                data
+            )
+            .then((res) => {
+                console.log("saveWorkflow", res);
+                return res.data;
+            })
+            .catch((error) => {
+                console.error(error);
+                throw error;
+            });
+    };
+
+    updateWorkflow = async (wid: string): Promise<any> => {
+
+        const data = await this.modeler
+            .saveXML({ format: true })
+            .then((res: any) => {
+                console.log("updateCurrentWorkflow", res?.xml);
+                return res;
+            });
+        return await this.workflowService
+            .updateWorkflow(
+                this.rootStore.projectData.currentProjectId,
+                wid,
+                data
+            )
+            .then((res) => {
+                console.log("updateCurrentWorkflow", res);
+                return res.data;
+            })
+            .catch((error) => {
+                console.error(error);
+                throw error;
+            });
+    };
 }

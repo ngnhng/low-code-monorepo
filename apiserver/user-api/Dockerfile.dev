@@ -1,19 +1,16 @@
-FROM node:18-alpine AS development
+FROM node:20 AS builder
 
 WORKDIR /app
 
 COPY yarn.lock package.json ./
 COPY prisma ./prisma/
-COPY ./start-dev.sh ./start-dev.sh 
 
 RUN yarn install --frozen-lockfile
+RUN yarn add @nestjs/cli -g
 
 COPY . .
 
-RUN yarn add @nestjs/cli -g
+RUN yarn run prisma generate
 
-RUN chmod +x ./start-dev.sh
-ENTRYPOINT [ "./start-dev.sh" ]
-
-EXPOSE 3000
 CMD [ "yarn", "run", "start:dev" ]
+EXPOSE 3000
