@@ -5,7 +5,7 @@ import { getBearerToken } from "app/api/dbms/_utils/utils";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
-const serviceBaseUrl = process.env.SERVICE_BASE_URL;
+const serviceBaseUrl = process.env.NEXT_PUBLIC_DBMS_API_URL;
 
 /*
  * [POST]: adđ rows of projects
@@ -29,7 +29,7 @@ export async function POST(
   const insertRows = await request.json();
 
   const response = await axios.post(
-    `${serviceBaseUrl}/dbms/projects/${params.projectId}/tables/${params.tableId}/rows`,
+    `${serviceBaseUrl}/projects/${params.projectId}/tables/${params.tableId}/rows`,
     insertRows,
     config
   );
@@ -61,7 +61,7 @@ export async function PATCH(
   const data = await request.json();
 
   const response = await axios.patch(
-    `${serviceBaseUrl}/dbms/projects/${params.projectId}/tables/${params.tableId}/rows`,
+    `${serviceBaseUrl}/projects/${params.projectId}/tables/${params.tableId}/rows`,
     data,
     config
   );
@@ -89,7 +89,7 @@ export async function DELETE(
   console.log("DELETE", data);
 
   const response = await axios.delete(
-    `${serviceBaseUrl}/dbms/projects/${params.projectId}/tables/${params.tableId}/rows`,
+    `${serviceBaseUrl}/projects/${params.projectId}/tables/${params.tableId}/rows`,
     {
       headers: {
         Authorization: `Bearer ${bearerToken}`,

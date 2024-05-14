@@ -36,5 +36,45 @@ export async function GET(req: Request) {
             status: 500,
         });
     }
-    
+}
+
+export async function POST(req: Request) {
+    // get params from request
+    const { headers } = req;
+    const body = await req.json();
+    // extract the Bearer Token from the request headers
+    const token = headers.get("Authorization")?.split(" ")[1];
+
+    if (!token) {
+        return new Response("Unauthorized", {
+            status: 401,
+        });
+    }
+
+    // call api to create a new project
+    const axiosConfig: AxiosRequestConfig = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    try {
+        const res = await axios.post(
+            `${baseUrl}/api/projects`,
+            body,
+            axiosConfig
+        );
+        console.log(res.data);
+
+        return new Response(JSON.stringify(res.data.result), {
+            status: 200,
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+    } catch {
+        return new Response("Failed to create project", {
+            status: 500,
+        });
+    }
 }

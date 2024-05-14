@@ -241,10 +241,7 @@ export const ProjectLists = observer(() => {
         projectData: { projects, fetchProjectList },
     } = useMobxStore();
 
-    const { isLoading } = useSWR("/api/projects", () => fetchProjectList(), {
-        revalidateIfStale: false,
-        revalidateOnFocus: false,
-    });
+    const { isLoading } = useSWR("/api/projects", () => fetchProjectList());
 
     if (isLoading || !projects) {
         return <div>Loading...</div>;
