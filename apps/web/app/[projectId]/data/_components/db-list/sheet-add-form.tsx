@@ -22,8 +22,10 @@ import {
 } from "@repo/ui";
 import { useLocalStorage } from "hooks/use-local-storage";
 import { useRouter } from "next/navigation";
+import { useMobxStore } from "lib/mobx/store-provider";
 
 const formSchema = z.object({
+  title: z.string().min(2),
   spreadsheetsId: z
     .string()
     .regex(new RegExp(/^([\w-]+)+$/), "Must be a valid spreadsheet identifier"),
@@ -42,6 +44,10 @@ export const SheetAddForm = () => {
     },
   });
 
+  const {
+    projectData: { currentProjectId },
+  } = useMobxStore();
+
   const { isSubmitting, isValid } = form.formState;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -51,21 +57,24 @@ export const SheetAddForm = () => {
           Authorization: `Bearer ${yalcToken}`,
         },
       };
-      await axios.post(`http://localhost:3000/api/data/sheet`, values, config);
-      console.log("YALC", yalcToken);
 
-      toast.success("Event has been created.", {
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">
-              {JSON.stringify(values, undefined, 2)}
-            </code>
-          </pre>
-        ),
-      });
+      await axios
+        .post(`/api/data/sheet/${currentProjectId}`, values, config)
+        .then(() => {
+          toast.success("Event has been created.", {
+            description: (
+              <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+                <code className="text-white">
+                  {JSON.stringify(values, undefined, 2)}
+                </code>
+              </pre>
+            ),
+          });
+        });
 
       router.refresh();
-    } catch {
+    } catch (error) {
+      console.log(error);
       toast.error("Something went wrong");
     }
   }
@@ -74,6 +83,20 @@ export const SheetAddForm = () => {
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Table Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Input tablename" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="spreadsheetsId"
