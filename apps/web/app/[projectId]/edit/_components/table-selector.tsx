@@ -1,21 +1,61 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Select } from "@repo/ui";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@repo/ui";
 import { useMobxStore } from "../../../../lib/mobx/store-provider";
 import useSWR from "swr";
+import { observer } from "mobx-react-lite";
 
-export const TableSelector = () => {
-    const {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        projectData: { currentProjectId, fetchProjectList },
-    } = useMobxStore();
+export const TableSelector = observer(
+    ({ onChange, value }: { onChange: any; value: any }) => {
+        const {
+            projectData: { currentProjectId },
+            tableData: { fetchTables },
+        } = useMobxStore();
 
-    const { data, isLoading } = useSWR(["projects", currentProjectId], () =>
-        fetchProjectList()
-    );
+        const {
+            data: list,
+            isLoading,
+            error,
+        } = useSWR(["tables", currentProjectId], () => fetchTables(), {
+            revalidateOnFocus: false,
+            revalidateIfStale: false,
+        });
 
-    return (
-        <div>
-            <Select></Select>
-        </div>
-    );
-};
+        const handleSelect = (value: string) => {
+            console.log("Table Selected", value);
+            onChange(value);
+        };
+
+        if (isLoading || !list) {
+            return <div>Loading...</div>;
+        }
+
+        if (error) {
+            return <div>Error</div>;
+        }
+
+        return (
+            <div>
+                <Select
+                    onValueChange={(value) => handleSelect(value)}
+                    defaultValue={value ?? undefined}
+                >
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select a table" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {list?.map((table) => (
+                            <SelectItem value={table.id} key={table.id}>
+                                {table.label}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+        );
+    }
+);

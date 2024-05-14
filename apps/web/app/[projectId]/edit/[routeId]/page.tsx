@@ -20,8 +20,9 @@ import {
 import { toast } from "sonner";
 
 export default function Page({ params }: { params: { routeId: string } }) {
-    const [tempData, setTempData] = useState<any>();
+    //const [tempData, setTempData] = useState<any>();
     const [isEdit, setIsEdit] = useState<boolean>(true);
+    const [isLocalStorageSet, setIsLocalStorageSet] = useState(false);
 
     const {
         projectData: { currentProjectId: projectId, saveView, getProjectById },
@@ -39,15 +40,32 @@ export default function Page({ params }: { params: { routeId: string } }) {
         revalidateIfStale: false,
     });
 
-    useEffect(() => {
-        if (isLoading || !project) return;
-        const data = project.views.find(
-            (view) => view.uiData.route === `/${params.routeId}`
-        );
-        if (!data) return;
-        console.log("Temp data", data);
-        setTempData(data);
-    }, [isLoading, project, params.routeId]);
+    //useEffect(() => {
+    //    if (isLoading || !project) return;
+    //    const data = project.views.find(
+    //        (view) => view.uiData.route === `/${params.routeId}`
+    //    );
+    //    if (!data) return;
+    //    setTempData(data);
+    //}, [isLoading, project, params.routeId]);
+
+    //useEffect(() => {
+    //    if (isLoading || !project) return;
+    //    const data = project.views.find(
+    //        (view) => view.uiData.route === `/${params.routeId}`
+    //    );
+    //    if (!data) return;
+    //    setLocalStorage(key, data.uiData);
+    //}, [project]);
+
+    //useEffect(() => {
+    //    if (isLoading || !project) return;
+    //    const data = project.views.find(
+    //        (view) => view.uiData.route === `/${params.routeId}`
+    //    );
+    //    if (!data) return;
+    //    setLocalStorage(key, data.uiData);
+    //}, [])
 
     if (error) {
         notFound();
@@ -57,8 +75,31 @@ export default function Page({ params }: { params: { routeId: string } }) {
         return <div>Loading...</div>;
     }
 
+    const view = project.views.find(
+        (view) => view.uiData.route === `/${params.routeId}`
+    );
+
+    useEffect(() => {
+        if (!view) return;
+        console.log("Reset", view.uiData);
+        setLocalStorage(key, view.uiData);
+        setIsLocalStorageSet(true);
+    }, [params.routeId]);
+    //setLocalStorage(key, view.uiData);
+
     const handleToggle = () => {
         setIsEdit(!isEdit);
+    };
+
+    const getUi = () => {
+        if (isLocalStorageSet) {
+            console.log("Get UI", JSON.parse(getLocalStorage(key) ?? ""));
+            return getLocalStorage(key)
+                ? JSON.parse(getLocalStorage(key) ?? "")
+                : undefined;
+        }
+
+        return;
     };
 
     const editSwitch = (
@@ -74,7 +115,7 @@ export default function Page({ params }: { params: { routeId: string } }) {
             <Label className="w-auto">Route</Label>
             <Input
                 placeholder="Empty route is treated as '/'"
-                defaultValue={tempData?.uiData?.route}
+                defaultValue={view.uiData?.route}
                 onBlur={(event) => {
                     // Do Something
                     console.log(event.target?.value);
@@ -94,12 +135,12 @@ export default function Page({ params }: { params: { routeId: string } }) {
                     return;
                 }
                 const modifiedData = {
-                    route: tempData?.uiData?.route,
-                    id: tempData?.uiData?.id,
+                    route: view?.uiData?.route,
+                    id: view?.uiData?.id,
                     ...payload,
                 };
 
-                await saveView(modifiedData, tempData.projectId, tempData.id)
+                await saveView(modifiedData, view.projectId, view.id)
                     .then(() => {
                         toast.success("Saved Successfully");
                         mutate();
@@ -133,12 +174,12 @@ export default function Page({ params }: { params: { routeId: string } }) {
                     {isEdit ? (
                         <PuckEditor
                             config={config}
-                            data={tempData?.uiData}
+                            data={getUi()}
                             headerPath={params.routeId}
                             lcKey={key}
                         />
                     ) : (
-                        <RenderPreview config={config} tempData={tempData} />
+                        <RenderPreview config={config} lcKey={key} />
                     )}
                 </div>
             )}
@@ -225,11 +266,12 @@ function PuckEditor({ config, data, lcKey, headerPath }) {
     );
 }
 
-function RenderPreview({ config, tempData }) {
+function RenderPreview({ config, lcKey }) {
+    const data = JSON.parse(getLocalStorage(lcKey) ?? "{}");
     return (
         <div className="flex-1 overflow-auto">
             <div className="w-full h-full overflow-auto">
-                <Render config={config} data={tempData?.uiData ?? "Error"} />
+                <Render config={config} data={data} />
             </div>
         </div>
     );

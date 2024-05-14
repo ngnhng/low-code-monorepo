@@ -30,11 +30,9 @@ export class ProjectService extends APIService {
         }
     }
 
-    async createProject(title: string, uuid: string, userEmail: string) {
+    async createProject(title: string) {
         const response = await this.post("/api/projects", {
             title,
-            uuid,
-            userEmail,
         });
         return response.data;
     }

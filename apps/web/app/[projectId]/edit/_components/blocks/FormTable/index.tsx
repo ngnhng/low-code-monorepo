@@ -3,8 +3,10 @@ import { ComponentConfig } from "@measured/puck";
 
 import { Label, Input, Switch, Button, DatePicker } from "@repo/ui";
 // import { useMobxStore } from "lib/mobx/store-provider";
-import { Fragment, useState, useEffect } from "react";
-import useSWR from "swr";
+import { Fragment, useState } from "react";
+import { TableSelector } from "../../table-selector";
+import { useMobxStore } from "../../../../../../lib/mobx/store-provider";
+import { toast } from "sonner";
 
 export type FormTableProps = {
     tableId: string;
@@ -15,7 +17,11 @@ export type FormTableProps = {
 export const FormTable: ComponentConfig<FormTableProps> = {
     fields: {
         tableId: {
-            type: "text",
+            type: "custom",
+            label: "Select Table",
+            render: ({ onChange, value }) => {
+                return <TableSelector onChange={onChange} value={value} />;
+            },
         },
         formName: {
             type: "text",
@@ -34,34 +40,41 @@ export const FormTable: ComponentConfig<FormTableProps> = {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     render: ({ tableId, formName, workflowId }) => {
+        const {
+            tableData: { tables, insertRow },
+        } = useMobxStore();
+
+        const columns = tables.find((table) => table.id === tableId)?.columns;
+
         const [sendData, setSendData] = useState<any>({});
 
-        const { data, isLoading } = useSWR("/api/table", async (url) =>
-            fetch(url)
-                .then((res) => res.json())
-                .then((json) => json)
-        );
+        // if no tableId
+        if (!tableId) {
+            return (
+                <div className="flex w-full h-96 justify-center items-center h-20 bg-slate-100 rounded-md">
+                    Select a table
+                </div>
+            );
+        }
 
-        useEffect(() => {
-            if (!data || isLoading) return;
-
-            const newData = { ...sendData };
-            for (const col of data) {
-                newData[col.id] = "";
-            }
-
-            setSendData(newData);
-        }, [data]);
-
-        const postData = () => {
+        const postData = async () => {
             console.log(sendData);
+            await insertRow(tableId, sendData)
+                .then(() => {
+                    toast.success("Data inserted successfully");
+                })
+                .catch((error) => {
+                    toast.error("Error inserting data");
+                    console.error(error);
+                });
+            setSendData({});
 
             if (workflowId === "") return;
         };
 
-        const renderFormField = ({ label, type, id }) => {
+        const renderFormField = ({ label, type, id, name }) => {
             const handleValueChange = (value) => {
-                setSendData((prevData) => ({ ...prevData, [id]: value }));
+                setSendData((prevData) => ({ ...prevData, [name]: value }));
             };
 
             switch (type) {
@@ -103,6 +116,8 @@ export const FormTable: ComponentConfig<FormTableProps> = {
                         <Fragment key={id}>
                             <Label>{label}</Label>
                             <Input
+                                value={sendData[name] || ""}
+                                placeholder={label}
                                 onChange={(event) =>
                                     handleValueChange(event.target.value)
                                 }
@@ -114,12 +129,17 @@ export const FormTable: ComponentConfig<FormTableProps> = {
         };
 
         return (
-            <div className="flex flex-col gap-2.5 w-96 ml-auto mr-auto p-2.5">
+            <div className="flex flex-col gap-2.5 ml-auto mr-auto p-24 w-full">
                 <div className="font-bold">{formName}</div>
                 <div className="bg-slate-100 p-5 rounded-md flex flex-col gap-2.5">
-                    {isLoading
-                        ? ""
-                        : data.map((element) => renderFormField(element))}
+                    {columns
+                        ? columns
+                              .filter(
+                                  (col) =>
+                                      col.label !== "id" && col.type !== "link"
+                              )
+                              .map((col) => renderFormField(col))
+                        : ""}
                     <Button onClick={postData} className="self-end">
                         Submit
                     </Button>

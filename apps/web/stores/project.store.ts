@@ -19,6 +19,8 @@ export interface IProjectStore {
     getProjectById: (projectId: string) => any;
     saveView: (view: any, pid: string, viewId: string) => void;
     createView: (route: string, title: string, pid: string) => void;
+
+    createProject: (title: string) => void;
 }
 
 export class ProjectStore implements IProjectStore {
@@ -114,6 +116,17 @@ export class ProjectStore implements IProjectStore {
     createView = async (route: string, title: string, pid: string) => {
         try {
             await this.projectSerivce.createView(route, title, pid).then(() => {
+                return true;
+            });
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    };
+
+    createProject = async (title: string) => {
+        try {
+            await this.projectSerivce.createProject(title).then(() => {
                 return true;
             });
         } catch (error) {
