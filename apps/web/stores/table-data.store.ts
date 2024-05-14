@@ -1,10 +1,11 @@
 "use client";
 
-import { action, makeObservable, observable } from "mobx";
+import { action, makeObservable, observable, runInAction } from "mobx";
 
 import { RootStore } from "./root";
 import {
   GetTableDataParams,
+  GetTablesResponse,
   // GetTableDataResponse,
   TableQueries,
 } from "types/table-data";
@@ -30,6 +31,7 @@ export class TableDataStore implements ITableDataStore {
 
   // service
   tableDataService: TableDataService;
+  tables: GetTablesResponse[] = [];
 
   constructor(_rootStore: RootStore) {
     makeObservable(this, {
@@ -127,10 +129,33 @@ export class TableDataStore implements ITableDataStore {
         yalcToken: yalcToken,
       });
 
+      runInAction(() => {
+        this.tables = response;
+      });
+
       return response;
     } catch (error) {
       console.log("FETCH_TABLE_ERROR", error);
       throw error;
+    }
+  };
+
+  fetchRelationalTables = async (tableId: string) => {
+    try {
+      const response = await this.tableDataService.getRelationalTable({
+        projectId: this.rootStore.projectData.currentProjectId,
+        tableId: tableId,
+      });
+
+      response.push(tableId);
+
+      const results = this.tables.filter((table) =>
+        response.includes(table.id)
+      );
+
+      return results;
+    } catch (error) {
+      console.log("STORE_RELATIONAL_TABLES:", error);
     }
   };
 }
