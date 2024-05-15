@@ -108,7 +108,7 @@ const CreateColumnForm = ({
 
   const { data: allTables, isLoading } = useSWR(
     `TABLE_DATA-${currentProjectId}-all`,
-    () => fetchTables(yalcToken)
+    () => fetchTables()
   );
 
   const form = useForm<z.infer<typeof formSchema>>({
