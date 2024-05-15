@@ -107,7 +107,7 @@ services:
     table-api:
         build:
             context: ../../apiserver/table-api/app
-            dockerfile: Dockerfile.dev
+            dockerfile: Dockerfile
         networks:
             - dev-network
         env_file:
