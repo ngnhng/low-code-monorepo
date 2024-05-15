@@ -1390,6 +1390,7 @@ func (p *Pgx) getLinkColumnData(
 		parentId,
 	)
 	if err != nil {
+		p.Logger.Debug(fmt.Sprintf(`SELECT %s FROM %s WHERE %s = $1;`, fkMMChildColName, mmTable.Name, fkMMParentColName))
 		p.Logger.Errorf("failed to get mm link table data: %v", err)
 		return nil, err
 	}

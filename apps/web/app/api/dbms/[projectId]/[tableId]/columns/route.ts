@@ -5,7 +5,7 @@ import { getBearerToken } from "app/api/dbms/_utils/utils";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
-const serviceBaseUrl = process.env.SERVICE_BASE_URL;
+const serviceBaseUrl = process.env.NEXT_PUBLIC_DBMS_API_URL;
 
 /*
  * [POST]: create column of projects
@@ -29,7 +29,7 @@ export async function POST(
   const data = await request.json();
 
   const response = await axios.post(
-    `${serviceBaseUrl}/dbms/projects/${params.projectId}/tables/${params.tableId}/columns`,
+    `${serviceBaseUrl}/projects/${params.projectId}/tables/${params.tableId}/columns`,
     data,
     config
   );

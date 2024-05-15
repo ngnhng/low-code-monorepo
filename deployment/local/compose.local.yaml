@@ -170,42 +170,42 @@ services:
     #         - "traefik.enable=false"
     #     cpus: '0.25'
 
-    prometheus:
-        image: prom/prometheus:v2.52.0
-        container_name: prometheus
-        #ports:
-        #- 9090:9090
-        command:
-            - "--config.file=/etc/prometheus/prometheus.yaml"
-            - "--storage.tsdb.path=/prometheus"
-            - "--storage.tsdb.retention.size=256MB"
-        volumes:
-            - ./prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+    #prometheus:
+    #    image: prom/prometheus:v2.52.0
+    #    container_name: prometheus
+    #    #ports:
+    #    #- 9090:9090
+    #    command:
+    #        - "--config.file=/etc/prometheus/prometheus.yaml"
+    #        - "--storage.tsdb.path=/prometheus"
+    #        - "--storage.tsdb.retention.size=256MB"
+    #    volumes:
+    #        - ./prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
 
-        networks:
-            - dev-network
+    #    networks:
+    #        - dev-network
 
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
-            - "traefik.http.routers.prometheus.entrypoints=web"
-            - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+    #    labels:
+    #        - "traefik.enable=true"
+    #        - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
+    #        - "traefik.http.routers.prometheus.entrypoints=web"
+    #        - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
 
-    grafana:
-        image: grafana/grafana-oss:10.4.2
-        container_name: grafana
-        #ports:
-        #    - "3000:3000"
-        volumes:
-            - monitoring:/var/lib/grafana
-        networks:
-            - dev-network
-        #password: root123
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
-            - "traefik.http.routers.grafana.entrypoints=web"
-            - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    #grafana:
+    #    image: grafana/grafana-oss:10.4.2
+    #    container_name: grafana
+    #    #ports:
+    #    #    - "3000:3000"
+    #    volumes:
+    #        - monitoring:/var/lib/grafana
+    #    networks:
+    #        - dev-network
+    #    #password: root123
+    #    labels:
+    #        - "traefik.enable=true"
+    #        - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
+    #        - "traefik.http.routers.grafana.entrypoints=web"
+    #        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
     #node_exporter:
     #    image: quay.io/prometheus/node-exporter:v1.5.0
