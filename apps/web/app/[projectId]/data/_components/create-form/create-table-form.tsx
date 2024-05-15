@@ -68,7 +68,7 @@ const CreateTableForm = ({ projectId, yalcToken }: CreateTableFormProps) => {
 
   const { data, isLoading, mutate } = useSWR(
     `TABLE_DATA-${currentProjectId}-all`,
-    () => fetchTables(yalcToken)
+    () => fetchTables(),
   );
 
   // const references = data?.map((data) => ({
