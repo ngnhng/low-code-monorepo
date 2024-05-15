@@ -5,7 +5,7 @@ import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import { getBearerToken } from "../_utils/utils";
 
-const serviceBaseUrl = process.env.SERVICE_BASE_URL;
+const serviceBaseUrl = process.env.NEXT_PUBLIC_DBMS_API_URL;
 
 /*
  * [POST]: POST create a table of projects
@@ -29,7 +29,7 @@ export async function POST(
   const { table } = await request.json();
 
   const response = await axios.post(
-    `${serviceBaseUrl}/dbms/projects/${params.projectId}/manage/tables`,
+    `${serviceBaseUrl}/projects/${params.projectId}/manage/tables`,
     {
       table: table,
     },
