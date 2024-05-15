@@ -2,11 +2,8 @@ name: Deploy to EC2
 
 on:
     push:
-        branches:
-            - dev
-            - main
-        paths:
-            - "apiserver/**"
+        branches: ["main", "dev"]
+        paths: ["apiserver/**", "deployment/ec2/**"]
 
 jobs:
     build-and-push:
