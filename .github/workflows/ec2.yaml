@@ -26,7 +26,7 @@ jobs:
             - name: UserAPI - Build and push Docker image
               uses: docker/build-push-action@v5
               with:
-                  context: ../../apiserver/user-api
+                  context: ../apiserver/user-api
                   file: Dockerfile.prod
                   push: true
                   tags: ghcr.io/${{ github.repository }}/user-api:latest
@@ -34,7 +34,7 @@ jobs:
             - name: AuthAPI - Build and push Docker image
               uses: docker/build-push-action@v5
               with:
-                  context: ../../apiserver/auth-api
+                  context: ../apiserver/auth-api
                   file: Dockerfile.prod
                   push: true
                   tags: ghcr.io/${{ github.repository }}/auth-api:latest
@@ -42,7 +42,7 @@ jobs:
             - name: DBMSAPI - Build and push Docker image
               uses: docker/build-push-action@v5
               with:
-                  context: ../../apiserver/table-api
+                  context: ../apiserver/table-api
                   file: Dockerfile
                   push: true
                   tags: ghcr.io/${{ github.repository }}/dbms-api:latest
@@ -50,7 +50,7 @@ jobs:
             - name: WorkflowAPI - Build and push Docker image
               uses: docker/build-push-action@v5
               with:
-                  context: ../../apiserver/bpmn-engine
+                  context: ../apiserver/bpmn-engine
                   file: Dockerfile.dev
                   push: true
                   tags: ghcr.io/${{ github.repository }}/workflow-api:latest
