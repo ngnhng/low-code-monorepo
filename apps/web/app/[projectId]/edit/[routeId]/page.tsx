@@ -71,11 +71,7 @@ export default function Page({ params }: { params: { routeId: string } }) {
         notFound();
     }
 
-    if (isLoading || !project) {
-        return <div>Loading...</div>;
-    }
-
-    const view = project.views.find(
+    const view = project?.views.find(
         (view) => view.uiData.route === `/${params.routeId}`
     );
 
@@ -84,7 +80,7 @@ export default function Page({ params }: { params: { routeId: string } }) {
         console.log("Reset", view.uiData);
         setLocalStorage(key, view.uiData);
         setIsLocalStorageSet(true);
-    }, [params.routeId]);
+    }, [params.routeId, view]);
     //setLocalStorage(key, view.uiData);
 
     const handleToggle = () => {
@@ -115,7 +111,7 @@ export default function Page({ params }: { params: { routeId: string } }) {
             <Label className="w-auto">Route</Label>
             <Input
                 placeholder="Empty route is treated as '/'"
-                defaultValue={view.uiData?.route}
+                defaultValue={view?.uiData?.route}
                 onBlur={(event) => {
                     // Do Something
                     console.log(event.target?.value);
@@ -164,7 +160,7 @@ export default function Page({ params }: { params: { routeId: string } }) {
         <div className="flex-1 flex flex-col gap-2.5">
             <Toolbar items={toolbarItems} />
             {isLoading ? (
-                ""
+                "Loading..."
             ) : (
                 <div
                     className={`${isEdit ? "flex" : "border-2 border-slate-300 rounded-md"} flex-1 box-border puckContainer ${
@@ -231,6 +227,8 @@ function SwitchGroup({
 }
 
 function PuckEditor({ config, data, lcKey, headerPath }) {
+    console.log(data);
+
     if (!data) {
         return <div>Loading...</div>;
     }
