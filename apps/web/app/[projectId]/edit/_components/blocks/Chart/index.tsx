@@ -233,13 +233,7 @@ export const Charts: ComponentConfig<ChartsProps> = {
             }}
           />
         </div>
-        <div
-          style={{
-            fontSize: "1.5rem",
-          }}
-        >
-          {title}
-        </div>
+        <p className="font-semibold">{title}</p>
       </div>
     );
   },
@@ -310,7 +304,10 @@ const SetAxis = ({
         </Label>
 
         {selectedTableFields.map((field) => (
-          <div className="flex flex-row items-start space-x-3 space-y-0">
+          <div
+            className="flex flex-row items-start space-x-3 space-y-0"
+            key={field.id}
+          >
             <Checkbox
               checked={yAxisValues.includes(field.name)}
               onCheckedChange={(checked) => {

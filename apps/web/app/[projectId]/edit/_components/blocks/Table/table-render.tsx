@@ -97,7 +97,7 @@ export const transformColumnsDef = (
   const results: ColumnDef<yalcColumnDef>[] = [];
 
   for (const column of columns) {
-    if (column.id === "id") {
+    if (column.name === "id") {
       continue;
     }
 
@@ -106,7 +106,7 @@ export const transformColumnsDef = (
     }
 
     results.push({
-      accessorKey: column.id,
+      accessorKey: column.name,
       header: column.label,
     });
   }
