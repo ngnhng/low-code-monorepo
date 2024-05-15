@@ -156,6 +156,7 @@ const RelationRecords = ({
                     key={index}
                     handleItemClick={handleItemClick}
                     record={data}
+                    referenceTableId={referenceTableId}
                   />
                   // <Button
                   //   key={index}

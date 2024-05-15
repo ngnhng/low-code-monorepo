@@ -1,25 +1,27 @@
-import React from 'react';
+import React from "react";
 
-import { Button, Dialog, DialogContent, DialogTrigger } from '@repo/ui';
-import { RelationRecordsType } from './relation-records';
-import { Link } from 'lucide-react';
-import { DetailedRecord } from './detailed-record';
+import { Button, Dialog, DialogContent, DialogTrigger } from "@repo/ui";
+import { RelationRecordsType } from "./relation-records";
+import { Link } from "lucide-react";
+import { DetailedRecord } from "./detailed-record";
 
 interface ButtonRecordProps {
   record: RelationRecordsType;
   handleItemClick: any;
+  referenceTableId: string;
 }
 
 export const ButtonRercord = ({
   record,
   handleItemClick,
+  referenceTableId,
 }: ButtonRecordProps) => {
   return (
     <Button
-      variant={'outline'}
+      variant={"outline"}
       data-id={record.id}
       onClick={() => handleItemClick(record.id)}
-      size={'default'}
+      size={"default"}
       className="w-full flex justify-between h-[100px] mb-2"
     >
       {/* <div className="flex flex-col w-full"> */}
@@ -45,7 +47,10 @@ export const ButtonRercord = ({
               e.stopPropagation();
             }}
           >
-            <DetailedRecord record={record} />
+            <DetailedRecord
+              record={record}
+              referenceTableId={referenceTableId}
+            />
           </DialogContent>
         </Dialog>
       </div>
