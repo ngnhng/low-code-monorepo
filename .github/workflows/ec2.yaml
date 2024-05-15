@@ -1,0 +1,77 @@
+name: Deploy to EC2
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "apiserver/**"
+
+jobs:
+    build-and-push:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.repository_owner }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Setup Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: UserAPI - Build and push Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: ../../apiserver/user-api
+                  file: Dockerfile.prod
+                  push: true
+                  tags: ghcr.io/${{ github.repository }}/user-api:latest
+
+            - name: AuthAPI - Build and push Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: ../../apiserver/auth-api
+                  file: Dockerfile.prod
+                  push: true
+                  tags: ghcr.io/${{ github.repository }}/auth-api:latest
+
+            - name: DBMSAPI - Build and push Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: ../../apiserver/table-api
+                  file: Dockerfile
+                  push: true
+                  tags: ghcr.io/${{ github.repository }}/dbms-api:latest
+            
+            - name: WorkflowAPI - Build and push Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: ../../apiserver/bpmn-engine
+                  file: Dockerfile.dev
+                  push: true
+                  tags: ghcr.io/${{ github.repository }}/workflow-api:latest
+
+    deploy:
+        needs: build-and-push
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Execute remote ssh commands to deploy
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USERNAME }}
+                  key: ${{ secrets.SSH_KEY }}
+                  script: |
+                      cd ~/app/low-code-monorepo/deployment/ec2
+                      docker login ghcr.io -u ${{ github.repository_owner }} -p ${{ secrets.GHCR_TOKEN }}
+                      docker pull ghcr.io/${{ github.repository }}/user-api:latest
+                      docker pull ghcr.io/${{ github.repository }}/auth-api:latest
+                      docker pull ghcr.io/${{ github.repository }}/dbms-api:latest
+                      docker compose -f compose.ec2.prod.yaml up -d --build --pull --force-recreate

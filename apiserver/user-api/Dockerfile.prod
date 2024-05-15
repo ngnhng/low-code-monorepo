@@ -6,6 +6,9 @@ COPY yarn.lock package.json ./
 COPY prisma ./prisma/
 
 RUN yarn install --frozen-lockfile
+RUN yarn prisma generate
+
+RUN yarn build
 
 COPY . .
 
@@ -18,15 +21,6 @@ WORKDIR /app
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-COPY package.json ./
 
-COPY ./start-prod.sh ./start-prod.sh
-
-RUN yarn add @nestjs/cli -g
-RUN yarn install --frozen-lockfile --production
-
-RUN chmod +x ./start-prod.sh
-ENTRYPOINT [ "./start-prod.sh" ]
-
+CMD [ "node", "dist/main.js" ]
 EXPOSE 3000
-CMD [ "yarn", "run", "start:prod" ]
