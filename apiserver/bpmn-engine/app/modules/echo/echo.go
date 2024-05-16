@@ -55,7 +55,7 @@ func New(p Params) *EchoHTTPServer {
 	e.Validator = &CustomValidator{}
 	e.Use(echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(p.Config.GetConfig().JwtSecret),
-		ContextKey: "user",
+		ContextKey: string(domain.UserKey),
 	}),
 	)
 
@@ -63,9 +63,6 @@ func New(p Params) *EchoHTTPServer {
 		LogStatus: true,
 		LogURI:    true,
 		LogError:  true,
-		//BeforeNextFunc: func(c echo.Context) {
-		//	c.Set("customValueFromContext", 42)
-		//},
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			value, _ := c.Get(string(domain.UserKey)).(*jwt.Token)
 			p.Logger.Debug(

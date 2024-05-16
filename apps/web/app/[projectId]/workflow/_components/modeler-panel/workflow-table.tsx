@@ -85,7 +85,7 @@ export function WorkflowTable<WorkflowItem, TValue>({
     }, []);
 
     return (
-        <div>
+        <div className="overflow-auto">
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>

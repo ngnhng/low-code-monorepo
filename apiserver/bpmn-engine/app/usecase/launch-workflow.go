@@ -43,7 +43,6 @@ func NewLaunchWorkflowUseCase(p LaunchWorkflowUseCaseParams) LaunchWorkflowUseCa
 }
 
 func (uc *launchWorkflowUseCase) Execute(ctx context.Context, request *workflow.WorkflowLaunchRequest) (*workflow.LaunchStatus, error) {
-	// timeout context, ?skip timeout
 	timerCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -51,15 +50,14 @@ func (uc *launchWorkflowUseCase) Execute(ctx context.Context, request *workflow.
 
 	decodedBPMN, err := base64.StdEncoding.DecodeString(request.ProcessDefinition)
 	if err != nil {
+		uc.logger.Debugf("Error while decoding BPMN: %v", err)
 		return nil, err
 	}
 	decodedMapping, err := base64.StdEncoding.DecodeString(request.VariableMapping)
 	if err != nil {
+		uc.logger.Debugf("Error while decoding variable mapping: %v", err)
 		return nil, err
 	}
-
-	uc.logger.Debug("decodedBPMN: ", string(decodedBPMN)[:10])
-	uc.logger.Debug("decodedMapping: ", string(decodedMapping))
 
 	// load the bpmn definition
 	// execution context

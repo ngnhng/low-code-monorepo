@@ -1,4 +1,10 @@
-import { makeObservable, observable, action, runInAction } from "mobx";
+import {
+    makeObservable,
+    observable,
+    action,
+    runInAction,
+    computed,
+} from "mobx";
 import { RootStore } from "./root";
 import { ProjectService } from "../services/project.service";
 
@@ -22,6 +28,8 @@ export interface IProjectStore {
 
     createProject: (title: string) => void;
     createDatabase: (pid: string) => void;
+
+    currentProjectName: string;
 }
 
 export class ProjectStore implements IProjectStore {
@@ -58,6 +66,8 @@ export class ProjectStore implements IProjectStore {
             setCurrentProjectId: action,
             fetchProjectList: action,
             getProjectById: action,
+            // computed
+            currentProjectName: computed,
         });
 
         this.rootStore = _rootStore;
@@ -127,10 +137,12 @@ export class ProjectStore implements IProjectStore {
 
     createProject = async (title: string) => {
         try {
-            return await this.projectSerivce.createProject(title).then((res) => {
-                console.log("Create Project Store Response:", res);
-                return res;
-            });
+            return await this.projectSerivce
+                .createProject(title)
+                .then((res) => {
+                    console.log("Create Project Store Response:", res);
+                    return res;
+                });
         } catch (error) {
             console.log(error);
             throw error;
@@ -147,4 +159,13 @@ export class ProjectStore implements IProjectStore {
             throw error;
         }
     };
+
+    get currentProjectName() {
+        if (!this.projects || !this.currentProjectId) {
+            return "";
+        }
+        return this.projects.find(
+            (project) => project.pid === this.currentProjectId
+        )?.title;
+    }
 }

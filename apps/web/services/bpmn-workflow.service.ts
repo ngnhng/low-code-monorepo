@@ -10,6 +10,60 @@ import CustomModule from "bpmn-js-custom";
 import { gsModel } from "bpmn-js-custom";
 import { CLIENT_BASE_URL } from "../helpers/common.helper";
 //import { ModdleExtensions } from "bpmn-js/lib/BaseViewer";
+import lintModule from "bpmn-js-bpmnlint";
+import conditionalFlows from "bpmnlint/rules/conditional-flows";
+import endEventRequired from "bpmnlint/rules/end-event-required";
+import noDisconnected from "bpmnlint/rules/no-disconnected";
+import startEventRequired from "bpmnlint/rules/start-event-required";
+
+export type LintRuleName = string;
+export type CacheLintRuleName = `bpmnlint/${LintRuleName}`;
+export type LintRuleFlag = "warn" | "error" | "info" | "off";
+
+type Reporter = {
+    report(
+        id: string,
+        message: string,
+        path?: string[] | Record<string, string[] | string>
+    ): void;
+};
+export type LintRuleLinter = {
+    check: (node: any, reporter: Reporter) => undefined | void;
+};
+
+export type LintRules = Record<LintRuleName, LintRuleFlag>;
+
+export const rules: LintRules = {
+    "conditional-flows": "error",
+    "end-event-required": "error",
+    "no-disconnected": "error",
+    "start-event-required": "error",
+};
+
+export const rulesCache: Record<CacheLintRuleName, LintRuleLinter> = {
+    "bpmnlint/conditional-flows": conditionalFlows,
+    "bpmnlint/end-event-required": endEventRequired,
+    "bpmnlint/no-disconnected": noDisconnected,
+    "bpmnlint/start-event-required": startEventRequired,
+};
+
+function Resolver() {}
+
+Resolver.prototype.resolveRule = function (pkg: string, ruleName: string) {
+    const rule = rulesCache[pkg + "/" + ruleName];
+
+    if (!rule) {
+        throw new Error("cannot resolve rule <" + pkg + "/" + ruleName + ">");
+    }
+
+    return rule;
+};
+
+Resolver.prototype.resolveConfig = function (pkg: string, configName: string) {
+    throw new Error(
+        "cannot resolve config <" + configName + "> in <" + pkg + ">"
+    );
+};
 
 export class BpmnWorkflowService extends APIService {
     constructor() {
@@ -23,10 +77,20 @@ export class BpmnWorkflowService extends APIService {
             // BpmnPropertiesPanelModule,
             // BpmnPropertiesProviderModule,
             CustomModule,
+            lintModule,
         ];
 
         return new BpmnModeler({
             ...options,
+            linting: {
+                active: true,
+                bpmnlint: {
+                    resolver: new Resolver(),
+                    config: {
+                        rules,
+                    },
+                },
+            },
             additionalModules,
             moddleExtensions: {
                 yalc: gsModel[1]!,

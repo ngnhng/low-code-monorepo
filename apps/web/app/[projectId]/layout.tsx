@@ -48,10 +48,13 @@ const LayoutContent = ({
     children: React.ReactNode;
 }) => {
     const pathName = usePathname();
+    const {
+        projectData: { currentProjectName },
+    } = useMobxStore();
 
     return (
         <div className="w-full h-full flex flex-col justify-start items-center overflow-hidden">
-            <Header headerTitle="Project Name" />
+            <Header headerTitle={currentProjectName} />
             <div className="flex-1 flex w-full overflow-hidden">
                 <div className="w-full h-full flex px-[50px] py-[20px] gap-2.5">
                     <Sidebar

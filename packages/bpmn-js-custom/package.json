@@ -11,6 +11,7 @@
         "eslint-plugin-bpmn-io": "^1.0.0"
     },
     "dependencies": {
+        "bpmnlint": "^10.2.1",
         "diagram-js": "^5.0.2",
         "inherits": "^2.0.4",
         "min-dash": "^3.5.2",

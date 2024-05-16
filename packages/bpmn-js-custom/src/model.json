@@ -29,6 +29,17 @@
             ]
         },
         {
+            "name": "MailServiceNode",
+            "extends": ["bpmn:ServiceTask"],
+            "properties": [
+                {
+                    "name": "isMailService",
+                    "isAttr": true,
+                    "type": "Boolean"
+                }
+            ]
+        },
+        {
             "name": "ConditionExpression",
             "superClass": ["Element"],
             "properties": [

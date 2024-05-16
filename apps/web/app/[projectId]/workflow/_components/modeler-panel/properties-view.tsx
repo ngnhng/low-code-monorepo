@@ -42,7 +42,9 @@ const PropertiesView = observer(() => {
                 <ElementProperties modeler={modeler} element={activeElement} />
             )}
             {selectedElements.length === 0 && (
-                <span>Please select an element.</span>
+                <div className="flex items-center justify-center h-full w-full p-8">
+                    <span>Please select an element.</span>
+                </div>
             )}
             {selectedElements.length > 1 && (
                 <span>Please select a single element.</span>
