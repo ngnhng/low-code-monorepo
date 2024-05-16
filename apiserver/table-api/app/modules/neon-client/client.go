@@ -102,6 +102,7 @@ func (c *NeonClient) CreateDatabase(name string) error {
 			"owner_name": c.Owner,
 		},
 	}
+	c.Logger.Debug("creating database: ", bodyMap)
 	bodyBytes, err := json.Marshal(bodyMap)
 	if err != nil {
 		return err

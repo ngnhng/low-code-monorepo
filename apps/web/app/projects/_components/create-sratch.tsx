@@ -39,10 +39,14 @@ export const CreateSratch = () => {
     const onSubmit = async (data: z.infer<typeof FormSchema>) => {
         console.log("[SUBMIT]:", data);
         await createProject(data.projectName)
-            .then(() => {
+            .then(async (res: any) => {
+                console.log("Project", res);
+                //await createDatabase(res.pid).then(() => {
                 toast.success("Project created successfully.");
+                //});
             })
-            .catch(() => {
+            .catch((error) => {
+                console.log(error);
                 toast.error("Failed to create project.");
             });
     };

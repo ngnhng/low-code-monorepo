@@ -119,8 +119,9 @@ services:
             - "traefik.enable=true"
             - "traefik.http.routers.table-api.rule=Host(`localhost`) && PathPrefix(`/dbms`)"
             - "traefik.http.routers.table-api.entrypoints=web"
+            - "traefik.http.middlewares.table-api-forwardauth.forwardauth.address=http://auth-api:3000/api/v1/validate/token"
             - "traefik.http.middlewares.table-api-stripprefix.stripprefix.prefixes=/dbms"
-            - "traefik.http.routers.table-api.middlewares=table-api-stripprefix@docker"
+            - "traefik.http.routers.table-api.middlewares=table-api-stripprefix@docker,table-api-forwardauth@docker"
 
     # workflow:
     #     build:

@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
 
 const baseUrl = process.env.NEXT_PUBLIC_USER_API_URL;
+const dbmsUrl = process.env.NEXT_PUBLIC_DBMS_API_URL;
 
 export async function GET(req: Request) {
     // get params from request
@@ -23,7 +24,6 @@ export async function GET(req: Request) {
 
     try {
         const res = await axios.get(`${baseUrl}/api/projects`, axiosConfig);
-        console.log(res.data);
 
         return new Response(JSON.stringify(res.data.result), {
             status: 200,
@@ -64,7 +64,23 @@ export async function POST(req: Request) {
             body,
             axiosConfig
         );
-        console.log(res.data);
+        const pid = res.data.result.data.pid;
+
+        console.log("Create project reponse:", pid);
+
+        if (!pid) {
+            throw new Error("Failed to create project");
+        }
+
+        const dbRes = await axios.post(
+            `${dbmsUrl}/projects/${pid}/databases`,
+            {
+                pid,
+            },
+            axiosConfig
+        );
+
+        console.log(dbRes.data);
 
         return new Response(JSON.stringify(res.data.result), {
             status: 200,

@@ -21,6 +21,7 @@ export interface IProjectStore {
     createView: (route: string, title: string, pid: string) => void;
 
     createProject: (title: string) => void;
+    createDatabase: (pid: string) => void;
 }
 
 export class ProjectStore implements IProjectStore {
@@ -126,7 +127,19 @@ export class ProjectStore implements IProjectStore {
 
     createProject = async (title: string) => {
         try {
-            await this.projectSerivce.createProject(title).then(() => {
+            return await this.projectSerivce.createProject(title).then((res) => {
+                console.log("Create Project Store Response:", res);
+                return res;
+            });
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    };
+
+    createDatabase = async (pid: string) => {
+        try {
+            await this.projectSerivce.createDatabase(pid).then(() => {
                 return true;
             });
         } catch (error) {

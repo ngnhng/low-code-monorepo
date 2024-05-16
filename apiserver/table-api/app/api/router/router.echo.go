@@ -55,8 +55,13 @@ func NewEchoRouter(p Params) {
 				return cc.DeleteTable(c)
 			})
 
+		},
+	)
+
+	p.Server.AddGroup("/projects/:projectId/databases",
+		func(g *v4.Group) {
 			// create a new database for project
-			manageSubGroup.POST("/databases", func(c v4.Context) error {
+			g.POST("", func(c v4.Context) error {
 				return cc.CreateDatabase(c)
 			})
 		},

@@ -42,7 +42,7 @@ jobs:
             - name: DBMSAPI - Build and push Docker image
               uses: docker/build-push-action@v5
               with:
-                  context: ../apiserver/table-api
+                  context: ../apiserver/table-api/app
                   file: Dockerfile
                   push: true
                   tags: ghcr.io/${{ github.repository }}/dbms-api:latest

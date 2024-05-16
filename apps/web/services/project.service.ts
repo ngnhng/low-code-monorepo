@@ -34,6 +34,7 @@ export class ProjectService extends APIService {
         const response = await this.post("/api/projects", {
             title,
         });
+        console.log("Create project service reponse:", response.data); 
         return response.data;
     }
 
@@ -50,6 +51,11 @@ export class ProjectService extends APIService {
         };
 
         const response = await this.post(`/api/projects/${pid}/views`, payload);
+        return response.data;
+    }
+
+    async createDatabase(pid: string) {
+        const response = await this.post(`/api/projects/${pid}/databases`);
         return response.data;
     }
 }
