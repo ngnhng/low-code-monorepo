@@ -1,6 +1,7 @@
 {
 	"extends": "@repo/typescript-config/nextjs.json",
 	"compilerOptions": {
+        "resolveJsonModule": true,
 		"noImplicitAny": false,
 		"useDefineForClassFields": true,
 		"plugins": [

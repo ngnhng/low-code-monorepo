@@ -3,6 +3,7 @@
 import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 import "@bpmn-io/properties-panel/assets/properties-panel.css";
+import 'bpmn-js-bpmnlint/dist/assets/css/bpmn-js-bpmnlint.css';
 
 import React, { useEffect, useRef, useState } from "react";
 
@@ -312,10 +313,6 @@ const BPMNModeler = observer(
             };
         }, [containerRef.current]);
 
-        return (
-            <div ref={containerRef} className="h-full">
-                {Math.random().toString(36).slice(7)}
-            </div>
-        );
+        return <div ref={containerRef} className="h-full"></div>;
     }
 );

@@ -63,9 +63,9 @@ const defaultXml = `<?xml version="1.0" encoding="UTF-8"?>
     xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
     id="Definitions_1pak3fd" 
     targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn:process id="Process_0ritvl1" isExecutable="false" />
+  <bpmn:process id="Process_{pid}" isExecutable="false" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_0ritvl1" />
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_{pid}" />
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>`;
 
@@ -188,9 +188,19 @@ export class WorkflowStore {
             return ["Modeler not initialized", false];
         }
 
-        const base64EncodedWorkflow = Buffer.from(
-            this.currentWorkflow
-        ).toString("base64");
+        const workflow = await this.modeler
+            .saveXML({ format: true })
+            .then((res: any) => {
+                return res?.xml;
+            });
+
+        console.log("Launching", workflow);
+
+        if (!workflow) {
+            return ["Workflow not found", false];
+        }
+
+        const base64EncodedWorkflow = Buffer.from(workflow).toString("base64");
         const base64EncodedVariables = Buffer.from(
             JSON.stringify({
                 _globalContext_user:
@@ -287,10 +297,14 @@ export class WorkflowStore {
     };
 
     fetchDefaultWorkflow = async (): Promise<any> => {
+        // generate a lowercase random string of 7 characters
+        const pid = Math.random().toString(36).slice(2, 9);
+        const xml = defaultXml.replaceAll("{pid}", pid);
+
         runInAction(() => {
-            this.currentWorkflow = defaultXml;
+            this.currentWorkflow = xml;
         });
-        return defaultXml;
+        return xml;
     };
 
     saveWorkflow = async (title: string): Promise<any> => {
@@ -319,7 +333,6 @@ export class WorkflowStore {
     };
 
     updateWorkflow = async (wid: string): Promise<any> => {
-
         const data = await this.modeler
             .saveXML({ format: true })
             .then((res: any) => {
