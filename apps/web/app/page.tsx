@@ -12,11 +12,7 @@ export default function Page() {
         user: { fetchCurrentUser },
     } = useMobxStore();
 
-    const { error } = useSWR("user", () => fetchCurrentUser());
-
-    if (error) {
-        return <div>Error loading user</div>;
-    }
+    useSWR("user", () => fetchCurrentUser());
 
     return (
         <div className="w-full h-full flex flex-col">

@@ -3,6 +3,7 @@ package controller
 import (
 	"yalc/auth-service/module/config"
 	"yalc/auth-service/module/logger"
+	"yalc/auth-service/module/oauth2"
 	"yalc/auth-service/usecase"
 
 	google_oauth "yalc/auth-service/api/controller/oauth"
@@ -23,9 +24,10 @@ type (
 	Params struct {
 		fx.In
 
-		Configs            *config.Config
-		Logger             logger.Logger
-		GoogleOAuthUsecase *usecase.GoogleOAuthLoginUsecase
+		Configs             *config.Config
+		Logger              logger.Logger
+		GoogleOAuthUsecase  *usecase.GoogleOAuthLoginUsecase
+		GoogleOAuthProvider *oauth2.GoogleProvider
 	}
 
 	Result struct {
@@ -46,6 +48,7 @@ func NewOauthController(p Params) Result {
 		p.GoogleOAuthUsecase,
 		p.Configs,
 		p.Logger,
+		p.GoogleOAuthProvider,
 	)
 
 	return Result{

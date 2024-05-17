@@ -168,8 +168,8 @@ services:
             nats:
                 condition: service_started
         labels:
-            - "traefik.enable=false"
-        cpus: "0.25"
+            - "traefik.ensable=false"
+        cpus: "0.09"
 
     #prometheus:
     #    image: prom/prometheus:v2.52.0

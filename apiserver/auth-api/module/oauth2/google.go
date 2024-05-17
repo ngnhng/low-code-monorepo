@@ -16,7 +16,7 @@ type GoogleProvider struct {
 // We use the offline and force options to get a refresh token.
 // See https://developers.google.com/identity/protocols/oauth2/web-server#offline.
 func (p *GoogleProvider) AuthCodeURL(state string) string {
-	return p.Config.AuthCodeURL(state, oauth2.AccessTypeOffline)
+	return p.Config.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 }
 
 // Exchange converts an authorization code into a token.

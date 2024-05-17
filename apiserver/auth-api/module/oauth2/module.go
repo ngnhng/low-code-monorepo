@@ -15,12 +15,6 @@ type (
 
 		*config.Config
 	}
-
-	Result struct {
-		fx.Out
-
-		*GoogleProvider
-	}
 )
 
 func GetModule() fx.Option {
@@ -32,11 +26,11 @@ func GetModule() fx.Option {
 }
 
 // NewGoogleProvider creates a new GoogleProvider with the specified client ID and secret.
-func NewGoogleProvider(p Params) (Result, error) {
+func NewGoogleProvider(p Params) (*GoogleProvider, error) {
 	if p.Config.OAuth.Google.ClientID == "" ||
 		p.Config.OAuth.Google.ClientSecret == "" ||
 		p.Config.OAuth.Google.RedirectURL == "" {
-		return Result{}, errors.New("missing google oauth2 provider configuration")
+		return nil, errors.New("missing google oauth2 provider configuration")
 	}
 
 	clientID := p.Config.OAuth.Google.ClientID
@@ -47,6 +41,7 @@ func NewGoogleProvider(p Params) (Result, error) {
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		RedirectURL:  redirectURL,
+
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile",
@@ -56,9 +51,7 @@ func NewGoogleProvider(p Params) (Result, error) {
 		Endpoint: google.Endpoint,
 	}
 
-	return Result{
-		GoogleProvider: &GoogleProvider{
-			Config: config,
-		},
+	return &GoogleProvider{
+		Config: config,
 	}, nil
 }
