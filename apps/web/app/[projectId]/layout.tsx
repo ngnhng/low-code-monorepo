@@ -10,6 +10,7 @@ import { UserAuthWrapper } from "lib/wrappers/user-auth-wrapper";
 import { useMobxStore } from "lib/mobx/store-provider";
 import { Brush, Database, Settings2, Workflow } from "lucide-react";
 import { usePathname } from "next/navigation";
+import useSWR from "swr";
 
 const useNavigation = (params: { projectId: string }) =>
     useMemo(
@@ -49,8 +50,13 @@ const LayoutContent = ({
 }) => {
     const pathName = usePathname();
     const {
-        projectData: { currentProjectName },
+        projectData: { currentProjectName, fetchProjectList },
     } = useMobxStore();
+
+    useSWR("project-list", () => fetchProjectList(), {
+        revalidateOnFocus: false,
+        revalidateIfStale: false,
+    });
 
     return (
         <div className="w-full h-full flex flex-col justify-start items-center overflow-hidden">

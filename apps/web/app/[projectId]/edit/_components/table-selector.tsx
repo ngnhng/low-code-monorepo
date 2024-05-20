@@ -20,10 +20,7 @@ export const TableSelector = observer(
             data: list,
             isLoading,
             error,
-        } = useSWR(["tables", currentProjectId], () => fetchTables(), {
-            revalidateOnFocus: false,
-            revalidateIfStale: false,
-        });
+        } = useSWR(["tables", currentProjectId], () => fetchTables());
 
         const handleSelect = (value: string) => {
             console.log("Table Selected", value);

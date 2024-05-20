@@ -18,12 +18,21 @@ export interface ITableDataStore {
     fetchTableData: (a0: GetTableDataParams, yalcToken) => any;
     // eslint-disable-next-line no-unused-vars
     fetchAppliedQueries: (tableId: string) => any;
-    fetchTables: (yalcToken: string) => any;
+    fetchTables: () => any;
+    fetchTablesByProjectId: (projectId: string) => any;
 
     fetchTableColumns: (yalcToken: string, tableId: string) => any;
     fetchTableRelations: (tableId: string) => any;
 
-    insertRow: (tableId: string, data: Record<string, string>) => any;
+    insertRow: ({
+        tableId,
+        data,
+        projectId,
+    }: {
+        tableId: string;
+        data: Record<string, string>;
+        projectId?: string;
+    }) => any;
 }
 
 export class TableDataStore implements ITableDataStore {
@@ -169,14 +178,44 @@ export class TableDataStore implements ITableDataStore {
         }
     };
 
-    insertRow = async (tableId: string, data: Record<string, string>) => {
+    fetchTablesByProjectId = async (projectId: string) => {
+        try {
+            const response = await this.tableDataService.getTables({
+                projectId,
+            });
+
+            if (response) {
+                runInAction(() => {
+                    this.tables = response;
+                    // set tableIds
+                    this.tableIds = response.map((table) => table.id);
+                });
+                return response;
+            }
+        } catch (error) {
+            console.log("FETCH_TABLE_ERROR", error);
+            throw error;
+        }
+    };
+
+    insertRow = async ({
+        tableId,
+        data,
+        projectId,
+    }: {
+        tableId: string;
+        data: Record<string, string>;
+        projectId?: string;
+    }) => {
+        console.log("INSERT_ROW", data, projectId, tableId);
         try {
             const payload = {
                 rows: [data],
             };
 
             const response = await this.tableDataService.insertRow({
-                projectId: this.rootStore.projectData.currentProjectId,
+                projectId:
+                    projectId ?? this.rootStore.projectData.currentProjectId,
                 tableId,
                 data: payload,
             });

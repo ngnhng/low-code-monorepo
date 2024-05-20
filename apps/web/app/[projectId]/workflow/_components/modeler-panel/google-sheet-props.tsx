@@ -25,7 +25,7 @@ export default function GoogleSheetProps({ element, modeler }) {
 
     useEffect(() => {
         const fnEnum = {
-            googleSheetGetData: "getData",
+            googleSheetReadRange: "getData",
             googleSheetAddRow: "add",
             googleSheetRemoveRow: "remove",
             googleSheetAppendRow: "append",
@@ -90,7 +90,7 @@ export default function GoogleSheetProps({ element, modeler }) {
 
     const setFunctionType = (value: string) => {
         const fnEnum = {
-            getData: "googleSheetGetData",
+            getData: "googleSheetReadRange",
             add: "googleSheetAddRow",
             remove: "googleSheetRemoveRow",
             append: "googleSheetAppendRow",

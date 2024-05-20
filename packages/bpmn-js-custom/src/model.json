@@ -29,6 +29,27 @@
             ]
         },
         {
+            "name": "FormListener",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "ui",
+                    "isAttr": true,
+                    "type": "String"
+                },
+                {
+                    "name": "component",
+                    "isAttr": true,
+                    "type": "String"
+                },
+                {
+                    "name": "table",
+                    "isAttr": true,
+                    "type": "String"
+                }
+            ]
+        },
+        {
             "name": "MailServiceNode",
             "extends": ["bpmn:ServiceTask"],
             "properties": [

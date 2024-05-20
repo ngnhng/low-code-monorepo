@@ -5,13 +5,13 @@ import "../style.css";
 import type { Data } from "@measured/puck";
 import { Render, Puck } from "@measured/puck";
 import "@measured/puck/puck.css";
-import { Save } from "lucide-react";
+import { Globe, Save } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import config from "../_config";
-import { Switch, Label, Input } from "@repo/ui";
+import { Switch, Label, Input, Button } from "@repo/ui";
 import useSWR from "swr";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { useMobxStore } from "../../../../lib/mobx/store-provider";
 import {
     getLocalStorage,
@@ -39,33 +39,6 @@ export default function Page({ params }: { params: { routeId: string } }) {
         revalidateOnFocus: false,
         revalidateIfStale: false,
     });
-
-    //useEffect(() => {
-    //    if (isLoading || !project) return;
-    //    const data = project.views.find(
-    //        (view) => view.uiData.route === `/${params.routeId}`
-    //    );
-    //    if (!data) return;
-    //    setTempData(data);
-    //}, [isLoading, project, params.routeId]);
-
-    //useEffect(() => {
-    //    if (isLoading || !project) return;
-    //    const data = project.views.find(
-    //        (view) => view.uiData.route === `/${params.routeId}`
-    //    );
-    //    if (!data) return;
-    //    setLocalStorage(key, data.uiData);
-    //}, [project]);
-
-    //useEffect(() => {
-    //    if (isLoading || !project) return;
-    //    const data = project.views.find(
-    //        (view) => view.uiData.route === `/${params.routeId}`
-    //    );
-    //    if (!data) return;
-    //    setLocalStorage(key, data.uiData);
-    //}, [])
 
     if (error) {
         notFound();
@@ -136,7 +109,7 @@ export default function Page({ params }: { params: { routeId: string } }) {
                     ...payload,
                 };
 
-                await saveView(modifiedData, view.projectId, view.id)
+                await saveView(modifiedData, projectId, view.id)
                     .then(() => {
                         toast.success("Saved Successfully");
                         mutate();
@@ -156,9 +129,31 @@ export default function Page({ params }: { params: { routeId: string } }) {
         { key: "saveButton", component: saveButton },
     ];
 
+    const PublishButton = () => {
+        // button to redirect to /view/{projectId}/{routeId}
+        const router = useRouter();
+        return (
+            <div>
+                <Button
+                    variant={"primary"}
+                    onClick={() => {
+                        router.push(`/view/${projectId}/${params.routeId}`);
+                    }}
+                    className="ml-auto items-center gap-2"
+                >
+                    <Globe />
+                    Publish
+                </Button>
+            </div>
+        );
+    };
+
     return (
         <div className="flex-1 flex flex-col gap-2.5">
-            <Toolbar items={toolbarItems} />
+            <div className="w-full border-2 border-slate-300 rounded-md h-14 flex gap-5 justify-between items-center px-5 box-border">
+                        <Toolbar items={toolbarItems} />
+                    <PublishButton />
+            </div>
             {isLoading ? (
                 "Loading..."
             ) : (
@@ -194,13 +189,13 @@ interface ToolbarItemProps {
 
 function Toolbar({ items }: ToolbarProps) {
     return (
-        <div className="w-full border-2 border-slate-300 rounded-md h-14 flex gap-5 items-center px-5 box-border">
+        <>
             {items.map((item) => (
                 <div className="toolbar-item" key={item.key}>
                     {item.component}
                 </div>
             ))}
-        </div>
+        </>
     );
 }
 

@@ -1,5 +1,5 @@
 /* eslint-disable unicorn/no-nested-ternary */
-import { ComponentConfig } from "@measured/puck";
+import { ComponentConfig, FieldLabel } from "@measured/puck";
 
 import { Label, Input, Switch, Button, DatePicker } from "@repo/ui";
 // import { useMobxStore } from "lib/mobx/store-provider";
@@ -7,11 +7,17 @@ import { Fragment, useState } from "react";
 import { TableSelector } from "../../table-selector";
 import { useMobxStore } from "../../../../../../lib/mobx/store-provider";
 import { toast } from "sonner";
+import { WorkflowSelector } from "../../workflow-selector";
+import useSWR from "swr";
 
 export type FormTableProps = {
     tableId: string;
     formName: string;
     workflowId: string;
+    project: {
+        projectId: string;
+        accessKey: string;
+    };
 };
 
 export const FormTable: ComponentConfig<FormTableProps> = {
@@ -19,17 +25,49 @@ export const FormTable: ComponentConfig<FormTableProps> = {
         tableId: {
             type: "custom",
             label: "Select Table",
-            render: ({ onChange, value }) => {
-                return <TableSelector onChange={onChange} value={value} />;
+            render: ({ onChange, value, field }) => {
+                return (
+                    <FieldLabel label={field.label ?? ""}>
+                        <TableSelector onChange={onChange} value={value} />
+                    </FieldLabel>
+                );
             },
         },
         formName: {
             type: "text",
+            label: "Form Name",
         },
         workflowId: {
             type: "custom",
-            render: () => {
-                return <></>;
+            label: "Select Workflow",
+            render: ({ onChange, value, field }) => {
+                return (
+                    <FieldLabel label={field.label ?? ""}>
+                        <WorkflowSelector onChange={onChange} value={value} />
+                    </FieldLabel>
+                );
+            },
+        },
+        project: {
+            type: "custom",
+            label: "Project ID",
+            render: ({ onChange, value }) => {
+                const {
+                    projectData: { currentProjectId },
+                } = useMobxStore();
+
+                if (currentProjectId !== value?.projectId) {
+                    onChange({
+                        projectId: currentProjectId,
+                        accessKey: "",
+                    });
+                }
+
+                return (
+                    <FieldLabel label="Project ID">
+                        <Input value={currentProjectId} disabled />
+                    </FieldLabel>
+                );
             },
         },
     },
@@ -37,16 +75,31 @@ export const FormTable: ComponentConfig<FormTableProps> = {
         tableId: "",
         formName: "Form Name",
         workflowId: "",
+        project: {
+            projectId: "",
+            accessKey: "",
+        },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    render: ({ tableId, formName, workflowId }) => {
+    render: ({ tableId, formName, workflowId, project }) => {
         const {
-            tableData: { tables, insertRow },
+            tableData: { insertRow, fetchTablesByProjectId },
+            workflow: { launchWorkflowWithPayload },
         } = useMobxStore();
 
-        const columns = tables.find((table) => table.id === tableId)?.columns;
+        const currentProjectId = project.projectId;
 
         const [sendData, setSendData] = useState<any>({});
+
+        const { data: tables, isLoading } = useSWR(
+            ["tables", currentProjectId],
+            () => fetchTablesByProjectId(currentProjectId),
+            {
+                revalidateOnFocus: false,
+            }
+        );
+
+        const columns = tables?.find((table) => table.id === tableId)?.columns;
 
         // if no tableId
         if (!tableId) {
@@ -57,21 +110,46 @@ export const FormTable: ComponentConfig<FormTableProps> = {
             );
         }
 
+        if (!tables || isLoading || !columns || !currentProjectId) {
+            return (
+                <div className="flex w-full h-96 justify-center items-center h-20 bg-slate-100 rounded-md">
+                    Loading...
+                </div>
+            );
+        }
+
         const postData = async () => {
-            console.log(sendData);
-            await insertRow(tableId, sendData)
-                .then(() => {
-                    toast.success("Data inserted successfully");
-                })
-                .catch((error) => {
-                    toast.error("Error inserting data");
-                    console.error(error);
+            console.log("Form payload", sendData);
+            try {
+                await insertRow({
+                    tableId,
+                    data: sendData,
+                    projectId: currentProjectId,
                 });
+                toast.success("Data inserted successfully");
+            } catch (error) {
+                toast.error("Error inserting data");
+                console.error(error);
+                return; // If inserting data fails, we exit the function early
+            }
+
+            if (workflowId === "") {
+                setSendData({});
+                return;
+            }
+
+            try {
+                await launchWorkflowWithPayload(workflowId, sendData);
+                toast.success(
+                    "Data inserted successfully and workflow launched"
+                );
+            } catch (error) {
+                toast.error("Error launching workflow");
+                console.error(error);
+            }
+
             setSendData({});
-
-            if (workflowId === "") return;
         };
-
         const renderFormField = ({ label, type, id, name }) => {
             const handleValueChange = (value) => {
                 setSendData((prevData) => ({ ...prevData, [name]: value }));

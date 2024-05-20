@@ -57,6 +57,7 @@ export class TableDataService extends RouteHandlerAPIService {
     }
 
     async getTables({ projectId }): Promise<GetTablesResponse[]> {
+        console.log("Fetching tables", projectId);
         const response = await this.get(`/api/dbms/${projectId}/all`);
 
         const rawTables = response.data;

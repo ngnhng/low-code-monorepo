@@ -21,7 +21,12 @@ export async function POST(req: Request) {
             Authorization: `Bearer ${token}`,
         },
     };
-    // create a request with Bearer Token Auth
+
+    console.log("Launch Payload", {
+        workflow_id,
+        process_definition,
+        variable_mapping,
+    });
 
     try {
         const res = await axios.post(
@@ -37,8 +42,8 @@ export async function POST(req: Request) {
         return new Response(res.data, {
             status: 200,
         });
-    } catch {
-        return new Response("Failed to launch workflow", {
+    } catch (error) {
+        return new Response(`Failed to launch workflow: ${error}`, {
             status: 500,
         });
     }

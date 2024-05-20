@@ -10,6 +10,7 @@ import (
 	"yalc/bpmn-engine/modules/config"
 	"yalc/bpmn-engine/modules/echo"
 	"yalc/bpmn-engine/modules/logger"
+	"yalc/bpmn-engine/modules/mailersend"
 	"yalc/bpmn-engine/router"
 	servicetasks "yalc/bpmn-engine/service-tasks"
 	"yalc/bpmn-engine/usecase"
@@ -27,6 +28,7 @@ func main() {
 		usecase.Module,
 		controller.Module,
 		router.Module,
+		mailersend.Module,
 
 		//fx.Provide(
 		//	usecase.NewGoogleSheetFn,
@@ -47,6 +49,13 @@ func main() {
 
 				// Assign the function to GoogleSheetFn
 				usecase.GoogleSheetWriteAppendFnAssign(gsf)
+			},
+			func(mailer *mailersend.MailerSend) {
+				// Create a new function with the MailerSend as its dependency
+				msf := mailersend.NewMailerSendSendMailFn(mailer)
+
+				// Assign the function to MailerSendSendMailFn
+				mailersend.MailerSendSendMailFnAssign(msf)
 			},
 		),
 
@@ -78,12 +87,22 @@ func main() {
 
 func connectAndLoadSpec(client *bpmn.SharClient, logger logger.Logger, rootDir string) error {
 	if err := client.Connect(); err != nil {
+		logger.Fatal("Error: ", err)
 		return fmt.Errorf("error connecting to SHAR: %w", err)
 	}
 
-	err := client.LoadServiceTaskSpecFromFile(
+	//err := client.LoadServiceTaskSpecFromFile(
+	//	client.GetConnCtx(),
+	//	filepath.Join(rootDir, "service-tasks/google-sheet-read-single-range.task.yaml"),
+	//	usecase.GoogleSheetReadSingleRangeFn,
+	//)
+	//if err != nil {
+	//	return fmt.Errorf("error loading service task spec: %w", err)
+	//}
+
+	err := client.LoadServiceTaskSpec(
 		client.GetConnCtx(),
-		filepath.Join(rootDir, "service-tasks/google-sheet-read-single-range.task.yaml"),
+		servicetasks.GoogleSheetReadRangeTaskSpec,
 		usecase.GoogleSheetReadSingleRangeFn,
 	)
 	if err != nil {
@@ -104,7 +123,15 @@ func connectAndLoadSpec(client *bpmn.SharClient, logger logger.Logger, rootDir s
 		servicetasks.GoogleSheetWriteAppendTaskSpec,
 		usecase.GoogleSheetWriteAppendFn,
 	)
+	if err != nil {
+		return fmt.Errorf("error loading service task spec: %w", err)
+	}
 
+	err = client.LoadServiceTaskSpec(
+		client.GetConnCtx(),
+		servicetasks.MailerSendSendMailTaskSpec,
+		mailersend.MailerSendSendMailFn,
+	)
 	if err != nil {
 		return fmt.Errorf("error loading service task spec: %w", err)
 	}

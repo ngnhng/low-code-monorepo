@@ -5,13 +5,13 @@ import (
 	"gitlab.com/shar-workflow/shar/model"
 )
 
-var MailerSendSendMailTask = &model.TaskSpec{
+var GoogleSheetReadRangeTask = &model.TaskSpec{
 	Version: "1.0",
 	Kind:    "ServiceTask",
 	Metadata: &model.TaskMetadata{
-		Type:        "mailersendSendMail",
+		Type:        "googleSheetReadRange",
 		Version:     "1.0",
-		Description: "MailerSend Send Mail Task",
+		Description: "Google Sheet Read Range Task",
 	},
 	Behaviour: &model.TaskBehaviour{
 		EstimatedMaxDuration: 200000,
@@ -30,12 +30,10 @@ var MailerSendSendMailTask = &model.TaskSpec{
 	},
 	Parameters: &model.TaskParameters{
 		Input: []*model.Parameter{
-			{Name: "apiKey", Description: "API Key", Type: "string", Mandatory: true},
-			{Name: "mailSubject", Description: "Mail Subject", Type: "string", Mandatory: true},
-			{Name: "mailText", Description: "Mail Body", Type: "string", Mandatory: true},
-			{Name: "receiverEmail", Description: "Mail To", Type: "string", Mandatory: true},
+			{Name: "sheetId", Description: "Google Sheet ID", Type: "string", Mandatory: true},
+			{Name: "range", Description: "Range to read", Type: "string", Mandatory: true},
 		},
 	},
 }
 
-var MailerSendSendMailTaskSpec, _ = yaml.Marshal(MailerSendSendMailTask)
+var GoogleSheetReadRangeTaskSpec, _ = yaml.Marshal(GoogleSheetReadRangeTask)

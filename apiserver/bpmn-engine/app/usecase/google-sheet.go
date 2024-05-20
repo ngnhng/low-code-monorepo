@@ -134,10 +134,11 @@ func NewGoogleSheetReadSingleRangeFn(uc *GoogleSheetUseCase) func(
 		rawData, err := uc.GetSheetData(ctx, sheetId, range_)
 		if err != nil {
 			uc.Logger.Error("Error getting sheet data", "err", err)
-			return nil, err
+			return vars, err
 		}
 
-		uc.Logger.Debug("Raw sheet data", "data", rawData)
+		uc.Logger.Debugf("Raw sheet data value: %v", rawData)
+		uc.Logger.Debugf("Raw sheet data type: %T", rawData)
 
 		// Convert rawData to string
 		data := fmt.Sprintf("%v", rawData)

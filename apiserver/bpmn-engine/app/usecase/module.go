@@ -8,6 +8,7 @@ var Module = fx.Options(
 		NewGoogleSheetUseCase,
 		NewFetchWorkflowStatusUseCase,
 		NewCompleteUserTaskUseCase,
+		NewFetchWorkflowStatusUseCaseV2,
 	),
 )
 

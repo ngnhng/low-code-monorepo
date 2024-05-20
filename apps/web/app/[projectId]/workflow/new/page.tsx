@@ -3,8 +3,9 @@
 import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 import "@bpmn-io/properties-panel/assets/properties-panel.css";
+import "bpmn-js-bpmnlint/dist/assets/css/bpmn-js-bpmnlint.css";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { useMobxStore } from "lib/mobx/store-provider";
 import { observer } from "mobx-react-lite";
@@ -50,24 +51,16 @@ export default function Page() {
 
 const Modeler = observer(() => {
     const {
-        workflow: {
-            modeler,
-            currentWorkflow,
-            fetchDefaultWorkflow,
-            newRenderer,
-        },
+        workflow: { modeler, fetchDefaultWorkflow, newRenderer },
     } = useMobxStore();
 
     //const { workflowId } = props;
 
-    const { isLoading, error } = useSWR(
-        ["workflow", "default"],
-        () => fetchDefaultWorkflow(),
-        {
-            revalidateOnFocus: false,
-            revalidateIfStale: false,
-        }
-    );
+    const {
+        data: currentWorkflow,
+        isLoading,
+        error,
+    } = useSWR(["workflow", "default"], () => fetchDefaultWorkflow());
 
     const panelRef = useRef<HTMLDivElement>(null);
 
@@ -253,31 +246,31 @@ const BPMNModeler = observer(
     ({ modeler, currentWorkflow }: { modeler: any; currentWorkflow: any }) => {
         const containerRef = useRef<HTMLDivElement>(null);
 
-        useEffect(() => {
+        useLayoutEffect(() => {
             if (!containerRef.current) return;
 
             // If you can read this, don't read further
-            setTimeout(() => {
-                // eslint-disable-next-line unicorn/consistent-function-scoping
-                const attachModeler = async () => {
-                    console.log("BPMNModeler", containerRef.current);
+            //setTimeout(() => {
+            // eslint-disable-next-line unicorn/consistent-function-scoping
+            const attachModeler = async () => {
+                console.log("BPMNModeler", containerRef.current);
 
+                try {
                     modeler.attachTo(containerRef.current);
 
-                    try {
-                        const { warnings } =
-                            await modeler.importXML(currentWorkflow);
-                        if (warnings.length > 0) {
-                            console.log("importXML", warnings);
-                        }
-                        modeler.get("canvas").zoom("fit-viewport");
-                    } catch (error) {
-                        console.error(error);
+                    const { warnings } =
+                        await modeler.importXML(currentWorkflow);
+                    if (warnings.length > 0) {
+                        console.log("importXML", warnings);
                     }
-                };
+                    modeler.get("canvas").zoom("fit-viewport");
+                } catch (error) {
+                    console.error(error);
+                }
+            };
 
-                attachModeler();
-            }, 1000);
+            attachModeler();
+            //}, 1000);
 
             return () => {
                 modeler?.clear();
@@ -285,10 +278,6 @@ const BPMNModeler = observer(
             };
         }, [containerRef.current]);
 
-        return (
-            <div ref={containerRef} className="h-full">
-                {Math.random().toString(36).slice(7)}
-            </div>
-        );
+        return <div ref={containerRef} className="h-full"></div>;
     }
 );

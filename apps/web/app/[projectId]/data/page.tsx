@@ -44,11 +44,7 @@ export default function Page() {
 
     const { data, isLoading, error } = useSWR(
         [`tables`, currentProjectId],
-        () => fetchTables(),
-        {
-            revalidateOnFocus: false,
-            revalidateIfStale: false,
-        }
+        () => fetchTables()
     );
 
     if (error) {

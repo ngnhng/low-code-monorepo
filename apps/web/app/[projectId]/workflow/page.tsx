@@ -8,8 +8,20 @@ import {
     columns,
 } from "./_components/modeler-panel/workflow-table";
 import Title from "../../../components/title/title";
-import { Button } from "@repo/ui";
+import {
+    Button,
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogTrigger,
+    Input,
+    Label,
+} from "@repo/ui";
 import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Page() {
     return (
@@ -22,18 +34,19 @@ export default function Page() {
 
 const WorkflowList = observer(() => {
     const {
-        workflow: { fetchWorkflowNameList, workflowNameList },
+        workflow: { fetchWorkflowNameList, workflowNameList, saveNewWorkflow },
         projectData: { currentProjectId },
     } = useMobxStore();
 
     const router = useRouter();
 
+    const [newTitle, setNewTitle] = useState("Workflow Title");
+
     const { isLoading } = useSWR(
-        ["workflow", "list", currentProjectId],
+        ["workflows", currentProjectId],
         () => fetchWorkflowNameList(),
         {
             revalidateOnFocus: false,
-            revalidateIfStale: false,
         }
     );
 
@@ -51,16 +64,53 @@ const WorkflowList = observer(() => {
 
     console.log("Rows:", rows);
 
-    const handleCreateWorkflow = () => {
+    const handleCreateWorkflow = async () => {
         console.log("Create Workflow");
-        // append /new to the current URL
-        router.push(window.location.href + "/new");
+        //router.push(window.location.href + "/new");
+        await saveNewWorkflow(newTitle)
+            .then((res) => {
+                console.log("Workflow Created:", res);
+                router.push(window.location.href + "/" + res.wid);
+            })
+            .catch((error) => {
+                console.log("Error:", error);
+                toast.error("Failed to create workflow");
+            });
     };
 
     return (
         <div className="flex flex-col space-y-4 mt-16">
             <div className="flex justify-between items-center">
-                <Button onClick={handleCreateWorkflow}>Create Workflow</Button>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button className="flex gap-2.5">
+                            <Plus />
+                            Create Workflow
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <div className="flex flex-col gap-4 p-4">
+                            <Label>Enter Workflow Title</Label>
+                            <Input
+                                type="text"
+                                placeholder="Workflow Title"
+                                onChange={(e) => setNewTitle(e.target.value)}
+                                className="p-2 border border-gray-300 rounded-md"
+                            />
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button
+                                    onClick={() => {
+                                        handleCreateWorkflow();
+                                    }}
+                                >
+                                    Save
+                                </Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
             <WorkflowTable columns={columns as any} data={rows} />
         </div>

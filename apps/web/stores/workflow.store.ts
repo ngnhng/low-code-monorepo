@@ -19,6 +19,8 @@ export interface IWorkflowStore {
         title: string;
         wid: string;
         data: string;
+        uiId: string;
+        componentId: string;
         created: string;
     }>;
 
@@ -27,6 +29,7 @@ export interface IWorkflowStore {
     activeElement: any;
 
     currentWorkflowId: string;
+    currentInstanceId: string;
     currentExecutingElementId: string;
     currentExecutingStatus: string;
 
@@ -39,6 +42,8 @@ export interface IWorkflowStore {
     setWorkflowName: (workflowName: string) => void;
 
     launchWorkflow: () => Promise<[string, boolean]>;
+    launchWorkflowWithPayload: (wid: string, payload: any) => Promise<[string, boolean]>;
+
     fetchWorkflow: () => Promise<any>;
     fetchWorkflowById: (workflowId: string) => Promise<any>;
     fetchWorkflowNameList: () => Promise<
@@ -46,12 +51,17 @@ export interface IWorkflowStore {
             title: string;
             wid: string;
             data: string;
+            uiId: string;
+            componentId: string;
             created: string;
         }>
     >;
     fetchDefaultWorkflow: () => Promise<any>;
     saveWorkflow: (title: string) => Promise<any>;
+    saveNewWorkflow: (title: string) => Promise<any>;
     updateWorkflow: (wid: string) => Promise<any>;
+
+    fetchWorkflowStatus: (workflowId) => Promise<any>;
 
     // per user set names of the bpmn workflows
     workflowName: string;
@@ -85,6 +95,7 @@ export class WorkflowStore {
     currentWorkflowId = "";
     currentExecutingElementId = "";
     currentExecutingStatus = "";
+    currentInstanceId = "";
 
     // root store
     rootStore: RootStore;
@@ -104,6 +115,7 @@ export class WorkflowStore {
             currentWorkflowId: observable,
             currentExecutingElementId: observable,
             currentExecutingStatus: observable,
+            currentInstanceId: observable,
             //action
             //  setRenderer: action,
             setWorkflowId: action,
@@ -143,7 +155,9 @@ export class WorkflowStore {
     //  };
 
     setWorkflowId = (workflowId: string) => {
-        this.currentWorkflowId = workflowId;
+        runInAction(() => {
+            this.currentWorkflowId = workflowId;
+        });
     };
 
     setCurrentWorkflow = (workflow: any) => {
@@ -220,6 +234,58 @@ export class WorkflowStore {
         return ["Service Unavailable", false];
     };
 
+    launchWorkflowWithPayload = async (
+        wid: string,
+        payload: any
+    ): Promise<[string, boolean]> => {
+        console.log("launchWorkflowWithPayload", wid, payload);
+        if (!payload || !wid) {
+            console.log("Modeler not initialized");
+            throw new Error("Modeler not initialized");
+        }
+
+        //const workflow = [...this.workflowNameList].find(
+        //    (workflow) => workflow.wid === wid
+        //)?.data;
+
+        const workflow = await this.fetchWorkflowById(wid);
+
+        console.log("Launching", workflow, payload);
+        console.log(
+            "Payload",
+            JSON.stringify({
+                ...payload,
+                _globalContext_user:
+                    this.rootStore.user.currentUser?.email || "none",
+            })
+        );
+
+        if (!workflow) {
+            console.log("Workflow not found", this.workflowNameList);
+            throw new Error("Workflow not found");
+        }
+
+        const base64EncodedWorkflow = Buffer.from(workflow).toString("base64");
+        const base64EncodedVariables = Buffer.from(
+            JSON.stringify({
+                ...payload,
+                _globalContext_user:
+                    this.rootStore.user.currentUser?.email || "none",
+            })
+        ).toString("base64");
+
+        const response = await this.workflowService.launchWorkflow(
+            this.workflowId,
+            base64EncodedWorkflow,
+            base64EncodedVariables
+        );
+        if (response[1]) {
+            return ["Workflow Started", true];
+        }
+
+        throw new Error("Service Unavailable");
+    };
+
     setWorkflowName = (workflowName: string) => {
         runInAction(() => {
             this.workflowName = workflowName;
@@ -255,6 +321,8 @@ export class WorkflowStore {
         Set<{
             title: string;
             wid: string;
+            uiId: string;
+            componentId: string;
             data: string;
             created: string;
         }>
@@ -276,7 +344,7 @@ export class WorkflowStore {
 
     fetchWorkflowById = async (workflowId: string): Promise<any> => {
         console.log("fetchWorkflowById", workflowId);
-        await this.workflowService
+        return await this.workflowService
             .fetchWorkflowById(
                 this.rootStore.projectData.currentProjectId,
                 workflowId
@@ -297,6 +365,7 @@ export class WorkflowStore {
     };
 
     fetchDefaultWorkflow = async (): Promise<any> => {
+        console.log("fetchDefaultWorkflow");
         // generate a lowercase random string of 7 characters
         const pid = Math.random().toString(36).slice(2, 9);
         const xml = defaultXml.replaceAll("{pid}", pid);
@@ -332,6 +401,30 @@ export class WorkflowStore {
             });
     };
 
+    saveNewWorkflow = async (title: string): Promise<any> => {
+        // generate a lowercase random string of 7 characters
+        const pid = Math.random().toString(36).slice(2, 9);
+        const xml = defaultXml.replaceAll("{pid}", pid);
+
+        console.log("saveNewWorkflow", title, xml);
+
+        const data = { xml: xml };
+        return await this.workflowService
+            .saveWorkflow(
+                this.rootStore.projectData.currentProjectId,
+                title,
+                data
+            )
+            .then((res) => {
+                console.log("saveNewWorkflow", res);
+                return res.data;
+            })
+            .catch((error) => {
+                console.error(error);
+                throw error;
+            });
+    };
+
     updateWorkflow = async (wid: string): Promise<any> => {
         const data = await this.modeler
             .saveXML({ format: true })
@@ -348,6 +441,24 @@ export class WorkflowStore {
             .then((res) => {
                 console.log("updateCurrentWorkflow", res);
                 return res.data;
+            })
+            .catch((error) => {
+                console.error(error);
+                throw error;
+            });
+    };
+
+    fetchWorkflowStatus = async (workflowId): Promise<any> => {
+        return await this.workflowService
+            .fetchWorkflowStatus(this.currentInstanceId, workflowId)
+            .then((res) => {
+                console.log("fetchWorkflowStatus", res);
+                runInAction(() => {
+                    this.currentExecutingElementId =
+                        res.currentExecutingElementId;
+                    this.currentExecutingStatus = res.currentExecutingStatus;
+                });
+                return res;
             })
             .catch((error) => {
                 console.error(error);

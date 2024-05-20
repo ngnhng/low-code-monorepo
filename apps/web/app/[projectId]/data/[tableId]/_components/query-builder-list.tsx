@@ -96,7 +96,7 @@ const QueryBuilderList = ({
 
   return (
     <div>
-      <DropdownMenu open={isOpen}>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant={"primary"} onClick={() => setIsOpen(true)}>
             Query Builder

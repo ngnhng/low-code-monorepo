@@ -4,6 +4,7 @@ import {
     action,
     runInAction,
     computed,
+    toJS,
 } from "mobx";
 import { RootStore } from "./root";
 import { ProjectService } from "../services/project.service";
@@ -30,6 +31,8 @@ export interface IProjectStore {
     createDatabase: (pid: string) => void;
 
     currentProjectName: string;
+
+    updateViewComponentWorkflowId: (route, componentId, workflowId) => void;
 }
 
 export class ProjectStore implements IProjectStore {
@@ -56,7 +59,7 @@ export class ProjectStore implements IProjectStore {
             currentProjectId: observable,
             projects: observable.ref,
             viewsIds: observable,
-            views: observable,
+            views: observable.ref,
             currentView: observable,
             currentViewId: observable,
             //use .ref annotation since immutability of projectData is expected.
@@ -101,8 +104,9 @@ export class ProjectStore implements IProjectStore {
 
     getProjectById = async (projectId: string) => {
         const data = await this.projectSerivce.getProject(projectId);
+        console.log("Get Project Data:", data);
         runInAction(() => {
-            this.views = data.views;
+            this.views = data?.views;
         });
 
         return data;
@@ -168,4 +172,60 @@ export class ProjectStore implements IProjectStore {
             (project) => project.pid === this.currentProjectId
         )?.title;
     }
+
+    updateViewComponentWorkflowId = async (
+        route: string,
+        componentId: string,
+        workflowId: string
+    ) => {
+        // find the view by route and update the component workflowId
+        console.log("Update View Component Workflow ID:", route, componentId);
+
+        const view = this.views.find((view) => view.uiData?.route === route);
+        if (!view) {
+            throw new Error("View not found");
+        }
+
+        const updatedView = toJS(view);
+
+        console.log("View:", updatedView);
+
+        const contentComponent = updatedView.uiData?.content?.find(
+            (component) => {
+                console.log("Component:", component);
+                return component?.props.id === componentId;
+            }
+        );
+
+        const zonesComponent = Object.values(
+            updatedView.uiData?.zones || {}
+        ).flatMap((zone: any) =>
+            zone.filter((component) => component?.props.id === componentId)
+        );
+
+        console.log("Content Component:", contentComponent);
+        console.log("Zones Component:", zonesComponent);
+
+        if (contentComponent || zonesComponent) {
+            if (contentComponent) {
+                contentComponent.props.workflowId = workflowId;
+            } else if (zonesComponent && zonesComponent[0].props) {
+                zonesComponent[0].props.workflowId = workflowId;
+            }
+
+            console.log("TEST", view, this.currentProjectId, updatedView);
+            try {
+                return await this.saveView(updatedView.uiData, this.currentProjectId, updatedView.id).then(
+                    () => {
+                        return true;
+                    }
+                );
+            } catch (error) {
+                console.log(error);
+                throw error;
+            }
+        }
+
+        throw new Error("Component not found");
+    };
 }

@@ -206,3 +206,92 @@ func extractTrackingId(data string) string {
 	}
 	return "unknown"
 }
+
+func (el *ExecutionLogger) GetServiceTaskLogSnapshot(ctx context.Context, id string, limit int) ([]workflow.TaskLog, error) {
+	logs := make([]workflow.TaskLog, 0)
+	searchId := id[1:]
+	msgCount := 0
+	finish := make(chan struct{})
+
+	handler := func(msg jetstream.Msg) {
+		el.Logger.Debug("Received message: \n", logger.Fields{
+			"subject": msg.Subject(),
+		})
+
+		subject := msg.Subject()
+
+		switch {
+		case strings.Contains(subject, ServiceTaskStartedSubject),
+			strings.Contains(subject, ServiceTaskCompletedSubject),
+			strings.Contains(subject, UserTaskStartedSubject),
+			strings.Contains(subject, UserTaskCompletedSubject),
+			strings.Contains(subject, ExecutionCompleted):
+			if log := el.processMsg(msg, searchId); log != nil {
+				logs = append(logs, *log)
+				msgCount++
+				if msgCount >= limit {
+					finish <- struct{}{}
+					return
+				}
+			}
+		}
+	}
+
+	el.Logger.Debug("Consuming logs")
+	jobConsumeCtx, err := el.JobConsumer.Consume(handler)
+	if err != nil {
+		el.Logger.Error("Error consuming job logs", err)
+		return nil, err
+	}
+	defer jobConsumeCtx.Stop()
+
+	executionConsumeCtx, err := el.ExecutionConsumer.Consume(handler)
+	if err != nil {
+		el.Logger.Error("Error consuming execution logs", err)
+		return nil, err
+	}
+	defer executionConsumeCtx.Stop()
+
+	select {
+	case <-finish:
+		el.Logger.Info("Finished consuming logs")
+	case <-ctx.Done():
+		el.Logger.Info("Context done consuming logs")
+	}
+
+	return logs, nil
+}
+
+func (el *ExecutionLogger) processMsg(msg jetstream.Msg, searchId string) *workflow.TaskLog {
+	el.Logger.Debug("Processing log for service task: \n", logger.Fields{
+		"subject": msg.Subject(),
+	})
+
+	data := string(msg.Data())
+	if !strings.Contains(data, searchId) {
+		return nil
+	}
+
+	meta, err := msg.Metadata()
+	if err != nil {
+		el.Logger.Error("Error getting metadata: ", err)
+		return nil
+	}
+
+	taskIdPattern := regexp.MustCompile(`(Activity|Event)_[a-zA-Z0-9]{7}`)
+	matches := taskIdPattern.FindStringSubmatch(data)
+	if len(matches) == 0 {
+		el.Logger.Error("Error getting task id")
+		matches = []string{"unknown"}
+	}
+
+	trackingId := extractTrackingId(data)
+
+	el.Logger.Debug("Found log: ", matches[0])
+	return &workflow.TaskLog{
+		Id:       matches[0],
+		Subject:  msg.Subject(),
+		Received: meta.Timestamp,
+		Payload:  trackingId,
+	}
+}

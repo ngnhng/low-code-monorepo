@@ -77,11 +77,12 @@ func (uc *launchWorkflowUseCase) Execute(ctx context.Context, request *workflow.
 	go func(launch *workflow.LaunchStatus) {
 		var varMap map[string]interface{} = make(map[string]interface{})
 		err = json.Unmarshal(decodedMapping, &varMap)
-
 		if err != nil {
 			uc.logger.Error("Error while unmarshalling variable mapping: ", err)
 			uc.errorChan <- err
 		}
+
+		uc.logger.Debug("varMap: ", varMap)
 
 		// create user-specific var mapping from context
 		user, ok := ctx.Value(domain.UserKey).(*jwt.Token)

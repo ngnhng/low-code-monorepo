@@ -28,11 +28,17 @@ import {
     FormControl,
     FormDescription,
     FormMessage,
+    SelectLabel,
 } from "@repo/ui";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MoveRight, Trash } from "lucide-react";
+import { useMobxStore } from "../../../../../lib/mobx/store-provider";
+import useSWR from "swr";
+import { observer } from "mobx-react-lite";
+import { toJS } from "mobx";
+import { toast } from "sonner";
 
 const initialState = {
     businessObject: null,
@@ -84,7 +90,20 @@ function reducer(state, action) {
     }
 }
 
-export function ElementProperties({ element, modeler }) {
+const getObjectType = (bObject) => {
+    const { suitable, isGoogleSheet, $type, isMailService } = bObject;
+
+    if ($type === "bpmn:StartEvent") return "startEvent";
+    if (suitable) return "suitable";
+    if (isGoogleSheet) return "googleSheet";
+    if ($type === "bpmn:SequenceFlow") return "gateway";
+    if ($type === "bpmn:UserTask") return "userTask";
+    if (isMailService) return "mailService";
+
+    return null;
+};
+
+export const ElementProperties = ({ element, modeler }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
 
     const disableAll = () => {
@@ -101,28 +120,39 @@ export function ElementProperties({ element, modeler }) {
         const bObject = getBusinessObject(element);
         dispatch({ type: "setBusinessObject", payload: bObject });
 
-        const { suitable, isGoogleSheet, $type, isMailService } = bObject;
-        const isStartEvent = $type === "bpmn:StartEvent";
-        const isGateway = $type === "bpmn:SequenceFlow";
-        const isUserTask = $type === "bpmn:UserTask";
-
-        //console.log("States", suitable, isGoogleSheet, isStartEvent);
+        const objectType = getObjectType(bObject);
 
         // Disable all at the start
         disableAll();
 
-        if (isStartEvent) {
-            handleStartEvent(bObject);
-        } else if (suitable) {
-            handleSuitable();
-        } else if (isGoogleSheet) {
-            handleGoogleSheet(bObject);
-        } else if (isGateway) {
-            handleSequenceFlow();
-        } else if (isUserTask) {
-            handleUserTask(bObject);
-        } else if (isMailService) {
-            handleMailServiceTask(bObject);
+        switch (objectType) {
+            case "startEvent": {
+                handleStartEvent(bObject);
+                break;
+            }
+            case "suitable": {
+                handleSuitable();
+                break;
+            }
+            case "googleSheet": {
+                handleGoogleSheet(bObject);
+                break;
+            }
+            case "gateway": {
+                handleSequenceFlow();
+                break;
+            }
+            case "userTask": {
+                handleUserTask(bObject);
+                break;
+            }
+            case "mailService": {
+                handleMailServiceTask(bObject);
+                break;
+            }
+            default: {
+                break;
+            }
         }
     }, [element]);
 
@@ -133,8 +163,20 @@ export function ElementProperties({ element, modeler }) {
 
         const moddle = modeler.get("moddle");
         const modeling = modeler.get("modeling");
-        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
+        const extensionElements =
+            bObject.extensionElements ||
+            moddle.create("bpmn:ExtensionElements");
         const ioMapping = moddle.create("yalc:IoMapping");
+
+        // Name of the handle function
+        const taskDefinition = moddle.create("yalc:TaskDefinition", {
+            type: "mailersendSendMail",
+        });
+
+        const apiKey = moddle.create("yalc:Input", {
+            source: "",
+            target: "apiKey",
+        });
 
         const subject = moddle.create("yalc:Input", {
             source: "",
@@ -146,20 +188,27 @@ export function ElementProperties({ element, modeler }) {
             target: "mailText",
         });
 
-        const html = moddle.create("yalc:Input", {
+        const mailToName = moddle.create("yalc:Input", {
             source: "",
-            target: "mailHtml",
+            target: "receiverName",
+        });
+
+        const mailToEmail = moddle.create("yalc:Input", {
+            source: "",
+            target: "receiverEmail",
         });
 
         const output = moddle.create("yalc:Output", {
-            source: "=isSuccess",
-            target: "isSuccess",
+            source: "=mailSent",
+            target: "mailSent",
         });
 
-        ioMapping.get("input").push(subject, text, html);
+        ioMapping
+            .get("input")
+            .push(apiKey, subject, text, mailToName, mailToEmail);
         ioMapping.get("output").push(output);
 
-        extensionElements.get("values").push(ioMapping);
+        extensionElements.get("values").push(taskDefinition, ioMapping);
 
         modeling.updateProperties(element, {
             extensionElements,
@@ -173,7 +222,9 @@ export function ElementProperties({ element, modeler }) {
 
         const moddle = modeler.get("moddle");
         const modeling = modeler.get("modeling");
-        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
+        const extensionElements =
+            bObject.extensionElements ||
+            moddle.create("bpmn:ExtensionElements");
         const ioMapping = moddle.create("yalc:IoMapping");
         const output = moddle.create("yalc:Output", {
             source: "",
@@ -217,9 +268,18 @@ export function ElementProperties({ element, modeler }) {
 
         const moddle = modeler.get("moddle");
         const modeling = modeler.get("modeling");
-        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
+        const extensionElements =
+            bObject.extensionElements ||
+            moddle.create("bpmn:ExtensionElements");
 
         const ioMapping = moddle.create("yalc:IoMapping");
+        // add _globalContext_user to global context
+        const defaultOutput = moddle.create("yalc:Output", {
+            source: "=_globalContext_user",
+            target: "_globalContext_user",
+        });
+        ioMapping.get("output").push(defaultOutput);
+
         extensionElements.get("values").push(ioMapping);
 
         modeling.updateProperties(element, {
@@ -238,11 +298,13 @@ export function ElementProperties({ element, modeler }) {
 
         const moddle = modeler.get("moddle");
         const modeling = modeler.get("modeling");
-        const extensionElements = bObject.extensionElements || moddle.create("bpmn:ExtensionElements");
+        const extensionElements =
+            bObject.extensionElements ||
+            moddle.create("bpmn:ExtensionElements");
 
         // Name of the handle function
         const taskDefinition = moddle.create("yalc:TaskDefinition", {
-            type: "getData",
+            type: "googleSheetReadRange",
         });
 
         const ioMapping = moddle.create("yalc:IoMapping");
@@ -251,22 +313,24 @@ export function ElementProperties({ element, modeler }) {
             target: "_localContext_user",
         });
         const sheetIdInput = moddle.create("yalc:Input", {
-            source: "sheetId",
-            target: "",
+            source: "",
+            target: "sheetId",
         });
         const sheetDataInput = moddle.create("yalc:Input", {
+            source: "",
+            target: "sheetData",
+        });
+        const rangeInput = moddle.create("yalc:Input", {
+            source: "",
+            target: "range",
+        });
+        const output = moddle.create("yalc:Output", {
             source: "=sheetData",
             target: "",
         });
-        const rangeInput = moddle.create("yalc:Input", {
-            source: "range",
-            target: "",
-        });
-        const output = moddle.create("yalc:Output", {
-            source: "sheetData",
-            target: "",
-        });
-        ioMapping.get("input").push(defaultInput, sheetIdInput, sheetDataInput, rangeInput);
+        ioMapping
+            .get("input")
+            .push(defaultInput, sheetIdInput, sheetDataInput, rangeInput);
         ioMapping.get("output").push(output);
 
         extensionElements.get("values").push(taskDefinition, ioMapping);
@@ -330,7 +394,9 @@ export function ElementProperties({ element, modeler }) {
 
     const isTimeoutConfigured = (element) => {
         const attachers = element.attachers || [];
-        return attachers.some((e) => hasDefinition(e, "bpmn:TimerEventDefinition"));
+        return attachers.some((e) =>
+            hasDefinition(e, "bpmn:TimerEventDefinition")
+        );
     };
 
     const append = (element, attrs) => {
@@ -348,9 +414,15 @@ export function ElementProperties({ element, modeler }) {
                     <AccordionContent>
                         <div className="flex flex-row justify-between">
                             <div>
-                                <h2 className="text-xl font-bold">{getElementType(element)}</h2>
-                                <p className="text-sm text-gray-500">{getElementName(element)}</p>
-                                <p className="text-sm text-gray-500">{element.id}</p>
+                                <h2 className="text-xl font-bold">
+                                    {getElementType(element)}
+                                </h2>
+                                <p className="text-sm text-gray-500">
+                                    {getElementName(element)}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                    {element.id}
+                                </p>
                             </div>
                         </div>
                     </AccordionContent>
@@ -359,55 +431,78 @@ export function ElementProperties({ element, modeler }) {
                     <AccordionItem value="qa">
                         <AccordionTrigger>QA</AccordionTrigger>
                         <AccordionContent>
-                            <QAElementProperties element={element} modeler={modeler} />
+                            <QAElementProperties
+                                element={element}
+                                modeler={modeler}
+                            />
                         </AccordionContent>
                     </AccordionItem>
                 )}
-                {state.isGS ? <GoogleSheetProps element={element} modeler={modeler} /> : ""}
+                {state.isGS ? (
+                    <GoogleSheetProps element={element} modeler={modeler} />
+                ) : (
+                    ""
+                )}
                 {state.isStartEvent && (
                     <AccordionItem value="startEvent">
                         <AccordionTrigger>I/O</AccordionTrigger>
                         <AccordionContent>
-                            <OutputProperties element={element} modeler={modeler} />
+                            <OutputProperties
+                                element={element}
+                                modeler={modeler}
+                            />
                         </AccordionContent>
                     </AccordionItem>
                 )}
-                {state.isSequenceFlow ? <GatewayProps element={element} modeler={modeler} /> : ""}
-                {state.isUserTask ? <UserTaskProps element={element} modeler={modeler} /> : ""}
-                {state.isMailService ? <MailServiceProps element={element} modeler={modeler} /> : ""}
+                {state.isSequenceFlow ? (
+                    <GatewayProps element={element} modeler={modeler} />
+                ) : (
+                    ""
+                )}
+                {state.isUserTask ? (
+                    <UserTaskProps element={element} modeler={modeler} />
+                ) : (
+                    ""
+                )}
+                {state.isMailService ? (
+                    <MailServiceProps element={element} modeler={modeler} />
+                ) : (
+                    ""
+                )}
                 <AccordionItem value="actions">
                     <AccordionTrigger>Actions</AccordionTrigger>
                     <AccordionContent>
                         <div className="flex flex-col gap-1">
-                            {is(element, "bpmn:Task") && !is(element, "bpmn:ServiceTask") && (
-                                <Button onClick={makeServiceTask}>Make Service Task</Button>
-                            )}
-                            {is(element, "bpmn:Event") && !hasDefinition(element, "bpmn:MessageEventDefinition") && (
-                                <Button onClick={makeMessageEvent}>Make Message Event</Button>
-                            )}
+                            {is(element, "bpmn:Task") &&
+                                !is(element, "bpmn:ServiceTask") && (
+                                    <Button onClick={makeServiceTask}>
+                                        Make Service Task
+                                    </Button>
+                                )}
+                            {is(element, "bpmn:Event") &&
+                                !hasDefinition(
+                                    element,
+                                    "bpmn:MessageEventDefinition"
+                                ) && (
+                                    <Button onClick={makeMessageEvent}>
+                                        Make Message Event
+                                    </Button>
+                                )}
 
-                            {is(element, "bpmn:Task") && !isTimeoutConfigured(element) && <Button onClick={attachTimeout}>Attach Timeout</Button>}
+                            {is(element, "bpmn:Task") &&
+                                !isTimeoutConfigured(element) && (
+                                    <Button onClick={attachTimeout}>
+                                        Attach Timeout
+                                    </Button>
+                                )}
                         </div>
                     </AccordionContent>
                 </AccordionItem>
                 {is(element, "bpmn:Event") ? (
                     <AccordionItem value="link">
-                        <AccordionTrigger>Behaviour Definition</AccordionTrigger>
+                        <AccordionTrigger>Behaviour</AccordionTrigger>
                         <AccordionContent>
-                            <div className="flex flex-col gap-5 p-5">
-                                <Label>Choose a UI element to listen to:</Label>
-                                <Select>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select one..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value="one">ID #1</SelectItem>
-                                            <SelectItem value="two">ID #2</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            <FormSelector element={element} modeler={modeler} />
                         </AccordionContent>
                     </AccordionItem>
                 ) : (
@@ -416,7 +511,297 @@ export function ElementProperties({ element, modeler }) {
             </Accordion>
         </div>
     );
-}
+};
+
+const FormSelector = observer(
+    ({ element, modeler }: { element: any; modeler: any }) => {
+        const {
+            projectData: {
+                currentProjectId,
+                getProjectById,
+                views,
+                updateViewComponentWorkflowId,
+            },
+            workflow: { currentWorkflowId },
+            tableData: { tables, fetchTables },
+        } = useMobxStore();
+
+        //const [ui, setUi] = useState<any>(null);
+        //const [component, setComponent] = useState<any>(null);
+        //const [tableId, setTableId] = useState<any>(null);
+
+        const bObject = getBusinessObject(element);
+
+        useSWR<any>(["view", currentProjectId], () =>
+            getProjectById(currentProjectId)
+        );
+
+        useSWR<any>(["tables", currentProjectId], () => fetchTables());
+
+        const uiViews = toJS(views);
+
+        const routes = uiViews?.map((view) => {
+            const contentForms =
+                view.uiData?.content?.filter(
+                    (component) =>
+                        component.type === "FormTable" &&
+                        component.props.tableId
+                ) || [];
+
+            const zoneForms = Object.values(view.uiData?.zones || {}).flatMap(
+                (zone: any) =>
+                    zone.filter(
+                        (component) =>
+                            component.type === "FormTable" &&
+                            component.props.tableId
+                    )
+            );
+
+            return {
+                routes: view.uiData?.route,
+                forms: [...contentForms, ...zoneForms],
+            };
+        });
+
+        const formListener = getExtensionElement(bObject, "yalc:FormListener");
+        //// if exists, get the ui and component
+        //if (formListener) {
+        //    setUi(formListener.get("ui"));
+        //    setComponent(formListener.get("component"));
+        //    setTableId(formListener.get("table"));
+        //}
+
+        // based on ui and component, lookup the table id and get table spec
+
+        const handleFormSelect = async (value) => {
+            // lookup the route the component/id belongs to and update its workflowId
+            const { route, form, table } = JSON.parse(value);
+            console.log("Form selected:", route, form, table);
+
+            await updateViewComponentWorkflowId(route, form, currentWorkflowId)
+                .then(() => {
+                    const moddle = modeler.get("moddle");
+                    const modeling = modeler.get("modeling");
+
+                    const extensionElements =
+                        bObject.extensionElements ||
+                        moddle.create("bpmn:ExtensionElements");
+
+                    // check if form listener already exists
+                    const formListener = getExtensionElement(
+                        bObject,
+                        "yalc:FormListener"
+                    );
+                    // if exists, modify the form listener
+                    if (formListener) {
+                        console.log("form listener found", bObject);
+
+                        console.log(element, formListener);
+                        //modeling.updateProperties(formListener, {
+                        //    component: form,
+                        //    ui: route,
+                        //    table,
+                        //});
+                        formListener.component = form;
+                        formListener.ui = route;
+                        formListener.table = table;
+
+                        console.log("form listener updated", bObject);
+
+                        // remove all yalc:Output elements expect _globalContext_user
+                        const ioMapping = getExtensionElement(
+                            bObject,
+                            "yalc:IoMapping"
+                        );
+                        ioMapping.get("output").splice(1);
+
+                        // add table columns to output
+                        const tableColumns = tables.find(
+                            (t) => t.id === table
+                        )?.columns;
+
+                        if (tableColumns)
+                            for (const column of tableColumns) {
+                                if (column.name !== "id") {
+                                    const output = moddle.create(
+                                        "yalc:Output",
+                                        {
+                                            source: `=${column.name}`,
+                                            target: column.name,
+                                        }
+                                    );
+
+                                    ioMapping.get("output").push(output);
+                                }
+                            }
+
+                        modeling.updateProperties(element, {
+                            extensionElements,
+                        });
+                    } else {
+                        const newFormListener = moddle.create(
+                            "yalc:FormListener",
+                            {
+                                component: form,
+                                ui: route,
+                                table,
+                            }
+                        );
+
+                        // get ioMapping and add table columns
+                        const ioMapping = getExtensionElement(
+                            bObject,
+                            "yalc:IoMapping"
+                        );
+
+                        const tableColumns = tables.find(
+                            (t) => t.id === table
+                        )?.columns;
+
+                        if (tableColumns)
+                            for (const column of tableColumns) {
+                                if (column.name !== "id") {
+                                    const output = moddle.create(
+                                        "yalc:Output",
+                                        {
+                                            source: `=${column.name}`,
+                                            target: column.name,
+                                        }
+                                    );
+
+                                    ioMapping.get("output").push(output);
+                                }
+                            }
+
+                        // add form listener to first position
+                        extensionElements
+                            .get("values")
+                            .unshift(newFormListener);
+
+                        // add ioMapping to extensionElements
+                        //extensionElements.get("values").push(ioMapping);
+
+                        modeling.updateProperties(element, {
+                            extensionElements,
+                        });
+                    }
+
+                    toast.success("Form linked to workflow successfully");
+                })
+                .catch((error) => {
+                    console.log(error);
+                    toast.error("Failed to link form to workflow");
+                });
+        };
+
+        return (
+            <div className="flex flex-col gap-5 p-5">
+                <Label>Link to a Form:</Label>
+                <Select
+                    onValueChange={handleFormSelect}
+                    defaultValue={
+                        formListener
+                            ? JSON.stringify({
+                                  route: formListener.get("ui"),
+                                  form: formListener.get("component"),
+                                  table: formListener.get("table"),
+                              })
+                            : undefined
+                    }
+                >
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select one..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {routes?.map((route, index) => (
+                            <SelectGroup key={index}>
+                                <SelectLabel>{route.routes}</SelectLabel>
+                                {route.forms?.length > 0 ? (
+                                    route.forms.map((form, formIndex) => (
+                                        <SelectItem
+                                            disabled={
+                                                form.props.workflowId &&
+                                                form.props.workflowId !==
+                                                    currentWorkflowId
+                                            }
+                                            key={formIndex}
+                                            value={JSON.stringify({
+                                                route: route.routes,
+                                                form: form.props.id,
+                                                table: form.props.tableId,
+                                            })}
+                                        >
+                                            {form.props.formName}
+                                        </SelectItem>
+                                    ))
+                                ) : (
+                                    <SelectItem value="none" disabled>
+                                        No forms available
+                                    </SelectItem>
+                                )}
+                            </SelectGroup>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Button
+                    variant="outline"
+                    disabled={!formListener}
+                    onClick={async () => {
+                        await updateViewComponentWorkflowId(
+                            formListener.ui,
+                            formListener.component,
+                            currentWorkflowId
+                        )
+                            .then(() => {
+                                const modeling = modeler.get("modeling");
+                                const extensionElements =
+                                    bObject.extensionElements;
+
+                                if (formListener) {
+                                    extensionElements
+                                        .get("values")
+                                        .splice(
+                                            extensionElements
+                                                .get("values")
+                                                .indexOf(formListener),
+                                            1
+                                        );
+
+                                    modeling.updateProperties(element, {
+                                        extensionElements,
+                                    });
+
+                                    toast.success(
+                                        "Form unlinked from workflow"
+                                    );
+                                }
+
+                                // remove all yalc:Output elements expect _globalContext_user
+                                const ioMapping = getExtensionElement(
+                                    bObject,
+                                    "yalc:IoMapping"
+                                );
+
+                                ioMapping.get("output").splice(1);
+
+                                modeling.updateProperties(element, {
+                                    extensionElements,
+                                });
+                            })
+                            .catch((error) => {
+                                console.log(error);
+                                toast.error(
+                                    "Failed to unlink form from workflow"
+                                );
+                            });
+                    }}
+                >
+                    Unlink Form
+                </Button>
+            </div>
+        );
+    }
+);
 
 const getElementName = (element) => {
     return element.businessObject.name || "No name";
@@ -495,17 +880,30 @@ const OutputProperties = ({ element, modeler }) => {
                     <h3>Outputs</h3>
                     <ul className="space-y-2">
                         {outputs.map((output, index) => (
-                            <li key={index} className="flex items-center justify-between p-2 bg-gray-100 rounded shadow">
+                            <li
+                                key={index}
+                                className="flex items-center justify-between p-2 bg-gray-100 rounded shadow"
+                            >
                                 <div className="flex items-center gap-2">
-                                    <span className="font-medium text-gray-700">{output.source}</span>
-                                    <MoveRight />
-                                    <span className="text-gray-500">{output.target}</span>
+                                    {output.source ===
+                                    "_globalContext_user" ? null : (
+                                        <div>
+                                            <span className="font-medium text-gray-700">
+                                                {output.source}
+                                            </span>
+                                            <MoveRight />
+                                            <span className="text-gray-500">
+                                                {output.target}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                                 <button
                                     onClick={() => handleRemove(index)}
                                     className="p-2 rounded hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50"
                                 >
-                                    <Trash color="#f54254" size={18} /> {/* Trash bin icon */}
+                                    <Trash color="#f54254" size={18} />{" "}
+                                    {/* Trash bin icon */}
                                 </button>
                             </li>
                         ))}
@@ -536,7 +934,11 @@ const OutputForm = ({ onSubmit }) => {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5" autoComplete="off">
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col gap-5"
+                autoComplete="off"
+            >
                 <FormField
                     control={form.control}
                     name="source"
@@ -546,7 +948,9 @@ const OutputForm = ({ onSubmit }) => {
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
-                            <FormDescription>Source of the output</FormDescription>
+                            <FormDescription>
+                                Source of the output
+                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}
@@ -560,7 +964,9 @@ const OutputForm = ({ onSubmit }) => {
                             <FormControl>
                                 <Input {...field} />
                             </FormControl>
-                            <FormDescription>Target of the output</FormDescription>
+                            <FormDescription>
+                                Target of the output
+                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { APIService } from "./api.service";
@@ -65,6 +66,16 @@ Resolver.prototype.resolveConfig = function (pkg: string, configName: string) {
     );
 };
 
+const getuiId = (wf: any) => {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(wf.wfData, "text/xml");
+    const formElement = xmlDoc.getElementsByTagNameNS("*", "formListener")[0];
+    const ui = formElement?.getAttribute("uiId");
+    const component = formElement?.getAttribute("componentId");
+
+    return [ui, component];
+};
+
 export class BpmnWorkflowService extends APIService {
     constructor() {
         super(CLIENT_BASE_URL);
@@ -109,11 +120,9 @@ export class BpmnWorkflowService extends APIService {
                 process_definition: wf,
                 variable_mapping: vars,
             });
-            return response.status === 200
-                ? [response.data, true]
-                : [response.data, false];
-        } catch {
-            return ["Error requesting launch", false];
+            return response.data;
+        } catch (error) {
+            throw new Error(`Error calling service ${error}`);
         }
     }
 
@@ -121,6 +130,8 @@ export class BpmnWorkflowService extends APIService {
         Set<{
             title: string;
             wid: string;
+            uiId: string;
+            componentId: string;
             data: string;
             created: string;
         }>
@@ -144,6 +155,8 @@ export class BpmnWorkflowService extends APIService {
                               minute: "2-digit",
                               second: "2-digit",
                           }).format(new Date(wf.createdAt)),
+                          uiId: getuiId(wf.wfData)[0],
+                          componentId: getuiId(wf.wfData)[1],
                       }))
                   )
                 : new Set();
@@ -183,5 +196,17 @@ export class BpmnWorkflowService extends APIService {
         );
 
         return response.status === 200 ? response.data : undefined;
+    }
+
+    async fetchWorkflowStatus(instanceId, workflowId: string): Promise<any> {
+        try {
+            const response = await this.get(
+                `/api/workflow/status/${instanceId}`
+            );
+
+            return response.status === 200 ? response.data : undefined;
+        } catch {
+            throw new Error("Error calling service");
+        }
     }
 }

@@ -49,6 +49,7 @@ func (r *RedisTokenRepository) Update(ctx context.Context, token auth.OAuthToken
 	if err != nil {
 		return err
 	}
+	r.Logger.Debugf("updating token in redis: %s %v", createRedisKey(token), json)
 	r.Client.Set(ctx, createRedisKey(token), json, 0)
 	return nil
 }

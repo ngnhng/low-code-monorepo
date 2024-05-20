@@ -3,9 +3,9 @@
 import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
 import "@bpmn-io/properties-panel/assets/properties-panel.css";
-import 'bpmn-js-bpmnlint/dist/assets/css/bpmn-js-bpmnlint.css';
+import "bpmn-js-bpmnlint/dist/assets/css/bpmn-js-bpmnlint.css";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { useMobxStore } from "lib/mobx/store-provider";
 import { observer } from "mobx-react-lite";
@@ -16,6 +16,11 @@ import {
     ResizablePanelGroup,
     ScrollArea,
     Button,
+    Sheet,
+    SheetTrigger,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
 } from "@repo/ui";
 import { PlayIcon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
@@ -224,17 +229,55 @@ const Controls = observer(
                 </div>
 
                 <div className="flex flex-row items-center gap-x-4">
-                    {/*<WorkflowSelector />*/}
-
-                    <div className="font-medium p-2">
-                        {/* Showing current node of workflow */}
-                        Workflow Status:{" "}
-                        <span className="text-green-500 font-bold">
-                            Activity_Test
-                        </span>
-                    </div>
+                    <WorkflowStatusSheet workflowId={workflowId} />
                 </div>
             </div>
+        );
+    }
+);
+
+const WorkflowStatusSheet = observer(
+    (props: React.PropsWithChildren<{ workflowId: string }>) => {
+        const {
+            workflow: { fetchWorkflowStatus },
+        } = useMobxStore();
+
+        const {
+            data: status,
+            isLoading,
+            error,
+        } = useSWR(
+            ["workflow", "status", props.workflowId],
+            () => fetchWorkflowStatus(props.workflowId),
+            {
+                shouldRetryOnError: false,
+            }
+        );
+
+        if (isLoading) {
+            return <div>Loading...</div>;
+        }
+
+        if (error) {
+            return <div>Error</div>;
+        }
+
+        return (
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button className="flex gap-2.5">Workflow Status</Button>
+                </SheetTrigger>
+                <SheetContent className="w-[500px] sm:w-[640px]">
+                    <SheetHeader>
+                        <SheetTitle>Workflow Status</SheetTitle>
+                    </SheetHeader>
+                    <ScrollArea className="h-[calc(100%)]">
+                        <div className="p-5">
+                            <pre>{JSON.stringify(status, undefined, 2)}</pre>
+                        </div>
+                    </ScrollArea>
+                </SheetContent>
+            </Sheet>
         );
     }
 );
@@ -281,31 +324,31 @@ const BPMNModeler = observer(
         //    }
         //}, [modeler, currentWorkflow]);
 
-        useEffect(() => {
+        useLayoutEffect(() => {
             if (!containerRef.current) return;
 
             // If you can read this, don't read further
-            setTimeout(() => {
-                // eslint-disable-next-line unicorn/consistent-function-scoping
-                const attachModeler = async () => {
-                    console.log("BPMNModeler", containerRef.current);
+            //setTimeout(() => {
+            // eslint-disable-next-line unicorn/consistent-function-scoping
+            const attachModeler = async () => {
+                console.log("BPMNModeler", containerRef.current);
 
+                try {
                     modeler.attachTo(containerRef.current);
 
-                    try {
-                        const { warnings } =
-                            await modeler.importXML(currentWorkflow);
-                        if (warnings.length > 0) {
-                            console.log("importXML", warnings);
-                        }
-                        modeler.get("canvas").zoom("fit-viewport");
-                    } catch (error) {
-                        console.error(error);
+                    const { warnings } =
+                        await modeler.importXML(currentWorkflow);
+                    if (warnings.length > 0) {
+                        console.log("importXML", warnings);
                     }
-                };
+                    modeler.get("canvas").zoom("fit-viewport");
+                } catch (error) {
+                    console.error(error);
+                }
+            };
 
-                attachModeler();
-            }, 1000);
+            attachModeler();
+            //}, 1000);
 
             return () => {
                 modeler?.clear();

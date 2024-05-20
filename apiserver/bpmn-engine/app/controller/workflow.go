@@ -25,6 +25,7 @@ type (
 		usecase.LaunchWorkflowUseCase
 		*usecase.FetchWorkflowStatusUseCase
 		*usecase.CompleteUserTaskUseCase
+		*usecase.FetchWorkflowStatusUseCaseV2
 	}
 
 	WorkflowControllerParams struct {
@@ -34,15 +35,17 @@ type (
 		usecase.LaunchWorkflowUseCase
 		*usecase.FetchWorkflowStatusUseCase
 		*usecase.CompleteUserTaskUseCase
+		*usecase.FetchWorkflowStatusUseCaseV2
 	}
 )
 
 func NewWorkflowController(p WorkflowControllerParams) *WorkflowController {
 	return &WorkflowController{
-		logger:                     p.Logger,
-		LaunchWorkflowUseCase:      p.LaunchWorkflowUseCase,
-		FetchWorkflowStatusUseCase: p.FetchWorkflowStatusUseCase,
-		CompleteUserTaskUseCase:    p.CompleteUserTaskUseCase,
+		logger:                       p.Logger,
+		LaunchWorkflowUseCase:        p.LaunchWorkflowUseCase,
+		FetchWorkflowStatusUseCase:   p.FetchWorkflowStatusUseCase,
+		CompleteUserTaskUseCase:      p.CompleteUserTaskUseCase,
+		FetchWorkflowStatusUseCaseV2: p.FetchWorkflowStatusUseCaseV2,
 	}
 }
 
@@ -54,9 +57,11 @@ func (ctrl *WorkflowController) Execute(c echo.Context) (err error) {
 	// bind and validate the request
 	var req workflow.WorkflowLaunchRequest
 	if err = c.Bind(&req); err != nil {
+		ctrl.logger.Errorf("Error binding request: %s %v", err, req)
 		return c.JSON(domain_error.BadRequestError("Malformed Request", "MALFORMED_REQUEST"))
 	}
 	if err = req.Validate(); err != nil {
+		ctrl.logger.Errorf("Error validating request: %s", err)
 		return c.JSON(domain_error.BadRequestError("Malformed Request", "MALFORMED_REQUEST"))
 	}
 
@@ -67,7 +72,9 @@ func (ctrl *WorkflowController) Execute(c echo.Context) (err error) {
 	ctx := c.Request().Context()
 	ctx = context.WithValue(ctx, domain.UserKey, c.Get("user"))
 	launchStatus := &workflow.LaunchStatus{}
+
 	if launchStatus, err = ctrl.LaunchWorkflowUseCase.Execute(ctx, &req); err != nil {
+		ctrl.logger.Error("Error launching workflow", "err", err)
 		return c.JSON(domain_error.InternalServerError("Internal Server Error", "INTERNAL_SERVER_ERROR"))
 	}
 
@@ -153,7 +160,7 @@ func (ctrl *WorkflowController) CompleteUserTask(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	ctx = context.WithValue(ctx, domain.UserKey, c.Get("user"))
+	//ctx = context.WithValue(ctx, domain.UserKey, c.Get("user"))
 
 	vars, err := ctrl.CompleteUserTaskUseCase.Execute(ctx, trackingID, req)
 	if err != nil {
@@ -161,4 +168,20 @@ func (ctrl *WorkflowController) CompleteUserTask(c echo.Context) error {
 		return c.JSON(domain_error.InternalServerError("Internal Server Error", "INTERNAL_SERVER_ERROR"))
 	}
 	return c.JSON(200, workflow.CompleteUserTaskResponse{Vars: vars})
+}
+
+// FetchInstanceStatus is the method to fetch the workflow instance status
+func (ctrl *WorkflowController) FetchInstanceStatus(c echo.Context) error {
+	ctrl.logger.Debug("FetchWorkflowStatusController.Fetch")
+	workflowID := c.Param("id")
+	ctrl.logger.Debug("Workflow ID: ", workflowID)
+
+	ctx := c.Request().Context()
+
+	status, err := ctrl.FetchWorkflowStatusUseCaseV2.Execute(ctx, workflowID)
+	if err != nil {
+		ctrl.logger.Error("Error fetching workflow status", "err", err)
+		return c.JSON(domain_error.InternalServerError("Internal Server Error", "INTERNAL_SERVER_ERROR"))
+	}
+	return c.JSON(200, status)
 }

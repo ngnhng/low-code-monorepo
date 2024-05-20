@@ -32,7 +32,10 @@ export class ViewService {
     const updatedView = await this.prisma.view.findFirst({
       where: {
         id: Number.parseInt(viewId, 10),
-        projectId: Number.parseInt(projectId, 10),
+        //projectId: Number.parseInt(projectId, 10),
+        project: {
+          pid: projectId,
+        },
       },
     });
 
