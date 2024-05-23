@@ -86,6 +86,8 @@ export class WorkflowStore {
         title: string;
         wid: string;
         data: string;
+        componentId: string;
+        uiId: string;
         created: string;
     }>;
     currentWorkflow: any;
