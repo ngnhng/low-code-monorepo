@@ -19,15 +19,16 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async validate(payload) {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      await this.user.getUserByEmail(payload.email);
-    } catch (error) {
-      this.logger.error('Unauthorized', error);
+    // try {
+    //   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    //   await this.user.getUserByEmail(payload.email);
+    // } catch (error) {
+    //   this.logger.error('Unauthorized', error);
 
-      throw new UnauthorizedException(error);
-    }
+    //   throw new UnauthorizedException(error);
+    // }
 
     return { email: payload.email };
   }
