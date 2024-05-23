@@ -21,6 +21,7 @@ import { Kanban, KanbanProps } from "../_components/blocks/Kanban";
 import { Charts, ChartsProps } from "../_components/blocks/Chart";
 import { Form, FormProps } from "../_components/blocks/Form";
 import { FormTable, FormTableProps } from "../_components/blocks/FormTable";
+import { Banner, BannerProps } from "../_components/blocks/Banner";
 
 export type { RootProps } from "./root";
 
@@ -37,7 +38,8 @@ type CProps = {
   Text: TextProps;
   VerticalSpace: VerticalSpaceProps;
   Form: FormProps,
-  FormTable: FormTableProps
+  FormTable: FormTableProps,
+  Banner: BannerProps
 };
 
 export type UserConfig = Config<
@@ -89,7 +91,8 @@ export const conf: Config<
     Text,
     VerticalSpace,
     Form,
-    FormTable
+    FormTable,
+    Banner
   },
 };
 
