@@ -29,22 +29,38 @@ import {
     FormDescription,
     FormMessage,
     SelectLabel,
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+    Command,
+    CommandInput,
+    CommandEmpty,
+    CommandGroup,
+    Separator,
 } from "@repo/ui";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MoveRight, Trash } from "lucide-react";
+import { CheckIcon, MoveRight, Trash } from "lucide-react";
 import { useMobxStore } from "../../../../../lib/mobx/store-provider";
 import useSWR from "swr";
 import { observer } from "mobx-react-lite";
 import { toJS } from "mobx";
 import { toast } from "sonner";
+import cn from "../../../../../lib";
+import {
+    formatQuery,
+    parseSQL,
+    QueryBuilder,
+} from "react-querybuilder";
+import "react-querybuilder/dist/query-builder.css";
 
 const initialState = {
     businessObject: null,
     isQA: false,
     isGS: false,
     isMailService: false,
+    isTableService: false,
     isStartEvent: false,
     isSequenceFlow: false,
     isUserTask: false,
@@ -67,6 +83,8 @@ function reducer(state, action) {
                 isStartEvent: false,
                 isSequenceFlow: false,
                 isUserTask: false,
+                isTableService: false,
+                isErrorEvent: false,
             };
         }
         case "setIsGS": {
@@ -84,6 +102,12 @@ function reducer(state, action) {
         case "setIsMailService": {
             return { ...state, isMailService: action.payload };
         }
+        case "setIsTableService": {
+            return { ...state, isTableService: action.payload };
+        }
+        case "setIsErrorEvent": {
+            return { ...state, isErrorEvent: action.payload };
+        }
         default: {
             throw new Error(`Unsupported action type: ${action.type}`);
         }
@@ -91,7 +115,9 @@ function reducer(state, action) {
 }
 
 const getObjectType = (bObject) => {
-    const { suitable, isGoogleSheet, $type, isMailService } = bObject;
+    console.log("getObjectType", bObject);
+    const { suitable, isGoogleSheet, $type, isMailService, isTableService } =
+        bObject;
 
     if ($type === "bpmn:StartEvent") return "startEvent";
     if (suitable) return "suitable";
@@ -99,6 +125,8 @@ const getObjectType = (bObject) => {
     if ($type === "bpmn:SequenceFlow") return "gateway";
     if ($type === "bpmn:UserTask") return "userTask";
     if (isMailService) return "mailService";
+    if (isTableService) return "tableService";
+    //if ($type === "bpmn:BoundaryEvent" && bObject.errorRef) return "errorEvent";
 
     return null;
 };
@@ -150,6 +178,14 @@ export const ElementProperties = ({ element, modeler }) => {
                 handleMailServiceTask(bObject);
                 break;
             }
+            case "tableService": {
+                handleTableServiceTask(bObject);
+                break;
+            }
+            //case "errorEvent": {
+            //    handleErrorEvent(bObject);
+            //    break;
+            //}
             default: {
                 break;
             }
@@ -207,6 +243,58 @@ export const ElementProperties = ({ element, modeler }) => {
             .get("input")
             .push(apiKey, subject, text, mailToName, mailToEmail);
         ioMapping.get("output").push(output);
+
+        extensionElements.get("values").push(taskDefinition, ioMapping);
+
+        modeling.updateProperties(element, {
+            extensionElements,
+        });
+    };
+
+    const handleTableServiceTask = (bObject: any) => {
+        // table name selector and a sql query input
+        dispatch({ type: "setIsTableService", payload: true });
+
+        if (bObject.extensionElements) return;
+
+        const moddle = modeler.get("moddle");
+        const modeling = modeler.get("modeling");
+        const extensionElements =
+            bObject.extensionElements ||
+            moddle.create("bpmn:ExtensionElements");
+
+        // Name of the handle function
+        const taskDefinition = moddle.create("yalc:TaskDefinition", {
+            type: "tableService",
+        });
+
+        const ioMapping = moddle.create("yalc:IoMapping");
+        const defaultInput = moddle.create("yalc:Input", {
+            source: "=_globalContext_user",
+            target: "_localContext_user",
+        });
+
+        const tableNameInput = moddle.create("yalc:Input", {
+            source: "",
+            target: "tableName",
+        });
+
+        // create yalc:RuleGroup for sql query
+        const sqlQueryInput = moddle.create("yalc:RuleGroup", {
+            id: "sqlQuery",
+            combinator: "and",
+            not: false,
+            rules: [],
+        });
+
+        //const sqlQueryInput = moddle.create("yalc:Input", {
+        //    source: "",
+        //    target: "sqlQuery",
+        //});
+
+        ioMapping
+            .get("input")
+            .push(defaultInput, tableNameInput, sqlQueryInput);
 
         extensionElements.get("values").push(taskDefinition, ioMapping);
 
@@ -328,6 +416,7 @@ export const ElementProperties = ({ element, modeler }) => {
             source: "=sheetData",
             target: "",
         });
+
         ioMapping
             .get("input")
             .push(defaultInput, sheetIdInput, sheetDataInput, rangeInput);
@@ -469,10 +558,23 @@ export const ElementProperties = ({ element, modeler }) => {
                 ) : (
                     ""
                 )}
+                {state.isTableService ? (
+                    <AccordionItem value="tableService">
+                        <AccordionTrigger>Table Service Query</AccordionTrigger>
+                        <AccordionContent>
+                            <TableSelector
+                                element={element}
+                                modeler={modeler}
+                            />
+                        </AccordionContent>
+                    </AccordionItem>
+                ) : (
+                    ""
+                )}
                 <AccordionItem value="actions">
                     <AccordionTrigger>Actions</AccordionTrigger>
                     <AccordionContent>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-4">
                             {is(element, "bpmn:Task") &&
                                 !is(element, "bpmn:ServiceTask") && (
                                     <Button onClick={makeServiceTask}>
@@ -484,9 +586,35 @@ export const ElementProperties = ({ element, modeler }) => {
                                     element,
                                     "bpmn:MessageEventDefinition"
                                 ) && (
-                                    <Button onClick={makeMessageEvent}>
-                                        Make Message Event
-                                    </Button>
+                                    <div className="flex flex-col gap-1">
+                                        <Label>Message Event</Label>
+                                        <Button onClick={makeMessageEvent}>
+                                            Make Message Event
+                                        </Button>
+                                        <Separator className="space-y-4" />
+                                    </div>
+                                )}
+
+                            {is(element, "bpmn:Event") &&
+                                !hasDefinition(
+                                    element,
+                                    "bpmn:ErrorEventDefinition"
+                                ) && (
+                                    <MakeErrorEvent
+                                        modeler={modeler}
+                                        element={element}
+                                    />
+                                )}
+
+                            {is(element, "bpmn:Event") &&
+                                hasDefinition(
+                                    element,
+                                    "bpmn:ErrorEventDefinition"
+                                ) && (
+                                    <CreateError
+                                        modeler={modeler}
+                                        element={element}
+                                    />
                                 )}
 
                             {is(element, "bpmn:Task") &&
@@ -512,6 +640,428 @@ export const ElementProperties = ({ element, modeler }) => {
         </div>
     );
 };
+
+const makeErrorEventFormSchema = z.object({
+    errorName: z.string(),
+    errorCode: z.string(),
+});
+
+const CreateError = ({ modeler, element }) => {
+    const errors = modeler.get("elementRegistry").filter((element) => {
+        return (
+            element.type === "bpmn:Error" &&
+            element.businessObject.$parent.$type === "bpmn:Definitions"
+        );
+    });
+    const errorRef = element.businessObject.eventDefinitions[0]?.errorRef;
+    const currentErrorName = errors.find((error) => error.id === errorRef)
+        ?.businessObject.name;
+    const currentErrorCode = errors.find((error) => error.id === errorRef)
+        ?.businessObject.errorCode;
+
+    const form = useForm<z.infer<typeof makeErrorEventFormSchema>>({
+        resolver: zodResolver(makeErrorEventFormSchema),
+        defaultValues: {
+            errorName: currentErrorName || "",
+            errorCode: currentErrorCode || "",
+        },
+    });
+
+    const onSubmit = async (data) => {
+        const moddle = modeler.get("moddle");
+        // replace element with error event
+        const newError = moddle.create("bpmn:Error", {
+            id: `Error_${Math.random().toString(36).slice(2, 11)}`,
+            name: data.errorName,
+            errorCode: data.errorCode,
+        });
+
+        console.log("New Error", newError);
+
+        // if new error, add it to the workflow definitions, push it to last
+        if (!errors.some((error) => error.name === data.name)) {
+            const definitions = modeler.getDefinitions();
+            definitions.get("rootElements")?.push(newError);
+        }
+    };
+
+    return (
+        <Form {...form}>
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col gap-4"
+            >
+                <FormField
+                    control={form.control}
+                    name="errorName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Error Name</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="errorCode"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Error Code</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+                <Button>Create Error</Button>
+            </form>
+        </Form>
+    );
+};
+
+const MakeErrorEvent = ({ modeler, element }) => {
+    const [value, setValue] = useState<string>("");
+
+    // look for all errors in the project (<bpmn:Error)
+    const errors = modeler
+        .getDefinitions()
+        .get("rootElements")
+        .filter((e) => {
+            return e.$type === "bpmn:Error";
+        });
+
+    console.log("MakeErrorEvent", errors, modeler.getDefinitions());
+
+    const makeErrorEvent = () => {
+        const bpmnReplace = modeler.get("bpmnReplace");
+        const newElement = bpmnReplace.replaceElement(element, {
+            type: element.businessObject.$type,
+            eventDefinitionType: "bpmn:ErrorEventDefinition",
+        });
+
+        console.log(
+            "MakeErrorEvent",
+            value,
+            newElement,
+            element.businessObject
+        );
+        const assignError = errors.find((error) => error.id === value);
+        console.log("assignError", assignError);
+        // search for bpmn:BoundaryEvent with id of bObj
+        const event = modeler.get("elementRegistry").get(newElement.id);
+        console.log("event", event);
+
+        // add related attributes to the event def
+        const eventDefinition = newElement.businessObject.eventDefinitions[0];
+        console.log("eventDefinition", eventDefinition);
+        eventDefinition.errorRef = assignError;
+        console.log("eventDefinition after assignment", eventDefinition);
+    };
+
+    return (
+        <div>
+            <Select onValueChange={(value) => setValue(value)}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Select Global Error Reference" />
+                </SelectTrigger>
+                <SelectContent>
+                    {errors.map((error) => (
+                        <SelectItem key={error.id} value={error.id}>
+                            {error.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+
+            <Button
+                onClick={() => {
+                    makeErrorEvent();
+                }}
+            >
+                Make Error Event
+            </Button>
+        </div>
+    );
+};
+
+const TableSelector = observer(
+    ({ element, modeler }: { element: any; modeler: any }) => {
+        const {
+            projectData: { currentProjectId },
+            tableData: { fetchTables },
+        } = useMobxStore();
+
+        const [open, setOpen] = useState<boolean>(false);
+
+        const { data: tables, isLoading } = useSWR<any>(
+            ["tables", currentProjectId],
+            () => fetchTables(),
+            {
+                revalidateOnFocus: false,
+            }
+        );
+
+        const bObject = getBusinessObject(element);
+
+        const moddle = modeler.get("moddle");
+        const modeling = modeler.get("modeling");
+
+        const ioMapping = getExtensionElement(bObject, "yalc:IoMapping");
+
+        // get tableId from yalc:Input and remove the =" " around the tableId
+        const tableId = ioMapping
+            ?.get("input")[1]
+            ?.source?.replace(/="(.*)"/, "$1");
+
+        // get sqlQuery from yalc:Input
+        const sqlQueryFormatted = ioMapping
+            ?.get("input")[2]
+            ?.source?.replace(/="(.*)"/, "$1");
+
+        const [query, setQuery] = useState<any>(parseSQL(sqlQueryFormatted));
+
+        console.log("TableSelector", tableId, parseSQL(sqlQueryFormatted));
+
+        // modify the extension elements
+        const handleTableSelect = (value) => {
+            console.log("Table selected:", value);
+            const extensionElements =
+                bObject.extensionElements ||
+                moddle.create("bpmn:ExtensionElements");
+
+            // parse selected table id to yalc:Input
+            const tableIdInput = moddle.create("yalc:Input", {
+                source: `="${value}"`,
+                target: "tableId",
+            });
+
+            // check if ioMapping already exists
+            const ioMapping = getExtensionElement(bObject, "yalc:IoMapping");
+
+            // if exists, update the tableId
+            if (ioMapping) {
+                ioMapping.get("input")[1] = tableIdInput;
+            } else {
+                // if not, create a new ioMapping
+                const ioMapping = moddle.create("yalc:IoMapping");
+                ioMapping.get("input").push(tableIdInput);
+
+                extensionElements.get("values").push(ioMapping);
+            }
+
+            modeling.updateProperties(element, {
+                extensionElements,
+            });
+        };
+
+        const handleInputSqlQuery = (value) => {
+            console.log("SQL Query:", value);
+            setQuery(value);
+            const extensionElements =
+                bObject.extensionElements ||
+                moddle.create("bpmn:ExtensionElements");
+
+            // check if ioMapping already exists
+            const ioMapping = getExtensionElement(bObject, "yalc:IoMapping");
+
+            // parse selected table id to yalc:Input
+            const sqlQueryInput = moddle.create("yalc:Input", {
+                source: `="${formatQuery(value, "sql")}"`,
+                target: "sqlQuery",
+            });
+
+            // if exists, update the tableId
+            if (ioMapping) {
+                ioMapping.get("input")[2] = sqlQueryInput;
+            } else {
+                // if not, create a new ioMapping
+                const ioMapping = moddle.create("yalc:IoMapping");
+                ioMapping.get("input").push(sqlQueryInput);
+
+                extensionElements.get("values").push(ioMapping);
+            }
+
+            modeling.updateProperties(element, {
+                extensionElements,
+            });
+
+            // update output, we map each column name to the target
+            const tableColumns = tables.find((t) => t.id === tableId)?.columns;
+
+            if (tableColumns)
+                for (const column of tableColumns) {
+                    // check if it already exists
+                    const exists = ioMapping
+                        .get("output")
+                        .some((output) => output.source === `=${column.name}`);
+
+                    if (exists) {
+                        const output = ioMapping
+                            .get("output")
+                            .find(
+                                (output) => output.source === `=${column.name}`
+                            );
+
+                        output.target = column.name;
+                    } else {
+                        const output = moddle.create("yalc:Output", {
+                            source: `=${column.name}`,
+                            target: column.name,
+                        });
+
+                        ioMapping.get("output").push(output);
+                    }
+                }
+        };
+
+        const outputs = getExtensionElement(bObject, "yalc:IoMapping")?.output;
+
+        const inputValues =
+            getExtensionElement(bObject, "yalc:IoMapping")
+                ?.input?.map((input) => {
+                    if (input.target !== "_localContext_user")
+                        return {
+                            name: `_VAR_${input.target}`,
+                            label: input.target,
+                            valueSources: ["field"],
+                        };
+                })
+                .filter(Boolean) || [];
+
+        console.log("TableSelector", tables, tableId, outputs, inputValues);
+
+        if (isLoading) {
+            return <div>Loading...</div>;
+        }
+
+        return (
+            <div className="flex flex-col space-y-4 items-start">
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox">
+                            {tableId
+                                ? tables.find((t) => t.id === tableId)?.label
+                                : "Select Table"}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                        <Command>
+                            <CommandInput placeholder="Search Table" />
+                            <CommandEmpty>No tables found</CommandEmpty>
+                            <CommandGroup>
+                                {tables.map((table) => (
+                                    <Command
+                                        key={table.id}
+                                        onClick={() => {
+                                            handleTableSelect(table.id);
+                                            setOpen(false);
+                                        }}
+                                    >
+                                        {table.label}
+                                        <CheckIcon
+                                            className={cn(
+                                                "ml-2 h-4 w-4",
+                                                tableId === table.id
+                                                    ? "opacity-100"
+                                                    : "opacity-0"
+                                            )}
+                                        />
+                                    </Command>
+                                ))}
+                            </CommandGroup>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
+
+                <QueryBuilder
+                    fields={[
+                        ...(tables
+                            .find((t) => t.id === tableId)
+                            ?.columns.map((column) => {
+                                return {
+                                    name: column.name,
+                                    label: column.label,
+                                    inputType:
+                                        column.name == "id"
+                                            ? "numeric"
+                                            : "text",
+                                };
+                            }) || []),
+                        //...inputValues,
+                    ]}
+                    onQueryChange={(query) => {
+                        handleInputSqlQuery(query);
+                    }}
+                    query={query}
+                />
+                <Label className="mt-4">SQL Query</Label>
+                <pre className="p-2 bg-gray-100 rounded-md overflow-auto">
+                    {query ? formatQuery(query, "sql") : ""}
+                </pre>
+
+                <Separator />
+                <Label>Input:</Label>
+                {/* render space to input more  */}
+                <InputProperties element={element} modeler={modeler} />
+
+                <Separator />
+                <Label>Output:</Label>
+                {/* render each output field with input field for each target*/}
+                {outputs?.map((output, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                        <Label>{output.source}</Label>
+                        <Input
+                            value={output.target}
+                            onChange={(e) => {
+                                const moddle = modeler.get("moddle");
+                                const modeling = modeler.get("modeling");
+
+                                const extensionElements =
+                                    bObject.extensionElements ||
+                                    moddle.create("bpmn:ExtensionElements");
+
+                                const ioMapping = getExtensionElement(
+                                    bObject,
+                                    "yalc:IoMapping"
+                                );
+
+                                ioMapping.get("output")[index].target =
+                                    e.target.value;
+
+                                modeling.updateProperties(element, {
+                                    extensionElements,
+                                });
+                            }}
+                        />
+                        <Trash
+                            onClick={() => {
+                                const moddle = modeler.get("moddle");
+                                const modeling = modeler.get("modeling");
+
+                                const extensionElements =
+                                    bObject.extensionElements ||
+                                    moddle.create("bpmn:ExtensionElements");
+
+                                const ioMapping = getExtensionElement(
+                                    bObject,
+                                    "yalc:IoMapping"
+                                );
+
+                                ioMapping.get("output").splice(index, 1);
+
+                                modeling.updateProperties(element, {
+                                    extensionElements,
+                                });
+                            }}
+                        />
+                    </div>
+                ))}
+            </div>
+        );
+    }
+);
 
 const FormSelector = observer(
     ({ element, modeler }: { element: any; modeler: any }) => {
@@ -873,11 +1423,10 @@ const OutputProperties = ({ element, modeler }) => {
     };
 
     return (
-        <div>
+        <div className="w-full">
             <h2>Output Mapping</h2>
             <div className="flex flex-col gap-5 p-5">
                 <div>
-                    <h3>Outputs</h3>
                     <ul className="space-y-2">
                         {outputs.map((output, index) => (
                             <li
@@ -914,6 +1463,161 @@ const OutputProperties = ({ element, modeler }) => {
                 <OutputForm onSubmit={onSubmit} />
             </div>
         </div>
+    );
+};
+
+const InputProperties = ({ element, modeler }) => {
+    // entered inputs
+    const [inputs, setInputs] = useState<any>([]);
+
+    const businessObject = getBusinessObject(element);
+    const moddle = modeler.get("moddle");
+    const modeling = modeler.get("modeling");
+
+    const onSubmit = (data) => {
+        const { source, target } = data;
+
+        const extensionElements = businessObject.get("extensionElements");
+
+        const values = moddle.create("yalc:Input", { source, target });
+
+        const ioMapping = getExtensionElement(businessObject, "yalc:IoMapping");
+        ioMapping.get("input").push(values);
+        setInputs([...inputs, { source, target }]);
+
+        //extensionElements.get('values').push(ioMapping);
+        modeling.updateProperties(element, {
+            extensionElements,
+        });
+    };
+
+    useEffect(() => {
+        const extensionElements = businessObject.get("extensionElements");
+        if (!extensionElements) return;
+
+        const ioMapping = getExtensionElement(businessObject, "yalc:IoMapping");
+        if (!ioMapping) return;
+
+        setInputs(
+            ioMapping.get("input").map(({ source, target }) => {
+                return {
+                    source,
+                    target,
+                };
+            })
+        );
+    }, []);
+
+    const handleRemove = (index) => {
+        const extensionElements = businessObject.get("extensionElements");
+        const ioMapping = getExtensionElement(businessObject, "yalc:IoMapping");
+        const values = ioMapping.get("input");
+        if (!values) return;
+
+        values.splice(index, 1);
+        // if all inputs are removed, remove ioMapping
+        // if (values.length === 0) {
+        //     extensionElements.get("values").splice(extensionElements.get("values").indexOf(ioMapping), 1);
+        // }
+
+        modeling.updateProperties(element, {
+            extensionElements,
+        });
+        setInputs(inputs.filter((_, i) => i !== index));
+    };
+
+    return (
+        <div className="w-full">
+            <h2>Input Mapping</h2>
+            <div className="flex flex-col gap-5 p-5">
+                <div>
+                    <ul className="space-y-2">
+                        {inputs.map((input, index) => (
+                            <li
+                                key={index}
+                                className="flex items-center justify-between p-2 bg-gray-100 rounded shadow"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <div>
+                                        <span className="font-medium text-gray-700">
+                                            {input.source}
+                                        </span>
+                                        <MoveRight />
+                                        <span className="text-gray-500">
+                                            {input.target}
+                                        </span>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => handleRemove(index)}
+                                    className="p-2 rounded hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50"
+                                >
+                                    <Trash color="#f54254" size={18} />{" "}
+                                    {/* Trash bin icon */}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+            <div className="flex flex-col gap-5 p-5">
+                <InputForm onSubmit={onSubmit} />
+            </div>
+        </div>
+    );
+};
+
+const InputForm = ({ onSubmit }) => {
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            source: "",
+            target: "",
+        },
+    });
+
+    return (
+        <Form {...form}>
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col gap-5"
+                autoComplete="off"
+            >
+                <FormField
+                    control={form.control}
+                    name="source"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Source</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                            <FormDescription>
+                                Source of the input
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="target"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Target</FormLabel>
+                            <FormControl>
+                                <Input {...field} />
+                            </FormControl>
+                            <FormDescription>
+                                Target of the input
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <Button type="submit">Add Input</Button>
+            </form>
+        </Form>
     );
 };
 

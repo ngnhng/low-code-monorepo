@@ -27,7 +27,7 @@ jobs:
               uses: docker/build-push-action@v5
               with:
                   context: ./apiserver/user-api
-                  file: Dockerfile.prod
+                  file: ./apiserver/user-api/Dockerfile.prod
                   push: true
                   tags: ghcr.io/${{ github.repository }}/user-api:latest
 
@@ -35,7 +35,7 @@ jobs:
               uses: docker/build-push-action@v5
               with:
                   context: ./apiserver/auth-api
-                  file: Dockerfile.prod
+                  file: ./apiserver/auth-api/Dockerfile.prod
                   push: true
                   tags: ghcr.io/${{ github.repository }}/auth-api:latest
 
@@ -43,7 +43,7 @@ jobs:
               uses: docker/build-push-action@v5
               with:
                   context: ./apiserver/table-api/app
-                  file: Dockerfile
+                  file: ./apiserver/table-api/app/Dockerfile
                   push: true
                   tags: ghcr.io/${{ github.repository }}/dbms-api:latest
             
@@ -51,7 +51,7 @@ jobs:
               uses: docker/build-push-action@v5
               with:
                   context: ./apiserver/bpmn-engine
-                  file: Dockerfile.dev
+                  file: ./apiserver/bpmn-engine/Dockerfile.dev
                   push: true
                   tags: ghcr.io/${{ github.repository }}/workflow-api:latest
 

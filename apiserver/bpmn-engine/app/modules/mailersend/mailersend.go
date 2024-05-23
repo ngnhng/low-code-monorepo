@@ -135,7 +135,7 @@ func (m *MailerSend) SendMail(ctx context.Context, req *SendMailRequest) error {
 
 	tags := []string{"yalc"}
 
-	bodyHtml := fmt.Sprintf("<h1>%s</h1>", req.Text)
+	bodyHtml := fmt.Sprintf("<h2>%s</h2>", req.Text)
 
 	message := ms.Email.NewMessage()
 
@@ -147,13 +147,13 @@ func (m *MailerSend) SendMail(ctx context.Context, req *SendMailRequest) error {
 	message.SetTags(tags)
 	message.SetInReplyTo("client-id")
 
-	res, err := ms.Email.Send(ctx, message)
+	m.logger.Debugf("Sending email: %s", message)
+
+	_, err := ms.Email.Send(ctx, message)
 	if err != nil {
 		m.logger.Error("Error sending email", "err", err)
 		return err
 	}
-
-	m.logger.Debug("Email sent", "res", res)
 
 	return nil
 

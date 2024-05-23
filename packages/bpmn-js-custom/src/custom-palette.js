@@ -1,4 +1,4 @@
-import QAIcon, { GSIcon64, mailIcon } from "./custom-icons";
+import QAIcon, { GSIcon64, mailIcon, tableServiceIcon } from "./custom-icons";
 
 const SUITABILITY_SCORE_HIGH = 100,
     SUITABILITY_SCORE_AVERGE = 50,
@@ -62,16 +62,22 @@ export default class CustomPalette {
             };
         }
 
+        function createTableServiceTask(type) {
+            return function (event) {
+                const businessObject = bpmnFactory.create(type);
+
+                businessObject.isTableService = true;
+
+                const shape = elementFactory.createShape({
+                    type: type,
+                    businessObject: businessObject,
+                });
+
+                create.start(event, shape);
+            };
+        }
+
         return {
-            // "create.qa-task": {
-            //     group: "activity",
-            //     title: translate("Create QA Task"),
-            //     imageUrl: QAIcon.dataUrl,
-            //     action: {
-            //         dragstart: createTask("bpmn:ServiceTask"),
-            //         click: createTask("bpmn:ServiceTask"),
-            //     },
-            // },
             "create.gs-task": {
                 group: "activity",
                 title: translate("Create Google Sheet Task"),
@@ -92,26 +98,24 @@ export default class CustomPalette {
                     click: createMailServiceTask("bpmn:ServiceTask"),
                 },
             },
-            //"create.average-task": {
-            //    group: "activity",
-            //    className: "bpmn-icon-task yellow",
-            //    title: translate("Create Task with average suitability score"),
-            //    action: {
-            //        dragstart: createTask(SUITABILITY_SCORE_AVERGE),
-            //        click: createTask(SUITABILITY_SCORE_AVERGE),
-            //    },
-            //},
-            //"create.high-task": {
-            //    group: "activity",
-            //    className: "bpmn-icon-task green",
-            //    title: translate("Create Task with high suitability score"),
-            //    action: {
-            //        dragstart: createTask(SUITABILITY_SCORE_HIGH),
-            //        click: createTask(SUITABILITY_SCORE_HIGH),
-            //    },
-            //},
+            "create.table-service-task": {
+                group: "activity",
+                title: translate("Create Table Service Task"),
+                imageUrl: tableServiceIcon,
+                className: "bpmn-custom-palette-icon",
+                action: {
+                    dragstart: createTableServiceTask("bpmn:ServiceTask"),
+                    click: createTableServiceTask("bpmn:ServiceTask"),
+                },
+            },
         };
     }
 }
 
-CustomPalette.$inject = ["bpmnFactory", "create", "elementFactory", "palette", "translate"];
+CustomPalette.$inject = [
+    "bpmnFactory",
+    "create",
+    "elementFactory",
+    "palette",
+    "translate",
+];
