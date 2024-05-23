@@ -29,16 +29,16 @@ require (
 	github.com/yoheimuta/go-protoparser v3.4.0+incompatible
 	gitlab.com/shar-workflow/nats-proto-gen-go v0.0.0-20231114143611-df0240df32cb
 	go.opentelemetry.io/contrib/propagators/autoprop v0.48.0
-	go.opentelemetry.io/otel v1.23.0
+	go.opentelemetry.io/otel v1.24.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v0.44.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.21.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.23.0
-	go.opentelemetry.io/otel/metric v1.23.0
+	go.opentelemetry.io/otel/metric v1.24.0
 	go.opentelemetry.io/otel/sdk v1.23.0
 	go.opentelemetry.io/otel/sdk/metric v1.21.0
-	go.opentelemetry.io/otel/trace v1.23.0
+	go.opentelemetry.io/otel/trace v1.24.0
 	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc
-	google.golang.org/grpc v1.59.0
+	google.golang.org/grpc v1.62.0
 	google.golang.org/protobuf v1.32.0
 )
 
@@ -116,7 +116,8 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.18.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20231127180814-3a041ad873d4 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231127180814-3a041ad873d4 // indirect
+	google.golang.org/genproto v0.0.0-20240205150955-31a09d347014 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240205150955-31a09d347014 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240304161311-37d4d3c04a78 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
