@@ -2,7 +2,7 @@ FROM node:20 AS builder
 
 WORKDIR /app
 
-COPY yarn.lock package.json ./
+COPY yarn.lock package.json tsconfig.json tsconfig.build.json ./
 COPY prisma ./prisma/
 
 RUN yarn install --frozen-lockfile
@@ -22,5 +22,5 @@ WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 
-CMD [ "node", "dist/main.js" ]
+CMD [ "node", "dist/src/main.js" ]
 EXPOSE 3000

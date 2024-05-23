@@ -1,27 +1,36 @@
+# Stage 1: Build the Go binary
 FROM golang:1.22-bullseye as builder
-WORKDIR /app
-# Copy the go mod and sum files
-COPY go.* ./
-# Create app directory
-RUN mkdir /app/app
-RUN mkdir /app/shar
-COPY ./app/go.* ./app
-COPY ./shar/go.* ./shar
-# Download the go dependencies
-RUN go mod download
-COPY . ./
-# Copy the source code
-# Buildthe webserver
-RUN go build -v -o server ./app/cmd/main.go
 
+WORKDIR /workspace
+
+# Copy the go.mod and go.sum files from both the main app and the shar module
+COPY go.work go.work.sum ./
+COPY app/go.mod app/go.sum ./app/
+COPY shar/go.mod shar/go.sum ./shar/
+
+# Download the Go dependencies
+RUN go work sync
+RUN go mod download -x
+
+# Copy the source code from both the main app and the shar module
+COPY app/ ./app/
+COPY shar/ ./shar/
+
+# Build the web server
+RUN go build -v -o /workspace/server ./app/cmd/main.go
+
+# Stage 2: Create a minimal runtime image
 FROM debian:buster-slim
+
 RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/server /app/server
+# Copy the built server binary from the builder stage
+COPY --from=builder /workspace/server /app/server
+
 # Copy the service task definitions
-COPY --from=builder /app/app/service-tasks/*.yaml /app/service-tasks/
+COPY --from=builder /workspace/app/service-tasks/*.yaml /app/service-tasks/
 
 WORKDIR /app
 
@@ -29,7 +38,5 @@ ENV ENVIRONMENT=development
 
 EXPOSE 3000
 
-# sleep for 3 secs as a fast workaround to wait for the engine to start
+# Sleep for 3 seconds to wait for the engine to start, then start the server
 CMD ["sh", "-c", "sleep 3 && ./server"]
-
-

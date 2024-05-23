@@ -144,7 +144,7 @@ func (s *SharClient) LoadServiceTaskSpec(ctx context.Context, taskYaml []byte, f
 //}
 
 func onProcessEnd(_ context.Context, vars model.Vars, wfError *model.Error, state model.CancellationState) {
-	fmt.Printf("Vars: %v\n", vars)
+	fmt.Printf("Process End - Vars: %v\n", vars)
 }
 
 func TestLogServiceFn(ctx context.Context, cl client.JobClient, vars model.Vars) (model.Vars, error) {
