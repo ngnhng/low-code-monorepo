@@ -55,7 +55,6 @@ const LayoutContent = ({
 
     useSWR("project-list", () => fetchProjectList(), {
         revalidateOnFocus: false,
-        revalidateIfStale: false,
     });
 
     return (

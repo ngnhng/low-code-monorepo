@@ -30,7 +30,7 @@ export interface IProjectStore {
     createProject: (title: string) => void;
     createDatabase: (pid: string) => void;
 
-    currentProjectName: string;
+    currentProjectName: () => string;
 
     updateViewComponentWorkflowId: (route, componentId, workflowId) => void;
 }
@@ -215,11 +215,13 @@ export class ProjectStore implements IProjectStore {
 
             console.log("TEST", view, this.currentProjectId, updatedView);
             try {
-                return await this.saveView(updatedView.uiData, this.currentProjectId, updatedView.id).then(
-                    () => {
-                        return true;
-                    }
-                );
+                return await this.saveView(
+                    updatedView.uiData,
+                    this.currentProjectId,
+                    updatedView.id
+                ).then(() => {
+                    return true;
+                });
             } catch (error) {
                 console.log(error);
                 throw error;

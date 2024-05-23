@@ -61,6 +61,17 @@
             ]
         },
         {
+            "name": "TableServiceNode",
+            "extends": ["bpmn:ServiceTask"],
+            "properties": [
+                {
+                    "name": "isTableService",
+                    "isAttr": true,
+                    "type": "Boolean"
+                }
+            ]
+        },
+        {
             "name": "ConditionExpression",
             "superClass": ["Element"],
             "properties": [
@@ -84,6 +95,78 @@
                     "name": "output",
                     "isMany": true,
                     "type": "Output"
+                }
+            ]
+        },
+        {
+            "name": "RuleGroup",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "combinator",
+                    "isBody": true,
+                    "type": "String"
+                },
+                {
+                    "name": "id",
+                    "isBody": true,
+                    "type": "String"
+                },
+                {
+                    "name": "not",
+                    "isBody": true,
+                    "type": "Boolean"
+                },
+                {
+                    "name": "rules",
+                    "isMany": true,
+                    "type": "Rule"
+                }
+            ]
+        },
+        {
+            "name": "Rule",
+            "superClass": ["Element"],
+            "properties": [
+                {
+                    "name": "combinator",
+                    "isBody": true,
+                    "type": "String"
+                },
+                {
+                    "name": "not",
+                    "isBody": true,
+                    "type": "Boolean"
+                },
+                {
+                    "name": "field",
+                    "isBody": true,
+                    "type": "String"
+                },
+                {
+                    "name": "id",
+                    "isBody": true,
+                    "type": "String"
+                },
+                {
+                    "name": "valueSource",
+                    "isBody": true,
+                    "type": "String"
+                },
+                {
+                    "name": "operator",
+                    "isBody": true,
+                    "type": "String"
+                },
+                {
+                    "name": "value",
+                    "isBody": true,
+                    "type": "String"
+                },
+                {
+                    "name": "rules",
+                    "isMany": true,
+                    "type": "Rule"
                 }
             ]
         },
