@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React from "react";
+import React, { useState } from "react";
 import type { ComponentConfig } from "@measured/puck";
 import { TableRenderer, transformColumnsDef } from "./table-render";
 import { useMobxStore } from "lib/mobx/store-provider";
@@ -8,11 +8,14 @@ import useSWR from "swr";
 import { EdittedSelect } from "../Chart";
 import { TableSelector } from "../../table-selector";
 import { useLocalStorage } from "hooks/use-local-storage";
+import { DataTable } from "./data-table";
 
 export type TableProps = {
   title: string;
   titlePosition: "above" | "below";
   tableId: string;
+  visibleColumns: string[];
+  // pageSize: number;
 };
 
 export const Table: ComponentConfig<TableProps> = {
@@ -42,11 +45,24 @@ export const Table: ComponentConfig<TableProps> = {
         return <TableSelector onChange={onChange} value={value} />;
       },
     },
+    // pageSize: {
+    //   type: "number",
+    //   label: "Page Size",
+    // },
+    visibleColumns: {
+      type: "custom",
+      label: "View",
+      render: ({ onChange, value }) => {
+        return <h1>Views</h1>;
+      },
+    },
   },
   defaultProps: {
     title: "",
     titlePosition: "below",
     tableId: "",
+    visibleColumns: [],
+    // pageSize: 10,
   },
   render: ({ title, tableId, titlePosition }) => {
     const {
@@ -89,10 +105,7 @@ export const Table: ComponentConfig<TableProps> = {
         {titlePosition === "above" && (
           <p className="mb-4 font-semibold">{title}</p>
         )}
-        <TableRenderer
-          columns={transformColumnsDef(columns!)}
-          data={data.rows}
-        />
+        <DataTable columns={transformColumnsDef(columns!)} data={data.rows} />
         {titlePosition === "below" && (
           <p className="mt-4 font-semibold">{title}</p>
         )}

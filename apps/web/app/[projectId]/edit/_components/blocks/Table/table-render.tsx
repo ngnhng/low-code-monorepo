@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/ui";
+import { DataTableColumnHeader } from "./data-table-column-header";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -96,18 +97,20 @@ export const transformColumnsDef = (
 ): ColumnDef<yalcColumnDef>[] => {
   const results: ColumnDef<yalcColumnDef>[] = [];
 
-  for (const column of columns) {
-    if (column.name === "id") {
+  for (const col of columns) {
+    if (col.name === "id") {
       continue;
     }
 
-    if (column.type === "link") {
+    if (col.type === "link") {
       continue;
     }
 
     results.push({
-      accessorKey: column.name,
-      header: column.label,
+      accessorKey: col.name,
+      header: ({ column }) => {
+        return <DataTableColumnHeader column={column} title={col.label} />;
+      },
     });
   }
 
