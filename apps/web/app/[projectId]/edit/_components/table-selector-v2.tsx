@@ -43,6 +43,7 @@ export const TableSelectorV2 = observer(
         tableId: v,
         selectedTableFields: selectedTableFields,
         yAxis: [],
+        visibleColumns: [],
         xAxis: "",
       });
     };
