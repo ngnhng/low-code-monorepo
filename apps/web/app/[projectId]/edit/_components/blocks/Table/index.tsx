@@ -9,12 +9,18 @@ import { EdittedSelect } from "../Chart";
 import { TableSelector } from "../../table-selector";
 import { useLocalStorage } from "hooks/use-local-storage";
 import { DataTable } from "./data-table";
+import { Checkbox, Label } from "@repo/ui";
+import { ChevronDown } from "lucide-react";
+import { TableSelectorV2 } from "../../table-selector-v2";
 
 export type TableProps = {
   title: string;
   titlePosition: "above" | "below";
-  tableId: string;
-  visibleColumns: string[];
+  tableConfigs: {
+    tableId: string;
+    selectedTableFields: any[];
+    visibleColumns: string[];
+  };
   // pageSize: number;
 };
 
@@ -38,33 +44,43 @@ export const Table: ComponentConfig<TableProps> = {
         },
       ],
     },
-    tableId: {
+    // tableId: {
+    //   type: "custom",
+    //   label: "Select Table",
+    //   render: ({ onChange, value }) => {
+    //     return <TableSelector onChange={onChange} value={value} />;
+    //   },
+    // },
+    tableConfigs: {
       type: "custom",
       label: "Select Table",
-      render: ({ onChange, value }) => {
-        return <TableSelector onChange={onChange} value={value} />;
-      },
-    },
-    // pageSize: {
-    //   type: "number",
-    //   label: "Page Size",
-    // },
-    visibleColumns: {
-      type: "custom",
-      label: "View",
-      render: ({ onChange, value }) => {
-        return <h1>Views</h1>;
+      render: ({ onChange, value, field }) => {
+        return (
+          <>
+            <TableSelectorV2 onChange={onChange} value={value} />
+            {value.selectedTableFields.length > 0 && (
+              <SetVisibleColumns
+                selectedTableFields={value.selectedTableFields}
+                handleUpdate={onChange}
+                tableConfigs={value}
+              />
+            )}
+          </>
+        );
       },
     },
   },
   defaultProps: {
     title: "",
     titlePosition: "below",
-    tableId: "",
-    visibleColumns: [],
+    tableConfigs: {
+      tableId: "",
+      selectedTableFields: [],
+      visibleColumns: [],
+    },
     // pageSize: 10,
   },
-  render: ({ title, tableId, titlePosition }) => {
+  render: ({ title, titlePosition, tableConfigs }) => {
     const {
       projectData: { currentProjectId },
       tableData: { fetchTableData, tables },
@@ -72,11 +88,13 @@ export const Table: ComponentConfig<TableProps> = {
     const [yalcToken] = useLocalStorage("yalc_at", "");
 
     const { data, isLoading } = useSWR(
-      tableId === "" ? undefined : ["tables_rows", currentProjectId, tableId],
+      tableConfigs.tableId === ""
+        ? undefined
+        : ["tables_rows", currentProjectId, tableConfigs.tableId],
       () =>
         fetchTableData(
           {
-            tableId: tableId,
+            tableId: tableConfigs.tableId,
             query: {
               sql: "(1=1)",
               params: [],
@@ -86,7 +104,7 @@ export const Table: ComponentConfig<TableProps> = {
         )
     );
 
-    if (!tableId) {
+    if (!tableConfigs.tableId) {
       return (
         <div className="flex w-full h-96 justify-center items-center bg-slate-100 rounded-md">
           Select a table
@@ -98,7 +116,12 @@ export const Table: ComponentConfig<TableProps> = {
       return <div>Loading...</div>;
     }
 
-    const columns = tables.find((table) => table.id === tableId)?.columns;
+    const columns = tables
+      .find((table) => table.id === tableConfigs.tableId)
+      ?.columns.filter((column) => {
+        if (column.name === "id") return false;
+        return tableConfigs.visibleColumns.includes(column.name);
+      });
 
     return (
       <div className="container mx-auto py-10 flex items-center justify-center flex-col">
@@ -112,6 +135,63 @@ export const Table: ComponentConfig<TableProps> = {
       </div>
     );
   },
+};
+
+const SetVisibleColumns = ({
+  selectedTableFields,
+  handleUpdate,
+  tableConfigs,
+}) => {
+  const [visibleColumns, setVisibleColumns] = useState<any>([]);
+
+  const onChangeVisibleColumns = (value) => {
+    handleUpdate({
+      ...tableConfigs,
+      visibleColumns: value,
+    });
+  };
+
+  return (
+    <div>
+      <div className="mt-2">
+        <Label className="flex items-center justify-start mb-2">
+          <div className="mr-1">
+            <ChevronDown size={16} />
+          </div>
+          Choose y-Axis
+        </Label>
+
+        {selectedTableFields.map((field) => {
+          if (field.name === "id") return;
+
+          return (
+            <div
+              className="flex flex-row items-start space-x-3 space-y-0"
+              key={field.id}
+            >
+              <Checkbox
+                checked={visibleColumns.includes(field.name)}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setVisibleColumns([...visibleColumns, field.name]);
+                    onChangeVisibleColumns([...visibleColumns, field.name]);
+                  } else {
+                    setVisibleColumns(
+                      visibleColumns.filter((item) => item !== field.name)
+                    );
+                    onChangeVisibleColumns(
+                      visibleColumns.filter((item) => item !== field.name)
+                    );
+                  }
+                }}
+              />
+              <Label className="text-sm font-normal">{field.label}</Label>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 };
 
 // export const Table: ComponentConfig<TableProps> = {
