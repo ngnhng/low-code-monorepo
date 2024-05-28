@@ -34,7 +34,8 @@ type (
 	}
 
 	ApiConfig struct {
-		AuthApiBaseUrl string `env:"AUTH_API_BASE_URL"`
+		AuthApiBaseUrl  string `env:"AUTH_API_BASE_URL"`
+		TableApiBaseUrl string `env:"TABLE_API_BASE_URL"`
 	}
 )
 

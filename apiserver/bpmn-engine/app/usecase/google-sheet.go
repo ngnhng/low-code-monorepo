@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 	"yalc/bpmn-engine/domain"
@@ -49,25 +50,49 @@ func NewGoogleSheetWriteAppendFn(uc *GoogleSheetUseCase) func(
 		uc.Logger.Debug("Getting sheet data", vars)
 		sheetId, range_, email, data, err := validateGoogleSheetWriteAppendVars(vars)
 		if err != nil {
+			uc.Logger.Errorf("Error validating vars: %v", err)
 			return nil, err
 		}
+
+		uc.Logger.Debugf("Data: %v", data)
 
 		// set the context
 		ctx = context.WithValue(ctx, domain.UserKey, email)
 
-		// transform to a single cell in a row [][]string{{"data"}}
-		// convert string of formar [["abc", "abc"], ["abc"]] to [][]interface{}
-		data = strings.Replace(data, `'`, `"`, -1)
+		// given that data is a string of the format [['string', var]]
+		// replace single quotes with double quotes
+		data = strings.ReplaceAll(data, "'", "\"")
+
+		// Replace variables not surrounded by quotes with their values
+		for key, value := range vars {
+			uc.Logger.Debugf("Key: %v, Value: %v", key, value)
+			// Create a regular expression to match variables not surrounded by quotes
+			re := regexp.MustCompile(`(?m)\b` + key + `\b`)
+
+			// Replace the variable with its value if it's not surrounded by quotes
+			data = re.ReplaceAllStringFunc(data, func(s string) string {
+				if s == key {
+					return fmt.Sprintf(`"%v"`, value)
+				}
+				return s
+			})
+		}
+
+		uc.Logger.Debugf("Data after replacing variables: %v", data)
+
+		// Unmarshal the data into a [][]interface{}
 		values := make([][]interface{}, len(data))
 		err = json.Unmarshal([]byte(data), &values)
 		if err != nil {
-			uc.Logger.Error("Error unmarshalling sheet data", "err", err)
+			uc.Logger.Errorf("Error unmarshalling sheet data: %v", err)
 			return nil, err
 		}
 
+		uc.Logger.Debugf("Values: %v", values)
+
 		err = uc.AppendData(ctx, sheetId, range_, values)
 		if err != nil {
-			uc.Logger.Error("Error appending data to sheet", "err", err)
+			uc.Logger.Errorf("Error appending data to sheet: %v", err)
 			return nil, err
 		}
 

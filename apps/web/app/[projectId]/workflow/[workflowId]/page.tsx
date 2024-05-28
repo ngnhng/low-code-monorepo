@@ -16,11 +16,6 @@ import {
   ResizablePanelGroup,
   ScrollArea,
   Button,
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
 } from "@repo/ui";
 import { PlayIcon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
@@ -191,10 +186,10 @@ const Controls = observer(
     const { workflowId } = props;
 
     const handleLaunchWorkflow = async () => {
-      const [result, ok] = await launchWorkflow();
+      const [, ok] = await launchWorkflow();
       ok
-        ? toast.success("Workflow launched successfully: " + result)
-        : toast.error("Failed to launch workflow: " + result);
+        ? toast.success("Workflow deployed")
+        : toast.error("Failed to deploy workflow");
     };
 
     const handleUpdateWorkflow = async () => {
@@ -224,58 +219,58 @@ const Controls = observer(
         </div>
 
         <div className="flex flex-row items-center gap-x-4">
-          <WorkflowStatusSheet workflowId={workflowId} />
+          {/*<WorkflowStatusSheet workflowId={workflowId} />*/}
         </div>
       </div>
     );
   }
 );
 
-const WorkflowStatusSheet = observer(
-  (props: React.PropsWithChildren<{ workflowId: string }>) => {
-    const {
-      workflow: { fetchWorkflowStatus },
-    } = useMobxStore();
+//const WorkflowStatusSheet = observer(
+//  (props: React.PropsWithChildren<{ workflowId: string }>) => {
+//    const {
+//      workflow: { fetchWorkflowStatus },
+//    } = useMobxStore();
 
-    const {
-      data: status,
-      isLoading,
-      error,
-    } = useSWR(
-      ["workflow", "status", props.workflowId],
-      () => fetchWorkflowStatus(props.workflowId),
-      {
-        shouldRetryOnError: false,
-      }
-    );
+//    const {
+//      data: status,
+//      isLoading,
+//      error,
+//    } = useSWR(
+//      ["workflow", "status", props.workflowId],
+//      () => fetchWorkflowStatus(props.workflowId),
+//      {
+//        shouldRetryOnError: false,
+//      }
+//    );
 
-    if (isLoading) {
-      return <div>Loading...</div>;
-    }
+//    if (isLoading) {
+//      return <div>Loading...</div>;
+//    }
 
-    if (error) {
-      return <div>Error</div>;
-    }
+//    if (error) {
+//      return <div>Error</div>;
+//    }
 
-    return (
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button className="flex gap-2.5">Workflow Status</Button>
-        </SheetTrigger>
-        <SheetContent className="w-[500px] sm:w-[640px]">
-          <SheetHeader>
-            <SheetTitle>Workflow Status</SheetTitle>
-          </SheetHeader>
-          <ScrollArea className="h-[calc(100%)]">
-            <div className="p-5">
-              <pre>{JSON.stringify(status, undefined, 2)}</pre>
-            </div>
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
-    );
-  }
-);
+//    return (
+//      <Sheet>
+//        <SheetTrigger asChild>
+//          <Button className="flex gap-2.5">Workflow Status</Button>
+//        </SheetTrigger>
+//        <SheetContent className="w-[500px] sm:w-[640px]">
+//          <SheetHeader>
+//            <SheetTitle>Workflow Status</SheetTitle>
+//          </SheetHeader>
+//          <ScrollArea className="h-[calc(100%)]">
+//            <div className="p-5">
+//              <pre>{JSON.stringify(status, undefined, 2)}</pre>
+//            </div>
+//          </ScrollArea>
+//        </SheetContent>
+//      </Sheet>
+//    );
+//  }
+//);
 
 const BPMNModeler = observer(
   ({ modeler, currentWorkflow }: { modeler: any; currentWorkflow: any }) => {

@@ -89,6 +89,8 @@ func NewMailerSendSendMailFn(mailer *MailerSend) func(
 			ReceiverEmail: receiverEmail,
 		}
 
+		mailer.logger.Debugf("Sending email: %v", req)
+
 		// send the email
 		err = mailer.SendMail(ctx, req)
 		if err != nil {
@@ -146,6 +148,14 @@ func (m *MailerSend) SendMail(ctx context.Context, req *SendMailRequest) error {
 	message.SetText(req.Text)
 	message.SetTags(tags)
 	message.SetInReplyTo("client-id")
+	message.SetPersonalization([]mailersend.Personalization{
+		{
+			Email: req.ReceiverEmail,
+			Data: map[string]interface{}{
+				"name": req.ReceiverName,
+			},
+		},
+	})
 
 	m.logger.Debugf("Sending email: %s", message)
 

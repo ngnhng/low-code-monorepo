@@ -4,13 +4,12 @@ import "./style.css";
 
 import React, { useMemo } from "react";
 import Sidebar from "components/menus/sidebar/sidebar";
-import Header from "components/header/header";
+import { Header } from "components/header/header";
 import { NavigationMenuProps as NavigationMenuProperties } from "../../types/navigation";
 import { UserAuthWrapper } from "lib/wrappers/user-auth-wrapper";
 import { useMobxStore } from "lib/mobx/store-provider";
 import { Brush, Database, Settings2, Workflow } from "lucide-react";
 import { usePathname } from "next/navigation";
-import useSWR from "swr";
 
 const useNavigation = (params: { projectId: string }) =>
     useMemo(
@@ -49,17 +48,10 @@ const LayoutContent = ({
     children: React.ReactNode;
 }) => {
     const pathName = usePathname();
-    const {
-        projectData: { currentProjectName, fetchProjectList },
-    } = useMobxStore();
-
-    useSWR("project-list", () => fetchProjectList(), {
-        revalidateOnFocus: false,
-    });
 
     return (
         <div className="w-full h-full flex flex-col justify-start items-center overflow-hidden">
-            <Header headerTitle={currentProjectName} />
+            <Header />
             <div className="flex-1 flex w-full overflow-hidden">
                 <div className="w-full h-full flex px-[50px] py-[20px] gap-2.5">
                     <Sidebar

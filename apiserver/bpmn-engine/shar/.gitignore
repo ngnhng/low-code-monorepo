@@ -28,7 +28,7 @@ build/
 /telemetry/cmd/shar-telemetry/shar-telemetry
 /server/shar
 /server/shar-telemetry
-/common/version/version.go
+#/common/version/version.go
 /zen-shar/cmd/zen-shar/zen-shar
 /cli/cmd/shar/shar
 /report.xml

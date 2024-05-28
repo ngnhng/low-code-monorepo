@@ -57,6 +57,14 @@ func main() {
 				// Assign the function to MailerSendSendMailFn
 				mailersend.MailerSendSendMailFnAssign(msf)
 			},
+
+			func(uc *usecase.TableQueryUseCase) {
+				// Create a new function with the TableQueryUseCase as its dependency
+				tqf := usecase.NewTableQuerySingleRecordFn(uc)
+
+				// Assign the function to TableQuerySingleRecordFn
+				usecase.TableQuerySingleRecordFnAssign(tqf)
+			},
 		),
 
 		fx.Invoke(func(lc fx.Lifecycle, client *bpmn.SharClient, logger logger.Logger) {
@@ -131,6 +139,15 @@ func connectAndLoadSpec(client *bpmn.SharClient, logger logger.Logger, rootDir s
 		client.GetConnCtx(),
 		servicetasks.MailerSendSendMailTaskSpec,
 		mailersend.MailerSendSendMailFn,
+	)
+	if err != nil {
+		return fmt.Errorf("error loading service task spec: %w", err)
+	}
+
+	err = client.LoadServiceTaskSpec(
+		client.GetConnCtx(),
+		servicetasks.TableServiceQuerySingleRecordTaskSpec,
+		usecase.TableQuerySingleRecordFn,
 	)
 	if err != nil {
 		return fmt.Errorf("error loading service task spec: %w", err)

@@ -44,20 +44,14 @@ export default function Page({
         data: tableRecordsData,
         isLoading: tableRecordsLoading,
         mutate: tableRecordsMutate,
-    } = useSWR(
-        ["tables_rows", params.projectId, params.tableId],
-        () =>
-            fetchTableData(
-                {
-                    tableId: params.tableId,
-                    query: queryObject,
-                },
-                yalcToken
-            ),
-        {
-            revalidateIfStale: false,
-            revalidateOnFocus: false,
-        }
+    } = useSWR(["tables_rows", params.projectId, params.tableId], () =>
+        fetchTableData(
+            {
+                tableId: params.tableId,
+                query: queryObject,
+            },
+            yalcToken
+        )
     );
 
     const {
@@ -65,13 +59,8 @@ export default function Page({
         isLoading: tableColumnsLoading,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         mutate: tableColumnsMutate,
-    } = useSWR(
-        `TABLE_COLUMMS-${params.projectId}-${params.tableId}`,
-        () => fetchTableColumns(yalcToken, params.tableId),
-        {
-            revalidateIfStale: false,
-            revalidateOnFocus: false,
-        }
+    } = useSWR(`TABLE_COLUMMS-${params.projectId}-${params.tableId}`, () =>
+        fetchTableColumns(yalcToken, params.tableId)
     );
 
     if (
