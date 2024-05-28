@@ -4,7 +4,7 @@ FROM golang:1.22-bullseye as builder
 WORKDIR /workspace
 
 # Copy the go.mod and go.sum files from both the main app and the shar module
-COPY go.work go.work.sum ./
+COPY go.work  ./
 COPY app/go.mod app/go.sum ./app/
 COPY shar/go.mod shar/go.sum ./shar/
 

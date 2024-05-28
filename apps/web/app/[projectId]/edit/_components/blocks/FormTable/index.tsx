@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-nested-ternary */
 import { ComponentConfig, FieldLabel } from "@measured/puck";
 
-import { Label, Input, Switch, Button, DatePicker } from "@repo/ui";
+import { Label, Input, Switch, Button, DatePicker, Checkbox } from "@repo/ui";
 // import { useMobxStore } from "lib/mobx/store-provider";
 import { Fragment, useState } from "react";
 import { TableSelector } from "../../table-selector";
@@ -11,7 +11,10 @@ import { WorkflowSelector } from "../../workflow-selector";
 import useSWR from "swr";
 
 export type FormTableProps = {
-    tableId: string;
+    table: {
+        tableId: string;
+        enabledFields: Array<string>;
+    };
     formName: string;
     workflowId: string;
     project: {
@@ -22,13 +25,84 @@ export type FormTableProps = {
 
 export const FormTable: ComponentConfig<FormTableProps> = {
     fields: {
-        tableId: {
+        table: {
             type: "custom",
             label: "Select Table",
             render: ({ onChange, value, field }) => {
+                const {
+                    projectData: { currentProjectId },
+                    tableData: { fetchTables },
+                } = useMobxStore();
+
+                const {
+                    data: list,
+                    isLoading,
+                    error,
+                } = useSWR(["tables", currentProjectId], () => fetchTables());
+
+                const onEnabledFieldsChange = (enabledFields) => {
+                    onChange({ ...value, enabledFields });
+                };
+
                 return (
                     <FieldLabel label={field.label ?? ""}>
-                        <TableSelector onChange={onChange} value={value} />
+                        <div className="flex flex-col gap-2.5">
+                            <TableSelector onChange={onChange} value={value} />
+                            {list && !isLoading && !error && value?.tableId && (
+                                <>
+                                    {list
+                                        .find(
+                                            (table) =>
+                                                table.id === value.tableId
+                                        )
+                                        ?.columns.map(
+                                            (column) =>
+                                                column.name !== "id" && (
+                                                    <div
+                                                        key={column.name}
+                                                        className="flex items-center gap-2.5"
+                                                    >
+                                                        <div className="flex items-center gap-2.5">
+                                                            <Checkbox
+                                                                id={column.id}
+                                                                checked={value.enabledFields.includes(
+                                                                    column.name
+                                                                )}
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) => {
+                                                                    return checked
+                                                                        ? onEnabledFieldsChange(
+                                                                              [
+                                                                                  ...value.enabledFields,
+                                                                                  column.name,
+                                                                              ]
+                                                                          )
+                                                                        : onEnabledFieldsChange(
+                                                                              value.enabledFields.filter(
+                                                                                  (
+                                                                                      name
+                                                                                  ) =>
+                                                                                      name !==
+                                                                                      column.name
+                                                                              )
+                                                                          );
+                                                                }}
+                                                            />
+                                                            <label
+                                                                htmlFor={
+                                                                    column.id
+                                                                }
+                                                            >
+                                                                {column.label}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                )
+                                        )}
+                                </>
+                            )}
+                        </div>
                     </FieldLabel>
                 );
             },
@@ -72,7 +146,10 @@ export const FormTable: ComponentConfig<FormTableProps> = {
         },
     },
     defaultProps: {
-        tableId: "",
+        table: {
+            tableId: "",
+            enabledFields: [],
+        },
         formName: "Form Name",
         workflowId: "",
         project: {
@@ -81,7 +158,7 @@ export const FormTable: ComponentConfig<FormTableProps> = {
         },
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    render: ({ tableId, formName, workflowId, project }) => {
+    render: ({ table, formName, workflowId, project }) => {
         const {
             tableData: { insertRow, fetchTablesByProjectId },
             workflow: { launchWorkflowWithPayload },
@@ -99,10 +176,12 @@ export const FormTable: ComponentConfig<FormTableProps> = {
             }
         );
 
-        const columns = tables?.find((table) => table.id === tableId)?.columns;
+        const columns = tables?.find(
+            (itable) => itable.id === table.tableId
+        )?.columns;
 
         // if no tableId
-        if (!tableId) {
+        if (!table.tableId) {
             return (
                 <div className="flex w-full h-96 justify-center items-center h-20 bg-slate-100 rounded-md">
                     Select a table
@@ -120,18 +199,19 @@ export const FormTable: ComponentConfig<FormTableProps> = {
 
         const postData = async () => {
             console.log("Form payload", sendData);
-            try {
-                await insertRow({
-                    tableId,
-                    data: sendData,
-                    projectId: currentProjectId,
-                });
-                toast.success("Data inserted successfully");
-            } catch (error) {
-                toast.error("Error inserting data");
-                console.error(error);
-                return; // If inserting data fails, we exit the function early
-            }
+            if (table.tableId && table.tableId !== "")
+                try {
+                    await insertRow({
+                        tableId: table.tableId,
+                        data: sendData,
+                        projectId: currentProjectId,
+                    });
+                    toast.success("Data inserted successfully");
+                } catch (error) {
+                    toast.error("Error inserting data");
+                    console.error(error);
+                    return; // If inserting data fails, we exit the function early
+                }
 
             if (workflowId === "") {
                 setSendData({});
@@ -140,9 +220,7 @@ export const FormTable: ComponentConfig<FormTableProps> = {
 
             try {
                 await launchWorkflowWithPayload(workflowId, sendData);
-                toast.success(
-                    "Data inserted successfully and workflow launched"
-                );
+                toast.success("Workflow triggered successfully");
             } catch (error) {
                 toast.error("Error launching workflow");
                 console.error(error);
@@ -214,7 +292,9 @@ export const FormTable: ComponentConfig<FormTableProps> = {
                         ? columns
                               .filter(
                                   (col) =>
-                                      col.label !== "id" && col.type !== "link"
+                                      col.label !== "id" &&
+                                      col.type !== "link" &&
+                                      table.enabledFields.includes(col.name)
                               )
                               .map((col) => renderFormField(col))
                         : ""}

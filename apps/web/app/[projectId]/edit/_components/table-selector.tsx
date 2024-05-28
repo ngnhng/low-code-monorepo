@@ -24,7 +24,17 @@ export const TableSelector = observer(
 
         const handleSelect = (value: string) => {
             console.log("Table Selected", value);
-            onChange(value);
+            const columnNames = list
+                ?.find((table) => table.id === value)
+                ?.columns.map((column) => column.name)
+                .filter((column) => column !== "id");
+
+            console.log("Columns", columnNames);
+
+            onChange({
+                tableId: value,
+                enabledFields: columnNames,
+            });
         };
 
         if (isLoading || !list) {
@@ -39,7 +49,7 @@ export const TableSelector = observer(
             <div>
                 <Select
                     onValueChange={(value) => handleSelect(value)}
-                    defaultValue={value ?? undefined}
+                    defaultValue={value?.tableId ?? undefined}
                 >
                     <SelectTrigger>
                         <SelectValue placeholder="Select a table" />

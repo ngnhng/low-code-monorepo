@@ -42,7 +42,10 @@ export interface IWorkflowStore {
     setWorkflowName: (workflowName: string) => void;
 
     launchWorkflow: () => Promise<[string, boolean]>;
-    launchWorkflowWithPayload: (wid: string, payload: any) => Promise<[string, boolean]>;
+    launchWorkflowWithPayload: (
+        wid: string,
+        payload: any
+    ) => Promise<[string, boolean]>;
 
     fetchWorkflow: () => Promise<any>;
     fetchWorkflowById: (workflowId: string) => Promise<any>;
@@ -221,6 +224,8 @@ export class WorkflowStore {
             JSON.stringify({
                 _globalContext_user:
                     this.rootStore.user.currentUser?.email || "none",
+                _globalContext_projectId:
+                    this.rootStore.projectData.currentProjectId,
             })
         ).toString("base64");
 
@@ -259,6 +264,8 @@ export class WorkflowStore {
                 ...payload,
                 _globalContext_user:
                     this.rootStore.user.currentUser?.email || "none",
+                _globalContext_projectId:
+                    this.rootStore.projectData.currentProjectId,
             })
         );
 
@@ -273,6 +280,8 @@ export class WorkflowStore {
                 ...payload,
                 _globalContext_user:
                     this.rootStore.user.currentUser?.email || "none",
+                _globalContext_projectId:
+                    this.rootStore.projectData.currentProjectId,
             })
         ).toString("base64");
 

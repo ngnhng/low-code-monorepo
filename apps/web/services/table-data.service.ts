@@ -65,7 +65,7 @@ export class TableDataService extends RouteHandlerAPIService {
             id: table.tid,
             name: table.name,
             label: table.label,
-            source: "Source 1",
+            source: "Platform's Hosted DB",
             created: table.createdAt ?? "2024-01-01",
             updated: table.updatedAt ?? "2024-01-01",
             status: "Active",

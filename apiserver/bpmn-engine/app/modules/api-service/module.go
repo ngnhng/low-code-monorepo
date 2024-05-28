@@ -51,5 +51,6 @@ func (a *ApiService) Post(url string, body []byte) (*http.Response, error) {
 	if a.BearerToken != "" {
 		req.Header.Set("Authorization", "Bearer "+a.BearerToken)
 	}
+	req.Header.Set("Content-Type", "application/json")
 	return a.Do(req)
 }

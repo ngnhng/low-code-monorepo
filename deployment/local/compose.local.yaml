@@ -89,10 +89,6 @@ services:
         depends_on:
             reverse-proxy:
                 condition: service_started
-            auth-api:
-                condition: service_started
-            # user-db:
-            #   condition: service_healthy
         env_file:
             - ./.env
 
@@ -123,25 +119,25 @@ services:
             - "traefik.http.middlewares.table-api-stripprefix.stripprefix.prefixes=/dbms"
             - "traefik.http.routers.table-api.middlewares=table-api-stripprefix@docker,table-api-forwardauth@docker"
 
-    # workflow:
-    #     build:
-    #         context: ../../apiserver/bpmn-engine
-    #         dockerfile: Dockerfile.dev
-    #     networks:
-    #         - dev-network
-    #     depends_on:
-    #         reverse-proxy:
-    #             condition: service_started
-    #         shar-server:
-    #             condition: service_started
-    #     env_file:
-    #         - ./.env
-    #     labels:
-    #         - "traefik.enable=true"
-    #         - "traefik.http.routers.workflow.rule=Host(`localhost`) && PathPrefix(`/workflow`)"
-    #         - "traefik.http.routers.workflow.entrypoints=web"
-    #         - "traefik.http.middlewares.workflow-stripprefix.stripprefix.prefixes=/workflow"
-    #         - "traefik.http.routers.workflow.middlewares=workflow-stripprefix@docker"
+    workflow:
+        build:
+            context: ../../apiserver/bpmn-engine
+            dockerfile: Dockerfile.dev
+        networks:
+            - dev-network
+        depends_on:
+            reverse-proxy:
+                condition: service_started
+            shar-server:
+                condition: service_started
+        env_file:
+            - ./.env
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.workflow.rule=Host(`localhost`) && PathPrefix(`/workflow`)"
+            - "traefik.http.routers.workflow.entrypoints=web"
+            - "traefik.http.middlewares.workflow-stripprefix.stripprefix.prefixes=/workflow"
+            - "traefik.http.routers.workflow.middlewares=workflow-stripprefix@docker"
 
     nats:
         image: nats:2.10-alpine3.19

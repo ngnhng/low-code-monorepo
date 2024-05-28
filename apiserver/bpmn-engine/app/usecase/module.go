@@ -9,6 +9,7 @@ var Module = fx.Options(
 		NewFetchWorkflowStatusUseCase,
 		NewCompleteUserTaskUseCase,
 		NewFetchWorkflowStatusUseCaseV2,
+		NewTableQueryUseCase,
 	),
 )
 

@@ -52,6 +52,7 @@ import {
     formatQuery,
     parseSQL,
     QueryBuilder,
+    ValueEditorProps,
 } from "react-querybuilder";
 import "react-querybuilder/dist/query-builder.css";
 
@@ -265,7 +266,7 @@ export const ElementProperties = ({ element, modeler }) => {
 
         // Name of the handle function
         const taskDefinition = moddle.create("yalc:TaskDefinition", {
-            type: "tableService",
+            type: "tableServiceQuery",
         });
 
         const ioMapping = moddle.create("yalc:IoMapping");
@@ -274,18 +275,23 @@ export const ElementProperties = ({ element, modeler }) => {
             target: "_localContext_user",
         });
 
+        const defaultProjectContext = moddle.create("yalc:Input", {
+            source: "=_globalContext_projectId",
+            target: "_localContext_projectId",
+        });
+
         const tableNameInput = moddle.create("yalc:Input", {
             source: "",
             target: "tableName",
         });
 
         // create yalc:RuleGroup for sql query
-        const sqlQueryInput = moddle.create("yalc:RuleGroup", {
-            id: "sqlQuery",
-            combinator: "and",
-            not: false,
-            rules: [],
-        });
+        //const sqlQueryInput = moddle.create("yalc:RuleGroup", {
+        //    id: "sqlQuery",
+        //    combinator: "and",
+        //    not: false,
+        //    rules: [],
+        //});
 
         //const sqlQueryInput = moddle.create("yalc:Input", {
         //    source: "",
@@ -294,7 +300,7 @@ export const ElementProperties = ({ element, modeler }) => {
 
         ioMapping
             .get("input")
-            .push(defaultInput, tableNameInput, sqlQueryInput);
+            .push(defaultInput, defaultProjectContext, tableNameInput);
 
         extensionElements.get("values").push(taskDefinition, ioMapping);
 
@@ -366,7 +372,13 @@ export const ElementProperties = ({ element, modeler }) => {
             source: "=_globalContext_user",
             target: "_globalContext_user",
         });
-        ioMapping.get("output").push(defaultOutput);
+
+        const defaultProjectContext = moddle.create("yalc:Output", {
+            source: "=_globalContext_projectId",
+            target: "_globalContext_projectId",
+        });
+
+        ioMapping.get("output").push(defaultOutput, defaultProjectContext);
 
         extensionElements.get("values").push(ioMapping);
 
@@ -441,13 +453,13 @@ export const ElementProperties = ({ element, modeler }) => {
     //   });
     // };
 
-    const makeMessageEvent = () => {
-        const bpmnReplace = modeler.get("bpmnReplace");
-        bpmnReplace.replaceElement(element, {
-            type: element.businessObject.$type,
-            eventDefinitionType: "bpmn:MessageEventDefinition",
-        });
-    };
+    //const makeMessageEvent = () => {
+    //    const bpmnReplace = modeler.get("bpmnReplace");
+    //    bpmnReplace.replaceElement(element, {
+    //        type: element.businessObject.$type,
+    //        eventDefinitionType: "bpmn:MessageEventDefinition",
+    //    });
+    //};
 
     const makeServiceTask = (/* name */) => {
         const bpmnReplace = modeler.get("bpmnReplace");
@@ -528,7 +540,18 @@ export const ElementProperties = ({ element, modeler }) => {
                     </AccordionItem>
                 )}
                 {state.isGS ? (
-                    <GoogleSheetProps element={element} modeler={modeler} />
+                    <>
+                        <AccordionItem value="gsio">
+                            <AccordionTrigger>Input</AccordionTrigger>
+                            <AccordionContent>
+                                <InputProperties
+                                    element={element}
+                                    modeler={modeler}
+                                />
+                            </AccordionContent>
+                        </AccordionItem>
+                        <GoogleSheetProps element={element} modeler={modeler} />
+                    </>
                 ) : (
                     ""
                 )}
@@ -559,15 +582,28 @@ export const ElementProperties = ({ element, modeler }) => {
                     ""
                 )}
                 {state.isTableService ? (
-                    <AccordionItem value="tableService">
-                        <AccordionTrigger>Table Service Query</AccordionTrigger>
-                        <AccordionContent>
-                            <TableSelector
-                                element={element}
-                                modeler={modeler}
-                            />
-                        </AccordionContent>
-                    </AccordionItem>
+                    <>
+                        <AccordionItem value="tablesvcio">
+                            <AccordionTrigger>Input</AccordionTrigger>
+                            <AccordionContent>
+                                <InputProperties
+                                    element={element}
+                                    modeler={modeler}
+                                />
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="tableService">
+                            <AccordionTrigger>
+                                Table Service Query
+                            </AccordionTrigger>
+                            <AccordionContent>
+                                <TableSelector
+                                    element={element}
+                                    modeler={modeler}
+                                />
+                            </AccordionContent>
+                        </AccordionItem>
+                    </>
                 ) : (
                     ""
                 )}
@@ -581,29 +617,36 @@ export const ElementProperties = ({ element, modeler }) => {
                                         Make Service Task
                                     </Button>
                                 )}
-                            {is(element, "bpmn:Event") &&
+                            {/*{is(element, "bpmn:Event") &&
                                 !hasDefinition(
                                     element,
                                     "bpmn:MessageEventDefinition"
                                 ) && (
-                                    <div className="flex flex-col gap-1">
-                                        <Label>Message Event</Label>
-                                        <Button onClick={makeMessageEvent}>
-                                            Make Message Event
-                                        </Button>
-                                        <Separator className="space-y-4" />
-                                    </div>
-                                )}
+                                    //<div className="flex flex-col gap-1">
+                                    //    <Label>Message Event</Label>
+                                    //    <Button onClick={makeMessageEvent}>
+                                    //        Make Message Event
+                                    //    </Button>
+                                    //    <Separator className="space-y-4" />
+                                    //</div>
+                                )}*/}
 
                             {is(element, "bpmn:Event") &&
                                 !hasDefinition(
                                     element,
                                     "bpmn:ErrorEventDefinition"
                                 ) && (
-                                    <MakeErrorEvent
-                                        modeler={modeler}
-                                        element={element}
-                                    />
+                                    <div className="flex flex-col gap-4 items-start">
+                                        <MakeErrorEvent
+                                            modeler={modeler}
+                                            element={element}
+                                        />
+
+                                        <CreateError
+                                            modeler={modeler}
+                                            element={element}
+                                        />
+                                    </div>
                                 )}
 
                             {is(element, "bpmn:Event") &&
@@ -761,7 +804,7 @@ const MakeErrorEvent = ({ modeler, element }) => {
     };
 
     return (
-        <div>
+        <div className="flex flex-col gap-4 items-start">
             <Select onValueChange={(value) => setValue(value)}>
                 <SelectTrigger>
                     <SelectValue placeholder="Select Global Error Reference" />
@@ -791,6 +834,7 @@ const TableSelector = observer(
         const {
             projectData: { currentProjectId },
             tableData: { fetchTables },
+            workflow: { currentWorkflow },
         } = useMobxStore();
 
         const [open, setOpen] = useState<boolean>(false);
@@ -812,17 +856,17 @@ const TableSelector = observer(
 
         // get tableId from yalc:Input and remove the =" " around the tableId
         const tableId = ioMapping
-            ?.get("input")[1]
+            ?.get("input")[2]
             ?.source?.replace(/="(.*)"/, "$1");
 
         // get sqlQuery from yalc:Input
         const sqlQueryFormatted = ioMapping
-            ?.get("input")[2]
+            ?.get("input")[3]
             ?.source?.replace(/="(.*)"/, "$1");
 
-        const [query, setQuery] = useState<any>(parseSQL(sqlQueryFormatted));
-
-        console.log("TableSelector", tableId, parseSQL(sqlQueryFormatted));
+        const [query, setQuery] = useState<any>(
+            sqlQueryFormatted ? parseSQL(sqlQueryFormatted) : parseSQL("(1=1)")
+        );
 
         // modify the extension elements
         const handleTableSelect = (value) => {
@@ -842,7 +886,7 @@ const TableSelector = observer(
 
             // if exists, update the tableId
             if (ioMapping) {
-                ioMapping.get("input")[1] = tableIdInput;
+                ioMapping.get("input")[2] = tableIdInput;
             } else {
                 // if not, create a new ioMapping
                 const ioMapping = moddle.create("yalc:IoMapping");
@@ -872,9 +916,8 @@ const TableSelector = observer(
                 target: "sqlQuery",
             });
 
-            // if exists, update the tableId
             if (ioMapping) {
-                ioMapping.get("input")[2] = sqlQueryInput;
+                ioMapping.get("input")[3] = sqlQueryInput;
             } else {
                 // if not, create a new ioMapping
                 const ioMapping = moddle.create("yalc:IoMapping");
@@ -914,6 +957,86 @@ const TableSelector = observer(
                         ioMapping.get("output").push(output);
                     }
                 }
+        };
+
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(currentWorkflow, "text/xml");
+        // Get all yalc:output elements
+        // eslint-disable-next-line unicorn/prefer-query-selector
+        const outputNodes = xmlDoc.getElementsByTagName("yalc:output");
+        const inputTargets: string[] = [];
+
+        // Iterate over the elements and extract the target attribute values
+        for (const outputNode of outputNodes) {
+            const target = outputNode?.getAttribute("target");
+            if (target) {
+                // if already exists, skip
+                if (inputTargets.includes(target)) continue;
+                inputTargets.push(target);
+            }
+        }
+
+        const ExtendedValueEditor_SelectWithInput = (
+            props: ValueEditorProps
+        ) => {
+            return (
+                <div className="flex items-center space-x-2">
+                    <Select
+                        onValueChange={(value) => {
+                            props.handleOnChange(`VAR_${value}`);
+                            // add input entry to ioMapping
+                            const moddle = modeler.get("moddle");
+                            const modeling = modeler.get("modeling");
+
+                            const extensionElements =
+                                bObject.extensionElements ||
+                                moddle.create("bpmn:ExtensionElements");
+
+                            const ioMapping = getExtensionElement(
+                                bObject,
+                                "yalc:IoMapping"
+                            );
+
+                            // check if it already exists
+                            const exists = ioMapping
+                                .get("input")
+                                .some((input) => input.target === value);
+
+                            if (exists) return;
+
+                            const input = moddle.create("yalc:Input", {
+                                source: `=${value}`,
+                                target: value,
+                            });
+
+                            ioMapping.get("input").push(input);
+
+                            modeling.updateProperties(element, {
+                                extensionElements,
+                            });
+                        }}
+                    >
+                        <SelectTrigger>
+                            <SelectValue>
+                                {props.value ?? "Select Variable"}
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            {inputTargets.map((target, idx) => (
+                                <SelectItem key={idx} value={target}>
+                                    {target}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Input
+                        value={props.value}
+                        onChange={(e) => {
+                            props.handleOnChange(e.target.value);
+                        }}
+                    />
+                </div>
+            );
         };
 
         const outputs = getExtensionElement(bObject, "yalc:IoMapping")?.output;
@@ -995,6 +1118,9 @@ const TableSelector = observer(
                         handleInputSqlQuery(query);
                     }}
                     query={query}
+                    controlElements={{
+                        valueEditor: ExtendedValueEditor_SelectWithInput,
+                    }}
                 />
                 <Label className="mt-4">SQL Query</Label>
                 <pre className="p-2 bg-gray-100 rounded-md overflow-auto">
@@ -1095,7 +1221,7 @@ const FormSelector = observer(
                 view.uiData?.content?.filter(
                     (component) =>
                         component.type === "FormTable" &&
-                        component.props.tableId
+                        component.props.table?.tableId
                 ) || [];
 
             const zoneForms = Object.values(view.uiData?.zones || {}).flatMap(
@@ -1103,7 +1229,7 @@ const FormSelector = observer(
                     zone.filter(
                         (component) =>
                             component.type === "FormTable" &&
-                            component.props.tableId
+                            component.props.table?.tableId
                     )
             );
 
@@ -1112,6 +1238,8 @@ const FormSelector = observer(
                 forms: [...contentForms, ...zoneForms],
             };
         });
+
+        console.log("FormSelector", routes);
 
         const formListener = getExtensionElement(bObject, "yalc:FormListener");
         //// if exists, get the ui and component
@@ -1125,7 +1253,7 @@ const FormSelector = observer(
 
         const handleFormSelect = async (value) => {
             // lookup the route the component/id belongs to and update its workflowId
-            const { route, form, table } = JSON.parse(value);
+            const { route, form, table, fields } = JSON.parse(value);
             console.log("Form selected:", route, form, table);
 
             await updateViewComponentWorkflowId(route, form, currentWorkflowId)
@@ -1163,7 +1291,7 @@ const FormSelector = observer(
                             bObject,
                             "yalc:IoMapping"
                         );
-                        ioMapping.get("output").splice(1);
+                        ioMapping.get("output").splice(2);
 
                         // add table columns to output
                         const tableColumns = tables.find(
@@ -1194,7 +1322,7 @@ const FormSelector = observer(
                             {
                                 component: form,
                                 ui: route,
-                                table,
+                                table: table,
                             }
                         );
 
@@ -1204,24 +1332,19 @@ const FormSelector = observer(
                             "yalc:IoMapping"
                         );
 
-                        const tableColumns = tables.find(
-                            (t) => t.id === table
-                        )?.columns;
+                        //const tableColumns = tables.find(
+                        //    (t) => t.id === table
+                        //)?.columns;
 
-                        if (tableColumns)
-                            for (const column of tableColumns) {
-                                if (column.name !== "id") {
-                                    const output = moddle.create(
-                                        "yalc:Output",
-                                        {
-                                            source: `=${column.name}`,
-                                            target: column.name,
-                                        }
-                                    );
+                        //if (tableColumns)
+                        for (const field of fields) {
+                            const output = moddle.create("yalc:Output", {
+                                source: `=${field}`,
+                                target: field,
+                            });
 
-                                    ioMapping.get("output").push(output);
-                                }
-                            }
+                            ioMapping.get("output").push(output);
+                        }
 
                         // add form listener to first position
                         extensionElements
@@ -1278,7 +1401,10 @@ const FormSelector = observer(
                                             value={JSON.stringify({
                                                 route: route.routes,
                                                 form: form.props.id,
-                                                table: form.props.tableId,
+                                                table: form.props.table
+                                                    ?.tableId,
+                                                fields: form.props.table
+                                                    ?.enabledFields,
                                             })}
                                         >
                                             {form.props.formName}
