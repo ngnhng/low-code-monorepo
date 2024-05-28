@@ -75,5 +75,6 @@ jobs:
                       docker pull ghcr.io/${{ github.repository }}/user-api:latest
                       docker pull ghcr.io/${{ github.repository }}/auth-api:latest
                       docker pull ghcr.io/${{ github.repository }}/dbms-api:latest
+                      docker pull ghcr.io/${{ github.repository }}/workflow-api:latest
                       docker compose -f compose.ec2.prod.yaml pull
                       docker compose -f compose.ec2.prod.yaml up -d --force-recreate

@@ -30,6 +30,9 @@ services:
             - "--certificatesresolvers.myresolver.acme.storage=/certificates/acme.json"
 
             - "--api.dashboard=true"
+            - "metrics.prometheus=true"
+            - "metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+
         labels:
             - "traefik.enable=true"
             - "traefik.http.routers.dashboard.rule=Host(`dashboard.yalc.live`)"
@@ -39,8 +42,7 @@ services:
             - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
             - "traefik.http.routers.dashboard.middlewares=auth"
             - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$05$$EBozzs8Ojtir8qAuUj1FFekGMsNA3wk9MtgvDyG33X2UIkqQfJIuq"
-            - "metrics.prometheus=true"
-            - "metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+    
 
         ports:
             - "443:443"
