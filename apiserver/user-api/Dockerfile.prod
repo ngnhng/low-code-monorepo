@@ -8,9 +8,9 @@ COPY prisma ./prisma/
 RUN yarn install --frozen-lockfile
 RUN yarn prisma generate
 
-RUN yarn build
-
 COPY . .
+
+RUN yarn build
 
 FROM node:20-slim AS production
 RUN apt-get update && apt-get install -y \
