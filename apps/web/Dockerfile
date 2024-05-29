@@ -51,20 +51,26 @@ ENV LOW_CODE_NO_AUTH=$LOW_CODE_NO_AUTH
 
 RUN npx turbo build --filter=web
 
-RUN ls -l /app/web
+RUN ls -la
 
 # Production image, copy all the files and run next
 FROM node:18-alpine AS runner
+
 WORKDIR /app
 
-COPY --from=installer /app/web/next.config.js .
-COPY --from=installer /app/web/package.json .
+EXPOSE 3000
+
+ENV NODE_ENV production
+ENV PORT 3000
+
+COPY --from=installer /app/apps/web/next.config.js .
+COPY --from=installer /app/apps/web/package.json .
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=installer /app/web/.next/standalone ./
-COPY --from=installer /app/web/.next ./web/.next
-COPY --from=deps /app/web/public ./web/public
+COPY --from=installer /app/apps/web/.next/standalone ./
+COPY --from=installer /app/apps/web/.next ./web/.next
+COPY --from=installer /app/apps/web/public ./web/public
 
 ARG NEXT_PUBLIC_API_BASE_URL=""
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
@@ -83,5 +89,3 @@ ENV NEXT_PUBLIC_DBMS_API_URL=$NEXT_PUBLIC_DBMS_API_URL
 
 ARG LOW_CODE_NO_AUTH=""
 ENV LOW_CODE_NO_AUTH=$LOW_CODE_NO_AUTH
-
-EXPOSE 3000

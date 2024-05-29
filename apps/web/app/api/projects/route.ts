@@ -31,8 +31,8 @@ export async function GET(req: Request) {
                 "Content-Type": "application/json",
             },
         });
-    } catch {
-        return new Response("Failed to get project list", {
+    } catch (error) {
+        return new Response(`Failed to get project list: ${error}`, {
             status: 500,
         });
     }

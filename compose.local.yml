@@ -13,4 +13,6 @@ services:
         NEXT_PUBLIC_DBMS_API_URL: http://localhost:80/dbms
         LOW_CODE_NO_AUTH: false
     restart: always
-    command: node web/server.js web
+    command: HOSTNAME="0.0.0.0" node apps/web/server.js web
+    ports:
+      - "3000:3000"
