@@ -51,6 +51,8 @@ ENV LOW_CODE_NO_AUTH=$LOW_CODE_NO_AUTH
 
 RUN npx turbo build --filter=web
 
+RUN ls -l /app/web
+
 # Production image, copy all the files and run next
 FROM node:18-alpine AS runner
 WORKDIR /app
@@ -62,7 +64,7 @@ COPY --from=installer /app/web/package.json .
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=installer /app/web/.next/standalone ./
 COPY --from=installer /app/web/.next ./web/.next
-COPY --from=installer /app/web/public ./web/public
+COPY --from=deps /app/web/public ./web/public
 
 ARG NEXT_PUBLIC_API_BASE_URL=""
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
