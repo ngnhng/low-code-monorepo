@@ -12,6 +12,8 @@ COPY . .
 
 RUN yarn build
 
+RUN ls -l /app/dist
+
 FROM node:20-slim AS production
 RUN apt-get update && apt-get install -y \
     ca-certificates \
@@ -21,6 +23,8 @@ WORKDIR /app
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+
+RUN ls -l /app/dist
 
 CMD [ "node", "dist/src/main.js" ]
 EXPOSE 3000

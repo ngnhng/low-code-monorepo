@@ -1,0 +1,16 @@
+services:
+  web:
+    container_name: yalc-frontend
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+      args:
+        DOCKER_BUILDKIT: 1
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:80
+        NEXT_PUBLIC_AUTH_API_URL: http://localhost:80/auth-api
+        NEXT_PUBLIC_USER_API_URL: http://localhost:80/user-api
+        NEXT_PUBLIC_WORKFLOW_API_URL: http://localhost:80/workflow
+        NEXT_PUBLIC_DBMS_API_URL: http://localhost:80/dbms
+        LOW_CODE_NO_AUTH: false
+    restart: always
+    command: node web/server.js web
