@@ -27,6 +27,8 @@
   ],
   "dependencies": {
     "bpmn-js-bpmnlint": "^0.22.2",
-    "bpmnlint": "^10.2.1"
+    "bpmnlint": "^10.2.1",
+    "emblor": "^1.2.1",
+    "react-tag-input": "^6.10.2"
   }
 }

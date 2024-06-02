@@ -23,11 +23,11 @@ export default function GoogleSheetProps({ element, modeler }) {
     const [inputs, setInputs] = useState<any>([]);
     const [outputs, setOutputs] = useState<any>([]);
 
+    console.log("GoogleSheetProps", inputs, outputs);
+
     useEffect(() => {
         const fnEnum = {
             googleSheetReadRange: "getData",
-            googleSheetAddRow: "add",
-            googleSheetRemoveRow: "remove",
             googleSheetAppendRow: "append",
         };
 
@@ -91,8 +91,6 @@ export default function GoogleSheetProps({ element, modeler }) {
     const setFunctionType = (value: string) => {
         const fnEnum = {
             getData: "googleSheetReadRange",
-            add: "googleSheetAddRow",
-            remove: "googleSheetRemoveRow",
             append: "googleSheetAppendRow",
         };
 
@@ -106,6 +104,48 @@ export default function GoogleSheetProps({ element, modeler }) {
         if (!definition) return;
 
         definition.type = fnEnum[value] ?? "";
+
+        // if type is append, add yalc:Input with target rowData
+        if (value === "append") {
+            const { input: inputArray } = extensionElements
+                .get("values")
+                .find((extension: any) => extension.$type === "yalc:IoMapping");
+
+            if (!inputArray) return;
+
+            const moddle = modeler.get("moddle");
+            const input = moddle.create("yalc:Input", {
+                source: "",
+                target: "rowData",
+            });
+            inputArray.push(input);
+
+            // append the rowData input
+            setInputs([...inputs, input]);
+        } else {
+            // remove the rowData input
+            const { input: inputArray } = extensionElements
+                .get("values")
+                .find((extension: any) => extension.$type === "yalc:IoMapping");
+
+            if (!inputArray) return;
+
+            const input = inputArray.find(
+                (input: any) => input.target === "rowData"
+            );
+            const index = inputArray.indexOf(input);
+
+            inputArray.splice(index, 1);
+
+            // also remove the rowData input from the inputs array
+            const inputIndex = inputs.findIndex(
+                (input: any) => input.target === "rowData"
+            );
+
+            inputs.splice(inputIndex, 1);
+
+            setInputs([...inputs]);
+        }
 
         modeling.updateProperties(element, {
             extensionElements,
@@ -159,8 +199,6 @@ export default function GoogleSheetProps({ element, modeler }) {
                             <SelectItem value="getData">
                                 Get Data Range
                             </SelectItem>
-                            <SelectItem value="add">Add Row</SelectItem>
-                            <SelectItem value="remove">Remove Row</SelectItem>
                             <SelectItem value="append">Append Row</SelectItem>
                         </SelectGroup>
                     </SelectContent>
