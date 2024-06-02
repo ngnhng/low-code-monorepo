@@ -27,3 +27,4 @@ export * from "./alert-dialog";
 export * from "./datepicker";
 export * from "./calendar";
 export * from "./breadcrumb";
+export * from "./slider"

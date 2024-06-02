@@ -22,17 +22,18 @@ export const TableSelector = observer(
             error,
         } = useSWR(["tables", currentProjectId], () => fetchTables());
 
-        const handleSelect = (value: string) => {
-            console.log("Table Selected", value);
+        const handleSelect = (tableId: string) => {
+            console.log("Table Selected", tableId);
             const columnNames = list
-                ?.find((table) => table.id === value)
+                ?.find((table) => table.id === tableId)
                 ?.columns.map((column) => column.name)
                 .filter((column) => column !== "id");
 
             console.log("Columns", columnNames);
 
             onChange({
-                tableId: value,
+                ...value,
+                tableId: tableId,
                 enabledFields: columnNames,
             });
         };
