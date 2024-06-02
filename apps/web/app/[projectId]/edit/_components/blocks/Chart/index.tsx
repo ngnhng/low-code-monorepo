@@ -28,6 +28,8 @@ import { TableSelector } from "../../table-selector";
 import { TableSelectorV2 } from "../../table-selector-v2";
 import { useLocalStorage } from "hooks/use-local-storage";
 
+import { Colors } from "chart.js";
+
 const getClassNameInput = getClassNameFactory("Input", styles);
 
 export type ChartsProps = {
@@ -93,7 +95,17 @@ function transformDataset(rowData: RowDef[], labels: string, y: string[]) {
 
   const chartDatasets = y.map((field) => ({
     label: field,
-    data: rowData.map((row) => row[field]),
+    data: rowData.map((row) => {
+      if (row[field] === "true") {
+        row[field] = 1;
+      }
+
+      if (row[field] === "false") {
+        row[field] = 0;
+      }
+
+      return row[field];
+    }),
     borderWidth: 1,
   }));
 
@@ -199,6 +211,8 @@ export const Charts: ComponentConfig<ChartsProps> = {
         </div>
       );
     }
+
+    console.log("data: " + data.rows);
 
     return (
       <div
