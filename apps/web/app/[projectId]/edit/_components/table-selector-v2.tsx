@@ -60,7 +60,7 @@ export const TableSelectorV2 = observer(
       <div>
         <Select
           onValueChange={(value) => handleSelect(value)}
-          defaultValue={value ?? undefined}
+          defaultValue={value?.tableId ?? undefined}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select a table" />

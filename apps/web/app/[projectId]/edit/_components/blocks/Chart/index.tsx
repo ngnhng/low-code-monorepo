@@ -146,9 +146,9 @@ export const Charts: ComponentConfig<ChartsProps> = {
         return (
           <>
             <TableSelectorV2 onChange={onChange} value={value} />
-            {value.selectedTableFields.length > 0 ? (
+            {value && value.selectedTableFields.length > 0 ? (
               <SetAxis
-                xAxis=""
+                xAxis={value.xAxis ?? ""}
                 yAxis=""
                 chartConfigs={value}
                 selectedTableFields={value.selectedTableFields}
@@ -280,7 +280,9 @@ const SetAxis = ({
     });
   };
 
-  const [yAxisValues, setYAxisvalues] = useState<string[]>([]);
+  const [yAxisValues, setYAxisvalues] = useState<string[]>(
+    chartConfigs.yAxis ?? []
+  );
 
   return (
     <div>

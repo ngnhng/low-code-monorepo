@@ -58,7 +58,7 @@ export const Table: ComponentConfig<TableProps> = {
         return (
           <>
             <TableSelectorV2 onChange={onChange} value={value} />
-            {value.selectedTableFields.length > 0 && (
+            {value && value.selectedTableFields.length > 0 && (
               <SetVisibleColumns
                 selectedTableFields={value.selectedTableFields}
                 handleUpdate={onChange}
@@ -142,7 +142,9 @@ const SetVisibleColumns = ({
   handleUpdate,
   tableConfigs,
 }) => {
-  const [visibleColumns, setVisibleColumns] = useState<any>([]);
+  const [visibleColumns, setVisibleColumns] = useState<any>(
+    tableConfigs.visibleColumns ?? []
+  );
 
   const onChangeVisibleColumns = (value) => {
     handleUpdate({
