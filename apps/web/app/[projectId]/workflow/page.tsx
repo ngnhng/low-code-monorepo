@@ -79,7 +79,7 @@ const WorkflowList = observer(() => {
     };
 
     return (
-        <div className="flex flex-col space-y-4 mt-16">
+        <div className="flex flex-col pl-8 space-y-4 mt-16">
             <div className="flex justify-between items-center">
                 <Dialog>
                     <DialogTrigger asChild>
@@ -94,7 +94,7 @@ const WorkflowList = observer(() => {
                             <Input
                                 type="text"
                                 placeholder="Workflow Title"
-                                onChange={(e) => setNewTitle(e.target.value)}
+                                onBlur={(e) => setNewTitle(e.target.value)}
                                 className="p-2 border border-gray-300 rounded-md"
                             />
                         </div>

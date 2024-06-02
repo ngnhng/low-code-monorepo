@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable unicorn/no-null */
 import { getBusinessObject, is } from "bpmn-js/lib/util/ModelUtil";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { getExtensionElement, hasDefinition } from "helpers/bpmn.helper";
 import { QAElementProperties } from "./qa-element-form";
 import GoogleSheetProps from "./google-sheet-props";
@@ -416,22 +417,20 @@ export const ElementProperties = ({ element, modeler }) => {
             source: "",
             target: "sheetId",
         });
-        const sheetDataInput = moddle.create("yalc:Input", {
+        const workSheetInput = moddle.create("yalc:Input", {
             source: "",
-            target: "sheetData",
+            target: "workSheet",
         });
-        const rangeInput = moddle.create("yalc:Input", {
-            source: "",
-            target: "range",
-        });
+        //const rangeInput = moddle.create("yalc:Input", {
+        //    source: "",
+        //    target: "range",
+        //});
         const output = moddle.create("yalc:Output", {
             source: "=sheetData",
             target: "",
         });
 
-        ioMapping
-            .get("input")
-            .push(defaultInput, sheetIdInput, sheetDataInput, rangeInput);
+        ioMapping.get("input").push(defaultInput, sheetIdInput, workSheetInput);
         ioMapping.get("output").push(output);
 
         extensionElements.get("values").push(taskDefinition, ioMapping);
@@ -509,7 +508,11 @@ export const ElementProperties = ({ element, modeler }) => {
 
     return (
         <div key={element.id} className="p-4 h-full bg-white shadow">
-            <Accordion type="multiple" className="w-full">
+            <Accordion
+                defaultValue={["general"]}
+                type="multiple"
+                className="w-full"
+            >
                 <AccordionItem value="general">
                     <AccordionTrigger>General</AccordionTrigger>
                     <AccordionContent>
@@ -592,10 +595,17 @@ export const ElementProperties = ({ element, modeler }) => {
                                 />
                             </AccordionContent>
                         </AccordionItem>
+                        <AccordionItem value="tableServiceOuput">
+                            <AccordionTrigger>Output</AccordionTrigger>
+                            <AccordionContent>
+                                <OutputProperties
+                                    element={element}
+                                    modeler={modeler}
+                                />
+                            </AccordionContent>
+                        </AccordionItem>
                         <AccordionItem value="tableService">
-                            <AccordionTrigger>
-                                Table Service Query
-                            </AccordionTrigger>
+                            <AccordionTrigger>Table Query</AccordionTrigger>
                             <AccordionContent>
                                 <TableSelector
                                     element={element}
@@ -641,24 +651,15 @@ export const ElementProperties = ({ element, modeler }) => {
                                             modeler={modeler}
                                             element={element}
                                         />
-
-                                        <CreateError
-                                            modeler={modeler}
-                                            element={element}
-                                        />
                                     </div>
                                 )}
 
-                            {is(element, "bpmn:Event") &&
-                                hasDefinition(
-                                    element,
-                                    "bpmn:ErrorEventDefinition"
-                                ) && (
-                                    <CreateError
-                                        modeler={modeler}
-                                        element={element}
-                                    />
-                                )}
+                            {is(element, "bpmn:StartEvent") && (
+                                <CreateError
+                                    modeler={modeler}
+                                    element={element}
+                                />
+                            )}
 
                             {is(element, "bpmn:Task") &&
                                 !isTimeoutConfigured(element) && (
@@ -729,38 +730,60 @@ const CreateError = ({ modeler, element }) => {
     };
 
     return (
-        <Form {...form}>
-            <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="flex flex-col gap-4"
-            >
-                <FormField
-                    control={form.control}
-                    name="errorName"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Error Name</FormLabel>
-                            <FormControl>
-                                <Input {...field} />
-                            </FormControl>
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="errorCode"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Error Code</FormLabel>
-                            <FormControl>
-                                <Input {...field} />
-                            </FormControl>
-                        </FormItem>
-                    )}
-                />
-                <Button>Create Error</Button>
-            </form>
-        </Form>
+        <div>
+            <Separator className="space-y-4 mb-8" />
+            <Label className="text-lg">Create Error</Label>
+            <Form {...form}>
+                <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="flex flex-col gap-4 w-full"
+                >
+                    <FormField
+                        control={form.control}
+                        name="errorName"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Error Name</FormLabel>
+                                <FormControl>
+                                    <Input {...field} />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="errorCode"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Error Code</FormLabel>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue>
+                                                {currentErrorCode ||
+                                                    "Select Error Code"}
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                    </FormControl>
+
+                                    <SelectContent>
+                                        <SelectItem value="501">
+                                            501 - Record Not Found
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FormItem>
+                        )}
+                    />
+                    <Button type="submit" className="w-full">
+                        Create Error
+                    </Button>
+                </form>
+            </Form>
+        </div>
     );
 };
 
@@ -804,7 +827,8 @@ const MakeErrorEvent = ({ modeler, element }) => {
     };
 
     return (
-        <div className="flex flex-col gap-4 items-start">
+        <div className="flex flex-col gap-4 items-start w-full">
+            <Label className="text-lg">Error Event</Label>
             <Select onValueChange={(value) => setValue(value)}>
                 <SelectTrigger>
                     <SelectValue placeholder="Select Global Error Reference" />
@@ -819,6 +843,7 @@ const MakeErrorEvent = ({ modeler, element }) => {
             </Select>
 
             <Button
+                className="w-full"
                 onClick={() => {
                     makeErrorEvent();
                 }}
@@ -959,26 +984,73 @@ const TableSelector = observer(
                 }
         };
 
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(currentWorkflow, "text/xml");
-        // Get all yalc:output elements
-        // eslint-disable-next-line unicorn/prefer-query-selector
-        const outputNodes = xmlDoc.getElementsByTagName("yalc:output");
-        const inputTargets: string[] = [];
-
-        // Iterate over the elements and extract the target attribute values
-        for (const outputNode of outputNodes) {
-            const target = outputNode?.getAttribute("target");
-            if (target) {
-                // if already exists, skip
-                if (inputTargets.includes(target)) continue;
-                inputTargets.push(target);
-            }
-        }
-
         const ExtendedValueEditor_SelectWithInput = (
             props: ValueEditorProps
         ) => {
+            const { data: xmlDoc, isLoading: xmlLoading, mutate } = useSWR(
+                "xml",
+                async () => {
+                    const { xml } = await modeler.saveXML({ format: true });
+                    return xml;
+                },
+                {
+                    revalidateOnFocus: false,
+                }
+            );
+
+            // call mutate each render to update the xml
+            mutate();
+
+            const elementId = element.id;
+
+            const parser = new DOMParser();
+            const xmlDocument = parser.parseFromString(xmlDoc, "text/xml");
+            // Get all yalc:output elements
+            const incomingFlows = [
+                // eslint-disable-next-line unicorn/prefer-query-selector
+                ...xmlDocument.getElementsByTagName("bpmn:sequenceFlow"),
+            ]
+                .map((flow: Element) => {
+                    console.log("Flow", flow);
+                    if (flow.getAttribute("targetRef") === elementId) {
+                        return flow;
+                    }
+                })
+                .filter(Boolean);
+
+            console.log("Incoming Flows", xmlDocument, incomingFlows);
+
+            const inputTargets: string[] = [];
+
+            for (const flow of incomingFlows) {
+                const sourceRef = flow?.getAttribute("sourceRef");
+                console.log("SourceRef", sourceRef);
+                if (!sourceRef) continue;
+                // eslint-disable-next-line unicorn/prefer-query-selector
+                const sourceElement = xmlDocument.getElementById(sourceRef);
+                const ioMapping =
+                    sourceElement?.getElementsByTagName("yalc:ioMapping");
+                if (!ioMapping) continue;
+                console.log("IoMapping", ioMapping);
+                // lookup child
+                const outputs =
+                    ioMapping[0]?.getElementsByTagName("yalc:output");
+                console.log("Outputs", outputs);
+                if (!outputs) continue;
+                for (const output of outputs) {
+                    console.log("Output", output);
+                    const target = output.getAttribute("target");
+                    console.log("Target", target);
+                    if (target && target != "") inputTargets.push(target);
+                }
+            }
+
+            console.log("Input Targets", inputTargets);
+
+            if (xmlLoading) {
+                return <div>Loading...</div>;
+            }
+
             return (
                 <div className="flex items-center space-x-2">
                     <Select
@@ -1126,64 +1198,6 @@ const TableSelector = observer(
                 <pre className="p-2 bg-gray-100 rounded-md overflow-auto">
                     {query ? formatQuery(query, "sql") : ""}
                 </pre>
-
-                <Separator />
-                <Label>Input:</Label>
-                {/* render space to input more  */}
-                <InputProperties element={element} modeler={modeler} />
-
-                <Separator />
-                <Label>Output:</Label>
-                {/* render each output field with input field for each target*/}
-                {outputs?.map((output, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                        <Label>{output.source}</Label>
-                        <Input
-                            value={output.target}
-                            onChange={(e) => {
-                                const moddle = modeler.get("moddle");
-                                const modeling = modeler.get("modeling");
-
-                                const extensionElements =
-                                    bObject.extensionElements ||
-                                    moddle.create("bpmn:ExtensionElements");
-
-                                const ioMapping = getExtensionElement(
-                                    bObject,
-                                    "yalc:IoMapping"
-                                );
-
-                                ioMapping.get("output")[index].target =
-                                    e.target.value;
-
-                                modeling.updateProperties(element, {
-                                    extensionElements,
-                                });
-                            }}
-                        />
-                        <Trash
-                            onClick={() => {
-                                const moddle = modeler.get("moddle");
-                                const modeling = modeler.get("modeling");
-
-                                const extensionElements =
-                                    bObject.extensionElements ||
-                                    moddle.create("bpmn:ExtensionElements");
-
-                                const ioMapping = getExtensionElement(
-                                    bObject,
-                                    "yalc:IoMapping"
-                                );
-
-                                ioMapping.get("output").splice(index, 1);
-
-                                modeling.updateProperties(element, {
-                                    extensionElements,
-                                });
-                            }}
-                        />
-                    </div>
-                ))}
             </div>
         );
     }
@@ -1248,6 +1262,12 @@ const FormSelector = observer(
         //    setComponent(formListener.get("component"));
         //    setTableId(formListener.get("table"));
         //}
+
+        const linkedForm = routes
+            ?.find((route) => route.routes === formListener?.get("ui"))
+            ?.forms?.find(
+                (form) => form.props.id === formListener?.get("component")
+            );
 
         // based on ui and component, lookup the table id and get table spec
 
@@ -1378,6 +1398,8 @@ const FormSelector = observer(
                                   route: formListener.get("ui"),
                                   form: formListener.get("component"),
                                   table: formListener.get("table"),
+                                  fields: linkedForm?.props.table
+                                      ?.enabledFields,
                               })
                             : undefined
                     }
@@ -1551,43 +1573,15 @@ const OutputProperties = ({ element, modeler }) => {
     return (
         <div className="w-full">
             <h2>Output Mapping</h2>
-            <div className="flex flex-col gap-5 p-5">
-                <div>
-                    <ul className="space-y-2">
-                        {outputs.map((output, index) => (
-                            <li
-                                key={index}
-                                className="flex items-center justify-between p-2 bg-gray-100 rounded shadow"
-                            >
-                                <div className="flex items-center gap-2">
-                                    {output.source ===
-                                    "_globalContext_user" ? null : (
-                                        <div>
-                                            <span className="font-medium text-gray-700">
-                                                {output.source}
-                                            </span>
-                                            <MoveRight />
-                                            <span className="text-gray-500">
-                                                {output.target}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                                <button
-                                    onClick={() => handleRemove(index)}
-                                    className="p-2 rounded hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50"
-                                >
-                                    <Trash color="#f54254" size={18} />{" "}
-                                    {/* Trash bin icon */}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-            <div className="flex flex-col gap-5 p-5">
-                <OutputForm onSubmit={onSubmit} />
-            </div>
+            {outputs.map((output, index) => (
+                <OutputSection
+                    key={index}
+                    index={index}
+                    output={output}
+                    element={element}
+                    modeler={modeler}
+                />
+            ))}
         </div>
     );
 };
@@ -1655,40 +1649,26 @@ const InputProperties = ({ element, modeler }) => {
     return (
         <div className="w-full">
             <h2>Input Mapping</h2>
-            <div className="flex flex-col gap-5 p-5">
-                <div>
-                    <ul className="space-y-2">
-                        {inputs.map((input, index) => (
-                            <li
-                                key={index}
-                                className="flex items-center justify-between p-2 bg-gray-100 rounded shadow"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <div>
-                                        <span className="font-medium text-gray-700">
-                                            {input.source}
-                                        </span>
-                                        <MoveRight />
-                                        <span className="text-gray-500">
-                                            {input.target}
-                                        </span>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => handleRemove(index)}
-                                    className="p-2 rounded hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50"
-                                >
-                                    <Trash color="#f54254" size={18} />{" "}
-                                    {/* Trash bin icon */}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-            <div className="flex flex-col gap-5 p-5">
-                <InputForm onSubmit={onSubmit} />
-            </div>
+            {inputs.map((input, index) => {
+                console.log(
+                    "mapping input",
+                    input,
+                    input.target.startsWith("_")
+                );
+                if (input.target.startsWith("_")) return;
+                return (
+                    <InputSection
+                        key={index}
+                        index={index}
+                        input={input}
+                        element={element}
+                        modeler={modeler}
+                        onRemove={() => handleRemove(index)}
+                    />
+                );
+            })}
+
+            <InputForm onSubmit={onSubmit} />
         </div>
     );
 };
@@ -1804,5 +1784,165 @@ const OutputForm = ({ onSubmit }) => {
                 <Button type="submit">Add Output</Button>
             </form>
         </Form>
+    );
+};
+
+const OutputSection = ({ index, output, element, modeler }) => {
+    const [source, setSource] = useState<string>(output.source);
+    const [target, setTarget] = useState<string>(output.target);
+
+    const bObject = getBusinessObject(element);
+
+    return (
+        <div
+            key={index}
+            className="flex justify-between items-center space-x-2"
+        >
+            <div className="flex items-center space-x-2">
+                <Label className="text-sm text-gray-500">Source:</Label>
+                <Input
+                    value={source}
+                    onChange={(e) => {
+                        setSource(e.target.value);
+
+                        const moddle = modeler.get("moddle");
+                        const modeling = modeler.get("modeling");
+                        const extensionElements =
+                            bObject.extensionElements ||
+                            moddle.create("bpmn:ExtensionElements");
+                        const ioMapping = getExtensionElement(
+                            bObject,
+                            "yalc:IoMapping"
+                        );
+                        ioMapping.get("output")[index].source = e.target.value;
+                        modeling.updateProperties(element, {
+                            extensionElements,
+                        });
+                    }}
+                />
+                <Label className="text-sm text-gray-500">Target:</Label>
+                <Input
+                    value={target}
+                    onChange={(e) => {
+                        setTarget(e.target.value);
+
+                        const moddle = modeler.get("moddle");
+                        const modeling = modeler.get("modeling");
+                        const extensionElements =
+                            bObject.extensionElements ||
+                            moddle.create("bpmn:ExtensionElements");
+                        const ioMapping = getExtensionElement(
+                            bObject,
+                            "yalc:IoMapping"
+                        );
+                        ioMapping.get("output")[index].target = e.target.value;
+                        modeling.updateProperties(element, {
+                            extensionElements,
+                        });
+                    }}
+                />
+            </div>
+            <Button
+                variant={"outline"}
+                onClick={() => {
+                    const moddle = modeler.get("moddle");
+                    const modeling = modeler.get("modeling");
+                    const extensionElements =
+                        bObject.extensionElements ||
+                        moddle.create("bpmn:ExtensionElements");
+                    const ioMapping = getExtensionElement(
+                        bObject,
+                        "yalc:IoMapping"
+                    );
+                    ioMapping.get("output").splice(index, 1);
+                    modeling.updateProperties(element, {
+                        extensionElements,
+                    });
+                }}
+            >
+                <Trash size={16} color="red" />
+            </Button>
+        </div>
+    );
+};
+
+const InputSection = ({ index, input, element, modeler, onRemove }) => {
+    const [source, setSource] = useState<string>(input.source);
+    const [target, setTarget] = useState<string>(input.target);
+
+    const bObject = getBusinessObject(element);
+
+    return (
+        <div
+            key={index}
+            className="flex justify-between items-center space-x-2"
+        >
+            <div className="flex items-center space-x-2">
+                <Label className="text-sm text-gray-500">Source:</Label>
+                <Input
+                    value={source}
+                    onChange={(e) => {
+                        setSource(e.target.value);
+
+                        const moddle = modeler.get("moddle");
+                        const modeling = modeler.get("modeling");
+                        const extensionElements =
+                            bObject.extensionElements ||
+                            moddle.create("bpmn:ExtensionElements");
+                        const ioMapping = getExtensionElement(
+                            bObject,
+                            "yalc:IoMapping"
+                        );
+                        ioMapping.get("input")[index].source = e.target.value;
+                        modeling.updateProperties(element, {
+                            extensionElements,
+                        });
+                    }}
+                />
+                <Label className="text-sm text-gray-500">Target:</Label>
+                <Input
+                    value={target}
+                    onChange={(e) => {
+                        setTarget(e.target.value);
+
+                        const moddle = modeler.get("moddle");
+                        const modeling = modeler.get("modeling");
+                        const extensionElements =
+                            bObject.extensionElements ||
+                            moddle.create("bpmn:ExtensionElements");
+                        const ioMapping = getExtensionElement(
+                            bObject,
+                            "yalc:IoMapping"
+                        );
+                        ioMapping.get("input")[index].target = e.target.value;
+                        modeling.updateProperties(element, {
+                            extensionElements,
+                        });
+                    }}
+                />
+            </div>
+            <Button
+                variant={"outline"}
+                onClick={() => {
+                    //const moddle = modeler.get("moddle");
+                    //const modeling = modeler.get("modeling");
+                    //const extensionElements =
+                    //    bObject.extensionElements ||
+                    //    moddle.create("bpmn:ExtensionElements");
+                    //const ioMapping = getExtensionElement(
+                    //    bObject,
+                    //    "yalc:IoMapping"
+                    //);
+                    //ioMapping.get("input").splice(index, 1);
+                    //modeling.updateProperties(element, {
+                    //    extensionElements,
+                    //});
+
+                    onRemove();
+                }}
+            >
+                <Trash size={16} color="red" />
+            </Button>
+        </div>
     );
 };

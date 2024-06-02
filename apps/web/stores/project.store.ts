@@ -8,6 +8,7 @@ import {
 } from "mobx";
 import { RootStore } from "./root";
 import { ProjectService } from "../services/project.service";
+import { IntegrationService } from "../services/integration.service";
 
 export interface IProjectStore {
     projectIds: string[];
@@ -33,6 +34,8 @@ export interface IProjectStore {
     currentProjectName: () => string;
 
     updateViewComponentWorkflowId: (route, componentId, workflowId) => void;
+
+    fetchSheets: (pid: string) => void;
 }
 
 export class ProjectStore implements IProjectStore {
@@ -51,6 +54,7 @@ export class ProjectStore implements IProjectStore {
 
     // service
     projectSerivce: ProjectService;
+    integrationService: IntegrationService;
 
     constructor(_rootStore: RootStore) {
         makeObservable(this, {
@@ -75,6 +79,7 @@ export class ProjectStore implements IProjectStore {
 
         this.rootStore = _rootStore;
         this.projectSerivce = new ProjectService();
+        this.integrationService = new IntegrationService();
     }
 
     getCurrentProjectId = (): string => {
@@ -229,5 +234,33 @@ export class ProjectStore implements IProjectStore {
         }
 
         throw new Error("Component not found");
+    };
+
+    fetchSheets = async (
+        pid: string
+    ): Promise<{
+        spreadsheets: {
+            id: string;
+            name: string;
+            worksheets: {
+                id: string;
+                name: string;
+                rows: string[];
+            }[];
+        }[];
+    }> => {
+        try {
+            const response = await this.integrationService.fetchSheets(pid);
+
+            // Ensure the response data has the correct shape
+            if (!response.data || !response.data.spreadsheets) {
+                throw new Error("Invalid response data");
+            }
+
+            return response.data;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
     };
 }
