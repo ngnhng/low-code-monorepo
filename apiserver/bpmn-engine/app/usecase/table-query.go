@@ -45,22 +45,22 @@ func NewTableQueryUseCase(p TableQueryParams) *TableQueryUseCase {
 }
 
 var (
-	TableQuerySingleRecordFn func(
+	TableQueryFn func(
 		ctx context.Context,
 		cl client.JobClient,
 		vars model.Vars,
 	) (model.Vars, error)
 
-	TableQuerySingleRecordFnAssign = func(tqf func(
+	TableQueryFnAssign = func(tqf func(
 		ctx context.Context,
 		cl client.JobClient,
 		vars model.Vars,
 	) (model.Vars, error)) {
-		TableQuerySingleRecordFn = tqf
+		TableQueryFn = tqf
 	}
 )
 
-func NewTableQuerySingleRecordFn(uc *TableQueryUseCase) func(
+func NewTableQueryFn(uc *TableQueryUseCase) func(
 	ctx context.Context,
 	cl client.JobClient,
 	vars model.Vars,
@@ -68,7 +68,7 @@ func NewTableQuerySingleRecordFn(uc *TableQueryUseCase) func(
 	return func(ctx context.Context, cl client.JobClient, vars model.Vars) (model.Vars, error) {
 		// get the projectId, table and query from the vars
 		uc.Logger.Debug("Getting table data", vars)
-		projectId, table, query, email, err := validateTableQuerySingleRecordVars(vars)
+		projectId, table, query, email, err := validateTableQueryVars(vars)
 		if err != nil {
 			uc.Logger.Errorf("Error validating vars: %v", err)
 			return nil, err
@@ -102,7 +102,7 @@ func NewTableQuerySingleRecordFn(uc *TableQueryUseCase) func(
 		}
 
 		// Query the table
-		result, err := uc.QuerySingleRecord(ctx, table, projectId, query)
+		result, err := uc.Query(ctx, table, projectId, query)
 		if err != nil {
 			uc.Logger.Errorf("Error querying table: %v", err)
 			return nil, err
@@ -110,17 +110,49 @@ func NewTableQuerySingleRecordFn(uc *TableQueryUseCase) func(
 
 		uc.Logger.Debugf("Result: %v", result)
 
-		// set the result to the vars
-		//vars["result"] = result
-		for k, v := range result {
-			vars[k] = v
+		// iterate the result and set/append the value to the vars
+		// if the key already exists, the value will be appeneded to the existing value as json array
+		for _, row := range result {
+			uc.Logger.Debugf("Row: %v", row)
+			for k, v := range row {
+				if _, ok := vars[k]; !ok {
+					vars[k] = []interface{}{v}
+				} else {
+					if _, ok := vars[k].([]interface{}); !ok {
+						vars[k] = []interface{}{}
+					}
+
+					vars[k] = append(vars[k].([]interface{}), v)
+				}
+			}
 		}
+
+		uc.Logger.Debugf("Vars after query: %v", vars)
+
+		// Convert the slice to a string
+		for k, v := range vars {
+			if slice, ok := v.([]interface{}); ok {
+				strs := make([]string, len(slice))
+				for i, val := range slice {
+					strs[i] = "'" + fmt.Sprint(val) + "'"
+				}
+				vars[k] = "[" + strings.Join(strs, ", ") + "]"
+			}
+		}
+
+		uc.Logger.Debugf("Vars after conversion: %v", vars)
+
+		//// set the result to the vars
+		////vars["result"] = result
+		//for k, v := range result {
+		//	vars[k] = v
+		//}
 
 		return vars, nil
 	}
 }
 
-func validateTableQuerySingleRecordVars(vars model.Vars) (projectId, table, query, email string, err error) {
+func validateTableQueryVars(vars model.Vars) (projectId, table, query, email string, err error) {
 	projectId, ok := vars["_localContext_projectId"].(string)
 	if !ok {
 		return "", "", "", "", fmt.Errorf("expected string for key 'projectId', got %T", vars["projectId"])
@@ -144,9 +176,9 @@ func validateTableQuerySingleRecordVars(vars model.Vars) (projectId, table, quer
 	return projectId, table, query, email, nil
 }
 
-// QuerySingleRecord queries a single record from the table
+// Query queries a single record from the table
 // If multiple or no records are found, an error will be returned
-func (uc *TableQueryUseCase) QuerySingleRecord(ctx context.Context, table string, projectId, query string) (map[string]interface{}, error) {
+func (uc *TableQueryUseCase) Query(ctx context.Context, table string, projectId, query string) ([]map[string]interface{}, error) {
 	// get the email from context user and generate a token to request to internal api
 	email, ok := ctx.Value(domain.UserKey).(string)
 	if !ok {
@@ -212,9 +244,9 @@ func (uc *TableQueryUseCase) QuerySingleRecord(ctx context.Context, table string
 
 	uc.Logger.Debugf("Result: %v", result)
 
-	if len(result.Data) != 1 {
-		return nil, errors.New("expected 1 record, got multiple or none")
+	if len(result.Data) < 1 {
+		return nil, errors.New("expected records, got none")
 	}
 
-	return result.Data[0], nil
+	return result.Data, nil
 }

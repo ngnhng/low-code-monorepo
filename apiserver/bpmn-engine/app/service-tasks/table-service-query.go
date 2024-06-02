@@ -5,7 +5,7 @@ import (
 	"gitlab.com/shar-workflow/shar/model"
 )
 
-var TableServiceQuerySingleRecordTask = &model.TaskSpec{
+var TableServiceQueryTask = &model.TaskSpec{
 	Version: "1.0",
 	Kind:    "ServiceTask",
 	Metadata: &model.TaskMetadata{
@@ -37,4 +37,4 @@ var TableServiceQuerySingleRecordTask = &model.TaskSpec{
 	},
 }
 
-var TableServiceQuerySingleRecordTaskSpec, _ = yaml.Marshal(TableServiceQuerySingleRecordTask)
+var TableServiceQueryTaskSpec, _ = yaml.Marshal(TableServiceQueryTask)

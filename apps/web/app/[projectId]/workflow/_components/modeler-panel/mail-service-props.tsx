@@ -1,4 +1,11 @@
-import { AccordionItem, AccordionContent, AccordionTrigger, Label, Input, Button } from "@repo/ui";
+import {
+    AccordionItem,
+    AccordionContent,
+    AccordionTrigger,
+    Label,
+    Input,
+    Button,
+} from "@repo/ui";
 import { Trash2 } from "lucide-react";
 
 import { getBusinessObject } from "bpmn-js/lib/util/ModelUtil";
@@ -15,12 +22,18 @@ export default function MailServiceProps({ element, modeler }) {
         const extensionElements = bObject.extensionElements;
         setExtensionElements(extensionElements);
 
-        const { input } = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
+        const { input } = extensionElements
+            .get("values")
+            .find((extension: any) => extension.$type === "yalc:IoMapping");
 
         setInputs(input ?? []);
     }, []);
 
-    const setInputData = (value: string, input: any, type: "source" | "target") => {
+    const setInputData = (
+        value: string,
+        input: any,
+        type: "source" | "target"
+    ) => {
         const modeling = modeler.get("modeling");
 
         if (!input) return;
@@ -35,7 +48,9 @@ export default function MailServiceProps({ element, modeler }) {
         const modeling = modeler.get("modeling");
         const moddle = modeler.get("moddle");
 
-        const ioMapping = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
+        const ioMapping = extensionElements
+            .get("values")
+            .find((extension: any) => extension.$type === "yalc:IoMapping");
         const newInput = moddle.create("yalc:Input", {
             source: "",
             target: "",
@@ -51,10 +66,11 @@ export default function MailServiceProps({ element, modeler }) {
 
     const removeInput = (idx: number) => {
         const modeling = modeler.get("modeling");
-        const ioMapping = extensionElements.get("values").find((extension: any) => extension.$type === "yalc:IoMapping");
+        const ioMapping = extensionElements
+            .get("values")
+            .find((extension: any) => extension.$type === "yalc:IoMapping");
 
-        ioMapping.get("input").length = 0;
-        ioMapping.get("input").push(...inputs.slice(0, idx), ...inputs.slice(idx + 1));
+        ioMapping.get("input").splice(idx, 1);
         setInputs([...ioMapping.input]);
 
         modeling.updateProperties(element, {
@@ -72,24 +88,45 @@ export default function MailServiceProps({ element, modeler }) {
                         console.log(idx);
                         return (
                             <div className="flex gap-5 items-center">
-                                <div className="flex-1 flex flex-col gap-2.5 p-2.5 rounded-md bg-slate-200" key={`${input.source}-${idx}`}>
+                                <div
+                                    className="flex-1 flex flex-col gap-2.5 p-2.5 rounded-md bg-slate-200"
+                                    key={`${input.source}-${idx}`}
+                                >
                                     <div className="flex gap-2.5 w-full items-center">
-                                        <Label className="w-[50px]">Target</Label>
+                                        <Label className="w-[50px]">
+                                            Target
+                                        </Label>
                                         {idx > 4 ? (
                                             <Input
-                                                onBlur={(event) => setInputData(event.target.value, input, "target")}
+                                                onBlur={(event) =>
+                                                    setInputData(
+                                                        event.target.value,
+                                                        input,
+                                                        "target"
+                                                    )
+                                                }
                                                 placeholder="Identifer"
                                                 defaultValue={input.target}
                                                 className="flex-1"
                                             />
                                         ) : (
-                                            <div className="p-2.5 bg-slate-200 rounded-md flex-1">{input.target}</div>
+                                            <div className="p-2.5 bg-slate-200 rounded-md flex-1">
+                                                {input.target}
+                                            </div>
                                         )}
                                     </div>
                                     <div className="flex gap-2.5 w-full items-center">
-                                        <Label className="w-[50px]">Source</Label>
+                                        <Label className="w-[50px]">
+                                            Source
+                                        </Label>
                                         <Input
-                                            onBlur={(event) => setInputData(event.target.value, input, "source")}
+                                            onBlur={(event) =>
+                                                setInputData(
+                                                    event.target.value,
+                                                    input,
+                                                    "source"
+                                                )
+                                            }
                                             placeholder="Identifer"
                                             defaultValue={input.source}
                                             className="flex-1"
