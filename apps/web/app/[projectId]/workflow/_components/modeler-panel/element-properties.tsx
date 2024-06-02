@@ -757,15 +757,15 @@ const CreateError = ({ modeler, element }) => {
                             <FormItem>
                                 <FormLabel>Error Code</FormLabel>
                                 <Select
-                                    onValueChange={field.onChange}
-                                    defaultValue={field.value}
+                                    onValueChange={(value) => {
+                                        console.log("Error Code", value);
+                                        field.onChange(value);
+                                    }}
+                                    defaultValue={field.value || ""}
                                 >
                                     <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue>
-                                                {currentErrorCode ||
-                                                    "Select Error Code"}
-                                            </SelectValue>
+                                            <SelectValue placeholder="Select Error Code" />
                                         </SelectTrigger>
                                     </FormControl>
 
@@ -987,7 +987,11 @@ const TableSelector = observer(
         const ExtendedValueEditor_SelectWithInput = (
             props: ValueEditorProps
         ) => {
-            const { data: xmlDoc, isLoading: xmlLoading, mutate } = useSWR(
+            const {
+                data: xmlDoc,
+                isLoading: xmlLoading,
+                mutate,
+            } = useSWR(
                 "xml",
                 async () => {
                     const { xml } = await modeler.saveXML({ format: true });

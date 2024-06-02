@@ -60,10 +60,10 @@ func main() {
 
 			func(uc *usecase.TableQueryUseCase) {
 				// Create a new function with the TableQueryUseCase as its dependency
-				tqf := usecase.NewTableQuerySingleRecordFn(uc)
+				tqf := usecase.NewTableQueryFn(uc)
 
-				// Assign the function to TableQuerySingleRecordFn
-				usecase.TableQuerySingleRecordFnAssign(tqf)
+				// Assign the function to TableQueryFn
+				usecase.TableQueryFnAssign(tqf)
 			},
 		),
 
@@ -146,8 +146,8 @@ func connectAndLoadSpec(client *bpmn.SharClient, logger logger.Logger, rootDir s
 
 	err = client.LoadServiceTaskSpec(
 		client.GetConnCtx(),
-		servicetasks.TableServiceQuerySingleRecordTaskSpec,
-		usecase.TableQuerySingleRecordFn,
+		servicetasks.TableServiceQueryTaskSpec,
+		usecase.TableQueryFn,
 	)
 	if err != nil {
 		return fmt.Errorf("error loading service task spec: %w", err)
