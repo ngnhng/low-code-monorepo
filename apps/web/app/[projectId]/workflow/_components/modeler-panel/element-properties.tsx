@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-query-selector */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable unicorn/no-null */
 import { getBusinessObject, is } from "bpmn-js/lib/util/ModelUtil";
@@ -1011,7 +1012,6 @@ const TableSelector = observer(
             const xmlDocument = parser.parseFromString(xmlDoc, "text/xml");
             // Get all yalc:output elements
             const incomingFlows = [
-                // eslint-disable-next-line unicorn/prefer-query-selector
                 ...xmlDocument.getElementsByTagName("bpmn:sequenceFlow"),
             ]
                 .map((flow: Element) => {
@@ -1030,7 +1030,6 @@ const TableSelector = observer(
                 const sourceRef = flow?.getAttribute("sourceRef");
                 console.log("SourceRef", sourceRef);
                 if (!sourceRef) continue;
-                // eslint-disable-next-line unicorn/prefer-query-selector
                 const sourceElement = xmlDocument.getElementById(sourceRef);
                 const ioMapping =
                     sourceElement?.getElementsByTagName("yalc:ioMapping");
@@ -1046,6 +1045,30 @@ const TableSelector = observer(
                     const target = output.getAttribute("target");
                     console.log("Target", target);
                     if (target && target != "") inputTargets.push(target);
+                }
+            }
+
+            // search for bpmn:startEvent and add the output
+            const startEvent =
+                xmlDocument.getElementsByTagName("bpmn:startEvent");
+            console.log("StartEvent", startEvent);
+            if (startEvent) {
+                const ioMapping =
+                    startEvent[0]?.getElementsByTagName("yalc:ioMapping");
+                if (ioMapping) {
+                    const outputs =
+                        ioMapping[0]?.getElementsByTagName("yalc:output");
+                    if (outputs) {
+                        for (const output of outputs) {
+                            const target = output.getAttribute("target");
+                            if (
+                                target &&
+                                target != "" &&
+                                !target.startsWith("_")
+                            )
+                                inputTargets.push(target);
+                        }
+                    }
                 }
             }
 
@@ -1238,7 +1261,8 @@ const FormSelector = observer(
             const contentForms =
                 view.uiData?.content?.filter(
                     (component) =>
-                        component.type === "FormTable" &&
+                        (component.type === "FormTable" ||
+                            component.type === "FormUpdateRecord") &&
                         component.props.table?.tableId
                 ) || [];
 
@@ -1246,7 +1270,8 @@ const FormSelector = observer(
                 (zone: any) =>
                     zone.filter(
                         (component) =>
-                            component.type === "FormTable" &&
+                            (component.type === "FormTable" ||
+                                component.type === "FormUpdateRecord") &&
                             component.props.table?.tableId
                     )
             );

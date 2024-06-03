@@ -308,6 +308,16 @@ export const FormTable: ComponentConfig<FormTableProps> = {
         };
         const renderFormField = ({ label, type, id, name }) => {
             const handleValueChange = (value) => {
+                console.log("Value changed", value);
+                // if value is array, get the first element
+                if (Array.isArray(value)) {
+                    value = value[0];
+                }
+                // if value is number, convert to srting
+                if (typeof value === "number") {
+                    value = value.toString();
+                }
+
                 setSendData((prevData) => ({ ...prevData, [name]: value }));
             };
 

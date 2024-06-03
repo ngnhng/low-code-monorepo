@@ -134,7 +134,7 @@ func NewTableQueryFn(uc *TableQueryUseCase) func(
 			if slice, ok := v.([]interface{}); ok {
 				strs := make([]string, len(slice))
 				for i, val := range slice {
-					strs[i] = "'" + fmt.Sprint(val) + "'"
+					strs[i] = "\"" + fmt.Sprint(val) + "\""
 				}
 				vars[k] = "[" + strings.Join(strs, ", ") + "]"
 			}

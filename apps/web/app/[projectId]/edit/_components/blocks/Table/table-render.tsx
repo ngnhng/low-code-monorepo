@@ -98,7 +98,7 @@ export const transformColumnsDef = (
   const results: ColumnDef<yalcColumnDef>[] = [];
 
   for (const col of columns) {
-    if (col.name === "id") {
+    if (col.name === "idx") {
       continue;
     }
 
