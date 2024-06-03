@@ -122,4 +122,21 @@ export class TableDataService extends RouteHandlerAPIService {
 
         return response.data;
     }
+
+    async updateRow({
+        projectId,
+        tableId,
+        data,
+    }: {
+        projectId: string;
+        tableId: string;
+        data: { data: Record<string, string>[] };
+    }) {
+        const response = await this.patch(
+            `/api/dbms/${projectId}/${tableId}/rows`,
+            data
+        );
+
+        return response.data;
+    }
 }

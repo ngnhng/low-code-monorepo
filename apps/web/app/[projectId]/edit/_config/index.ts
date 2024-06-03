@@ -22,6 +22,7 @@ import { Charts, ChartsProps } from "../_components/blocks/Chart";
 import { Form, FormProps } from "../_components/blocks/Form";
 import { FormTable, FormTableProps } from "../_components/blocks/FormTable";
 import { Banner, BannerProps } from "../_components/blocks/Banner";
+import { FormUpdateRecord, FormUpdateProps } from "../_components/blocks/FormUpdateRecord";
 
 export type { RootProps } from "./root";
 
@@ -39,6 +40,7 @@ type CProps = {
   VerticalSpace: VerticalSpaceProps;
   Form: FormProps,
   FormTable: FormTableProps,
+  FormUpdateRecord: FormUpdateProps,
   Banner: BannerProps
 };
 
@@ -75,6 +77,7 @@ export const conf: Config<
       components: [
 		"Form",
 		"FormTable",
+        "FormUpdateRecord",
 	  ],
     },
   },
@@ -92,6 +95,7 @@ export const conf: Config<
     VerticalSpace,
     Form,
     FormTable,
+    FormUpdateRecord,
     Banner
   },
 };

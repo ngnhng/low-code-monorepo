@@ -33,6 +33,16 @@ export interface ITableDataStore {
         data: Record<string, string>;
         projectId?: string;
     }) => any;
+
+    updateRow: ({
+        tableId,
+        data,
+        projectId,
+    }: {
+        tableId: string;
+        data: Record<string, string>;
+        projectId?: string;
+    }) => any;
 }
 
 export class TableDataStore implements ITableDataStore {
@@ -223,6 +233,34 @@ export class TableDataStore implements ITableDataStore {
             return response;
         } catch (error) {
             console.log("INSERT_ROW_ERROR", error);
+            throw error;
+        }
+    };
+
+    updateRow = async ({
+        tableId,
+        data,
+        projectId,
+    }: {
+        tableId: string;
+        data: Record<string, string>;
+        projectId?: string;
+    }) => {
+        try {
+            const payload = {
+                data: [data],
+            };
+
+            const response = await this.tableDataService.updateRow({
+                projectId:
+                    projectId ?? this.rootStore.projectData.currentProjectId,
+                tableId,
+                data: payload,
+            });
+
+            return response;
+        } catch (error) {
+            console.log("UPDATE_ROW_ERROR", error);
             throw error;
         }
     };

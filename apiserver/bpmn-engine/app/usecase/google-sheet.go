@@ -96,6 +96,8 @@ func NewGoogleSheetWriteAppendFn(uc *GoogleSheetUseCase) func(
 			return nil, err
 		}
 
+		vars["sheetData"] = data
+
 		return vars, nil
 	}
 }
@@ -105,17 +107,17 @@ func validateGoogleSheetWriteAppendVars(vars model.Vars) (sheetId string, range_
 	if !ok {
 		return "", "", "", "", fmt.Errorf("expected string for key 'sheetId', got %T", vars["sheetId"])
 	}
-	range_, ok = vars["range"].(string)
+	range_, ok = vars["workSheet"].(string)
 	if !ok {
-		return "", "", "", "", fmt.Errorf("expected string for key 'range', got %T", vars["range"])
+		return "", "", "", "", fmt.Errorf("expected string for key 'range', got %T", vars["workSheet"])
 	}
 	user, ok = vars["_localContext_user"].(string)
 	if !ok {
 		return "", "", "", "", fmt.Errorf("expected string for key '_localContext_user', got %T", vars["_localContext_user"])
 	}
-	data, ok = vars["sheetData"].(string)
+	data, ok = vars["rowData"].(string)
 	if !ok {
-		return "", "", "", "", fmt.Errorf("expected string for key 'sheetData', got %T", vars["sheetData"])
+		return "", "", "", "", fmt.Errorf("expected string for key 'sheetData', got %T", vars["rowData"])
 	}
 
 	return

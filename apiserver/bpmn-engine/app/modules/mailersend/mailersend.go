@@ -89,14 +89,23 @@ func NewMailerSendSendMailFn(mailer *MailerSend) func(
 		convertedReceiverEmailStr := strings.Replace(receiverEmailStr, "'", "\"", -1)
 		err = json.Unmarshal([]byte(convertedReceiverEmailStr), &receiverEmails)
 		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal receiverEmail")
+			// if receiverEmailStr is just a single email, unmarshal will fail
+			// so we try to unmarshal it as a single string
+			receiverEmails = []string{receiverEmailStr}
+			// regex to check if the email is valid
+			emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+			if !emailRegex.MatchString(receiverEmailStr) {
+				return nil, fmt.Errorf("receiverEmail is not a valid email")
+			}
 		}
 
 		var receiverNames []string
 		convertedReceiverNameStr := strings.Replace(receiverNameStr, "'", "\"", -1)
 		err = json.Unmarshal([]byte(convertedReceiverNameStr), &receiverNames)
 		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal receiverName")
+			// if receiverNameStr is just a single name, unmarshal will fail
+			// so we try to unmarshal it as a single string
+			receiverNames = []string{receiverNameStr}
 		}
 
 		// if length of receiverEmails and receiverNames is not equal, return error

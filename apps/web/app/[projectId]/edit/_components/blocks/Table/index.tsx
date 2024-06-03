@@ -104,6 +104,8 @@ export const Table: ComponentConfig<TableProps> = {
         )
     );
 
+    console.log("Table Rows", data, isLoading);
+
     if (!tableConfigs.tableId) {
       return (
         <div className="flex w-full h-96 justify-center items-center bg-slate-100 rounded-md">
@@ -119,7 +121,7 @@ export const Table: ComponentConfig<TableProps> = {
     const columns = tables
       .find((table) => table.id === tableConfigs.tableId)
       ?.columns.filter((column) => {
-        if (column.name === "id") return false;
+        if (column.name === "idx") return false;
         return tableConfigs.visibleColumns.includes(column.name);
       });
 
@@ -164,7 +166,7 @@ const SetVisibleColumns = ({
         </Label>
 
         {selectedTableFields.map((field) => {
-          if (field.name === "id") return;
+          if (field.name === "idx") return;
 
           return (
             <div
